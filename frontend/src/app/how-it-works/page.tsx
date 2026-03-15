@@ -89,7 +89,7 @@ const STEPS = [
       { icon:"🥉", text:"3rd place: 2× entry fee returned instantly in USDT" },
       { icon:"🎖️", text:"All top 3 receive an on-chain certificate (Gold / Silver / Bronze)" },
     ],
-    why: "A $25 entry with 25 participants = $625 prize pool. Winner gets $562 as a funded account — no evaluation, no BS. A $50 entry with 50 participants = $2,500 pool. Winner gets $2,250.",
+    why: "A $25 entry with 25 participants = $625 prize pool. Winner gets $562 as a funded account — no evaluation, no BS. A $50 entry with 25 participants = $1,250 pool. Winner gets $1,125 as a funded account.",
     whyIcon: "💰",
   },
 ];
@@ -257,7 +257,7 @@ export default function HowItWorksPage() {
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:28 }}>
           {[
             { plan:"Starter Bullet", fee:25, entries:25, color:"#FFD700", border:"rgba(255,215,0,.25)" },
-            { plan:"Pro Bullet", fee:50, entries:50, color:"#22C55E", border:"rgba(34,197,94,.25)" },
+            { plan:"Pro Bullet", fee:50, entries:25, color:"#22C55E", border:"rgba(34,197,94,.25)" },
           ].map(p => {
             const pool = p.fee * p.entries;
             const first = pool * 0.9;
