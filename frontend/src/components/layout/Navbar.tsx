@@ -12,6 +12,7 @@ export default function Navbar() {
     { href: "/tournaments",  label: "Tournaments" },
     { href: "/leaderboard",  label: "Leaderboard" },
     { href: "/certificates", label: "Certificates" },
+    { href: "/how-it-works", label: "How It Works" },
     ...(user ? [{ href: "/profile", label: "My Account" }] : []),
     ...(user?.is_admin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
