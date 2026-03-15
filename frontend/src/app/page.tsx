@@ -73,7 +73,7 @@ const COMPARISON = [
   { feature:"Evaluation Required",  mft:"❌ None",        ftmo:"✅ Mandatory",                 broker:"N/A" },
   { feature:"Payout Denial",        mft:"❌ Never",       ftmo:"⚠️ Possible",                  broker:"⚠️ Possible" },
   { feature:"Demo Account Risk",    mft:"✅ Zero",        ftmo:"❌ Real evaluation",            broker:"❌ Real money" },
-  { feature:"Re-entries",           mft:"✅ Up to 5",     ftmo:"❌ No re-entry in same eval",   broker:"N/A" },
+  { feature:"Re-entries",           mft:"✅ 1 re-entry",  ftmo:"❌ No re-entry in same eval",   broker:"N/A" },
   { feature:"Prize Transparency",   mft:"✅ 100% live",   ftmo:"❌ Fixed payouts",              broker:"❌ Spread-based" },
   { feature:"Time to First Payout", mft:"90 Minutes",    ftmo:"14 / 30 days",                 broker:"Varies" },
   { feature:"Profit Share",         mft:"90%",           ftmo:"80–90%",                       broker:"100% (high risk)" },
@@ -374,6 +374,69 @@ export default function HomePage() {
             <strong style={{ color:"rgba(255,215,0,.45)", fontWeight:700 }}>Disclaimer: </strong>
             MyFundedTournament is a skills-based demo trading competition platform. All trading takes place on MT5 demo accounts using virtual funds — no real money is traded or at risk during tournaments. Entry fees fund the prize pool. Past demo performance does not guarantee live account results. Funded account prizes are subject to KYC verification and our standard terms. FTMO and broker data is based on publicly available information and may change. MFT is not a broker, investment advisor, or financial institution. Forex trading involves substantial risk and is not suitable for all investors.
           </p>
+        </div>
+      </section>
+
+
+      {/* ═══ PRIZE BREAKDOWN ═══ */}
+      <section style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.5)" }}>
+        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px" }}>
+          <div style={{ textAlign:"center", marginBottom:52 }}>
+            <div className="section-eyebrow">Prize Breakdown</div>
+            <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>How the Prize Pool Works</h2>
+            <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:540, margin:"0 auto" }}>
+              100% transparent. Every entry fee goes into the pool. Here's exactly what each winner receives.
+            </p>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24, maxWidth:900, margin:"0 auto" }}>
+            {[
+              {
+                name:"Starter Bullet", color:"#FFD700", border:"rgba(255,215,0,.25)",
+                bg:"rgba(255,215,0,.05)", pool:625, sub:"25 traders × $25 USDT",
+                rows:[
+                  { medal:"🥇", label:"1st Place (Funded Account)", val:562.5,  color:"#FFD700" },
+                  { medal:"🥈", label:"2nd Place (4× fee)",          val:100,    color:"#b4c0d8" },
+                  { medal:"🥉", label:"3rd Place (2× fee)",          val:50,     color:"#CD7F32" },
+                  { medal:"🏛️", label:"Platform Fee (10%)",          val:62.5,   color:"rgba(255,255,255,.3)" },
+                ]
+              },
+              {
+                name:"Pro Bullet", color:"#22C55E", border:"rgba(34,197,94,.25)",
+                bg:"rgba(34,197,94,.05)", pool:1250, sub:"25 traders × $50 USDT",
+                rows:[
+                  { medal:"🥇", label:"1st Place (Funded Account)", val:1125,   color:"#FFD700" },
+                  { medal:"🥈", label:"2nd Place (4× fee)",          val:200,    color:"#b4c0d8" },
+                  { medal:"🥉", label:"3rd Place (2× fee)",          val:100,    color:"#CD7F32" },
+                  { medal:"🏛️", label:"Platform Fee (10%)",          val:125,    color:"rgba(255,255,255,.3)" },
+                ]
+              },
+            ].map(plan => (
+              <div key={plan.name} style={{ background:plan.bg, border:`1px solid ${plan.border}`, borderRadius:18, overflow:"hidden" }}>
+                {/* Header */}
+                <div style={{ padding:"22px 26px", borderBottom:`1px solid ${plan.border}` }}>
+                  <div style={{ fontSize:12, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.4)", marginBottom:6 }}>{plan.name}</div>
+                  <div style={{ fontSize:32, fontWeight:900, color:plan.color, letterSpacing:"-1px", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>
+                    ${plan.pool.toLocaleString()} Pool
+                  </div>
+                  <div style={{ fontSize:13, color:"rgba(255,255,255,.35)", marginTop:4 }}>{plan.sub}</div>
+                </div>
+                {/* Rows */}
+                <div style={{ padding:"8px 0" }}>
+                  {plan.rows.map((row, i) => (
+                    <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"13px 26px", borderBottom: i < plan.rows.length-1 ? "1px solid rgba(255,255,255,.04)" : "none" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                        <span style={{ fontSize:18 }}>{row.medal}</span>
+                        <span style={{ fontSize:13, color:"rgba(255,255,255,.55)" }}>{row.label}</span>
+                      </div>
+                      <span style={{ fontSize:15, fontWeight:800, color:row.color, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>
+                        ${row.val.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
