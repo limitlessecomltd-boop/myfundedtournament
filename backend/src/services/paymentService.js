@@ -92,7 +92,7 @@ async function createEntryPayment(userId, tournamentId, entryId, entryFee) {
     address:    data.pay_address,
     amount:     data.pay_amount,
     currency:   data.pay_currency.toUpperCase(),
-    paymentUrl: `https://nowpayments.io/payment/?iid=${data.payment_id}`,
+    paymentUrl: `https://nowpayments.io/payment?iid=${data.payment_id}`,
   };
 }
 

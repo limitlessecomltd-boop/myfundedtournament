@@ -16,19 +16,21 @@ function PaymentCard({ payment }: { payment: any }) {
 
   useEffect(() => {
     if (!payment?.address || !canvasRef.current) return;
-    // Load QRCode library dynamically
+    // Use qrcode-generator library — works with a div container
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
     script.onload = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      // Clear any previous QR
-      canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
+      const container = document.getElementById("qr-container");
+      if (!container) return;
+      container.innerHTML = ""; // Clear previous
       try {
-        (window as any).QRCode.toCanvas(canvas, payment.address, {
+        new (window as any).QRCode(container, {
+          text: payment.address,
           width: 180,
-          margin: 2,
-          color: { dark: "#000000", light: "#ffffff" },
+          height: 180,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: (window as any).QRCode.CorrectLevel.H,
         });
       } catch(e) { console.error("QR error:", e); }
     };
@@ -69,7 +71,7 @@ function PaymentCard({ payment }: { payment: any }) {
       {/* QR Code */}
       <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
         <div style={{ background:"#fff", borderRadius:12, padding:10, display:"inline-block" }}>
-          <canvas ref={canvasRef} style={{ display:"block" }}/>
+          <div id="qr-container" style={{ display:"block" }}/>
         </div>
       </div>
 
@@ -92,7 +94,7 @@ function PaymentCard({ payment }: { payment: any }) {
       </div>
 
       <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ width:"100%", justifyContent:"center", display:"flex", marginBottom:8 }}>
-        Open NOWPayments Invoice →
+        Open Payment Invoice →
       </a>
       <div style={{ fontSize:11, color:"rgba(255,255,255,.25)", textAlign:"center" }}>
         Payment confirms automatically · Entry activates on confirmation
@@ -174,9 +176,11 @@ export default function TournamentDetailPage() {
     } finally { setSubmitting(false); }
   }
 
-  const activeEntries = myEntries.filter(e => e.status === "active");
-  // 1 original + 1 re-entry max
-  const canEnter = user && tournament && ["registration","active"].includes(tournament.status) && myEntries.length < 2 && activeEntries.length < 1;
+  // Only count confirmed (non-pending) entries toward limits
+  const confirmedEntries = myEntries.filter(e => e.status !== "pending_payment");
+  const activeEntries    = myEntries.filter(e => e.status === "active");
+  // 1 original + 1 re-entry max (pending_payment don't count)
+  const canEnter = user && tournament && ["registration","active"].includes(tournament.status) && confirmedEntries.length < 2 && activeEntries.length < 1;
 
   // Calculate duration in minutes from actual start/end times
   const durationMins = tournament ? Math.round((new Date(tournament.end_time).getTime() - new Date(tournament.start_time).getTime()) / 60000) : 90;
@@ -312,10 +316,10 @@ export default function TournamentDetailPage() {
           <div className="detail-sidebar" style={{ width:300, flexShrink:0 }}>
 
             {/* My entries */}
-            {myEntries.length > 0 && (
+            {confirmedEntries.length > 0 && (
               <div style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${tierColor}33`, borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:14 }}>My Entries ({myEntries.length}/2)</div>
-                {myEntries.map(e => (
+                <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:14 }}>My Entries ({confirmedEntries.length}/2)</div>
+                {myEntries.filter(e => e.status !== "pending_payment").map(e => (
                   <div key={e.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(255,255,255,.05)" }}>
                     <div>
                       <div style={{ fontSize:12, color:"rgba(255,255,255,.5)", marginBottom:4 }}>Entry #{e.entry_number} · {e.broker}</div>
@@ -354,7 +358,7 @@ export default function TournamentDetailPage() {
             {/* Join / Re-enter card */}
             <div style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${tierColor}44`, borderRadius:16, padding:"22px" }}>
               <div style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:18, fontWeight:800, color:"#fff", marginBottom:20 }}>
-                {myEntries.length > 0 ? "Re-enter Battle" : "Join Battle"}
+                {confirmedEntries.length > 0 ? "Re-enter Battle" : "Join Battle"}
               </div>
 
               <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
@@ -388,7 +392,7 @@ export default function TournamentDetailPage() {
                 </div>
               ) : !showJoinForm ? (
                 <button onClick={() => setShowJoinForm(true)} className="btn" style={{ width:"100%", background:tierColor, color:"#000", fontWeight:800, fontSize:15, padding:"14px", border:"none", borderRadius:10, cursor:"pointer" }}>
-                  {myEntries.length > 0 ? "Use Re-entry →" : "Grab Your Spot →"}
+                  {confirmedEntries.length > 0 ? "Use Re-entry →" : "Grab Your Spot →"}
                 </button>
               ) : (
                 <form onSubmit={handleJoin} style={{ display:"flex", flexDirection:"column", gap:12 }}>
