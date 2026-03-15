@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { tournamentApi, entryApi, leaderboardApi } from "@/lib/api";
@@ -8,6 +8,98 @@ import { usePaymentSocket } from "@/hooks/useSockets";
 import { Tournament, Entry } from "@/types";
 
 const BROKERS = ["Exness", "ICMarkets", "Tickmill", "Other"];
+
+// ── QR Code Payment Card ───────────────────────────────────────────────────────
+function PaymentCard({ payment }: { payment: any }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!payment?.address || !canvasRef.current) return;
+    // Load QRCode library dynamically
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+    script.onload = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      // Clear any previous QR
+      canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
+      try {
+        (window as any).QRCode.toCanvas(canvas, payment.address, {
+          width: 180,
+          margin: 2,
+          color: { dark: "#000000", light: "#ffffff" },
+        });
+      } catch(e) { console.error("QR error:", e); }
+    };
+    document.head.appendChild(script);
+    return () => { try { document.head.removeChild(script); } catch(e) {} };
+  }, [payment?.address]);
+
+  function copyAddress() {
+    navigator.clipboard.writeText(payment.address).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,215,0,.3)", borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+        <div style={{ fontSize:14, fontWeight:700, color:"#FFD700" }}>⏳ Payment Pending</div>
+        <div style={{ fontSize:11, color:"rgba(255,255,255,.35)", display:"flex", alignItems:"center", gap:5 }}>
+          <span style={{ width:6, height:6, borderRadius:"50%", background:"#FFD700", display:"inline-block", animation:"pulse 1.5s infinite" }}/>
+          Waiting...
+        </div>
+      </div>
+
+      <div style={{ fontSize:12, color:"rgba(255,255,255,.45)", marginBottom:16 }}>
+        Scan QR or copy the address below. Send <strong style={{ color:"#FFD700" }}>exactly</strong> this amount.
+      </div>
+
+      {/* Amount */}
+      <div style={{ background:"rgba(255,215,0,.06)", border:"1px solid rgba(255,215,0,.15)", borderRadius:10, padding:"12px 14px", marginBottom:14, textAlign:"center" }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:".1em", color:"rgba(255,255,255,.35)", marginBottom:5, textTransform:"uppercase" }}>Amount to Send</div>
+        <div style={{ fontSize:22, fontWeight:900, color:"#FFD700", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", letterSpacing:"-0.5px" }}>
+          {payment.amount} <span style={{ fontSize:13, fontWeight:600 }}>{payment.currency}</span>
+        </div>
+      </div>
+
+      {/* QR Code */}
+      <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
+        <div style={{ background:"#fff", borderRadius:12, padding:10, display:"inline-block" }}>
+          <canvas ref={canvasRef} style={{ display:"block" }}/>
+        </div>
+      </div>
+
+      {/* Address */}
+      <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"10px 12px", marginBottom:12 }}>
+        <div style={{ fontSize:10, fontWeight:700, letterSpacing:".1em", color:"rgba(255,255,255,.3)", marginBottom:6, textTransform:"uppercase" }}>USDT TRC-20 Address</div>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <div style={{ fontSize:10, wordBreak:"break-all", color:"rgba(255,255,255,.7)", fontFamily:"'JetBrains Mono','Fira Code',monospace", flex:1, lineHeight:1.6 }}>
+            {payment.address}
+          </div>
+          <button onClick={copyAddress} style={{ flexShrink:0, background: copied ? "rgba(34,197,94,.15)" : "rgba(255,255,255,.06)", border: `1px solid ${copied?"rgba(34,197,94,.3)":"rgba(255,255,255,.1)"}`, borderRadius:7, padding:"6px 10px", cursor:"pointer", fontSize:11, fontWeight:700, color: copied ? "#22C55E" : "rgba(255,255,255,.6)", whiteSpace:"nowrap", transition:"all .2s" }}>
+            {copied ? "✓ Copied!" : "Copy"}
+          </button>
+        </div>
+      </div>
+
+      {/* Warning */}
+      <div style={{ fontSize:11, color:"rgba(239,68,68,.7)", background:"rgba(239,68,68,.06)", border:"1px solid rgba(239,68,68,.15)", borderRadius:8, padding:"8px 12px", marginBottom:12, lineHeight:1.6 }}>
+        ⚠️ Send only <strong>USDT on TRC-20 network</strong>. Wrong network = lost funds.
+      </div>
+
+      <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ width:"100%", justifyContent:"center", display:"flex", marginBottom:8 }}>
+        Open NOWPayments Invoice →
+      </a>
+      <div style={{ fontSize:11, color:"rgba(255,255,255,.25)", textAlign:"center" }}>
+        Payment confirms automatically · Entry activates on confirmation
+      </div>
+    </div>
+  );
+}
 
 function TimeDisplay({ label, value }: { label: string; value: string }) {
   return (
@@ -249,22 +341,7 @@ export default function TournamentDetailPage() {
 
             {/* Payment pending */}
             {payment && !payment.confirmed && (
-              <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,215,0,.3)", borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
-                <div style={{ fontSize:14, fontWeight:700, color:"#FFD700", marginBottom:12 }}>⏳ Payment Pending</div>
-                <div style={{ fontSize:12, color:"rgba(255,255,255,.45)", marginBottom:14 }}>Send exactly this amount to the address below:</div>
-                <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"12px", marginBottom:10 }}>
-                  <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:4 }}>AMOUNT</div>
-                  <div style={{ fontSize:16, fontWeight:800, color:"#FFD700" }}>{payment.amount} {payment.currency}</div>
-                </div>
-                <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"12px", marginBottom:14 }}>
-                  <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:4 }}>USDT TRC-20 ADDRESS</div>
-                  <div style={{ fontSize:11, wordBreak:"break-all", color:"rgba(255,255,255,.7)", fontFamily:"'JetBrains Mono','Fira Code',monospace" }}>{payment.address}</div>
-                </div>
-                <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ width:"100%", justifyContent:"center", display:"flex", marginBottom:8 }}>
-                  Pay via NOWPayments →
-                </a>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", textAlign:"center" }}>Waiting for confirmation...</div>
-              </div>
+              <PaymentCard payment={payment}/>
             )}
 
             {payment?.confirmed && (
