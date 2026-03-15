@@ -53,7 +53,7 @@ const FAQS = [
 // ── Mascot SVG (approved v2) ──────────────────────────────────────────────
 function MFTMascot() {
   return (
-    <svg viewBox="0 0 780 900" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", maxWidth:640, display:"block" }}>
+    <svg viewBox="0 0 780 900" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", maxWidth:680, display:"block" }}>
       <defs>
         <radialGradient id="mbgG" cx="50%" cy="45%" r="60%">
           <stop offset="0%" stopColor="#0d1a0a"/>
@@ -227,7 +227,7 @@ export default function HomePage() {
           .hero-pills{justify-content:center !important;}
           .hero-btns{justify-content:center !important;}
           .hero-checks{justify-content:center !important;}
-          .mascot-wrap{display:flex; justify-content:center; padding:0 20px 24px;}
+          .mascot-wrap{display:flex; justify-content:center; padding:0;}
           .stats-bar{grid-template-columns:1fr 1fr !important;}
           .stats-bar>div{border-right:none !important; border-bottom:1px solid rgba(255,255,255,.06);}
           .grid-3-resp{grid-template-columns:1fr !important;}
@@ -252,16 +252,16 @@ export default function HomePage() {
       `}</style>
 
       {/* HERO */}
-      <section className="hero-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"60px 20px 40px 40px", display:"grid", gridTemplateColumns:"1fr 560px", gap:24, alignItems:"center", minHeight:"88vh", position:"relative" }} >
+      <section className="hero-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"20px 0px 16px 40px", display:"grid", gridTemplateColumns:"5fr 7fr", gap:16, alignItems:"center", minHeight:"auto", position:"relative" }} >
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, background:"radial-gradient(ellipse 700px 600px at 65% 35%, rgba(34,197,94,.06) 0%, transparent 70%), radial-gradient(ellipse 500px 400px at 15% 70%, rgba(255,215,0,.04) 0%, transparent 60%)" }}/>
         <div className="hero-text" style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"flex-start" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.2)", borderRadius:100, padding:"5px 14px 5px 8px", fontSize:12, fontWeight:600, color:"#FFD700", marginBottom:24 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.2)", borderRadius:100, padding:"5px 14px 5px 8px", fontSize:13, fontWeight:600, color:"#FFD700", marginBottom:24 }}>
             <span className="live-dot"/>4 Live Tournaments &middot; 347 Active Traders
           </div>
-          <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:"clamp(32px,4vw,54px)", fontWeight:800, lineHeight:1.1, letterSpacing:"-1.5px", marginBottom:18, color:"#fff" }}>
+          <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:"clamp(42px,5vw,66px)", fontWeight:800, lineHeight:1.1, letterSpacing:"-1.5px", marginBottom:18, color:"#fff" }}>
             Compete Demo.<br/><span style={{ color:"#FFD700" }}>Win Real</span>{" "}<span style={{ color:"rgba(255,255,255,.45)" }}>Funding.</span>
           </h1>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,.5)", lineHeight:1.7, maxWidth:500, marginBottom:24 }}>
+          <p style={{ fontSize:17, color:"rgba(255,255,255,.6)", lineHeight:1.75, maxWidth:520, marginBottom:24 }}>
             Enter MT5 demo tournaments at <strong style={{ color:"rgba(255,255,255,.8)" }}>Exness, ICMarkets or Tickmill.</strong> Your entry fee joins the prize pool. Top trader wins a <strong style={{ color:"rgba(255,255,255,.8)" }}>real funded account</strong> — no evaluation needed.
           </p>
           <div className="hero-pills" style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:24 }}>
@@ -275,7 +275,7 @@ export default function HomePage() {
           </div>
           <div className="hero-checks" style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
             {["MT5 demo — zero risk","Transparent prize pool","No payout denial ever"].map(t=>(
-              <div key={t} style={{ display:"flex", alignItems:"center", gap:7, fontSize:12, color:"rgba(255,255,255,.35)", fontWeight:500 }}>
+              <div key={t} style={{ display:"flex", alignItems:"center", gap:7, fontSize:13, color:"rgba(255,255,255,.45)", fontWeight:500 }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{t}
               </div>
             ))}

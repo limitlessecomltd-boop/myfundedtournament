@@ -60,7 +60,7 @@ h1,h2,h3,h4{font-family:var(--font-head);font-weight:700;color:var(--text);}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
 
 /* ── Pills ── */
-.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.pill{display:inline-flex;align-items:center;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600;}
 .pill-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.22);}
 .pill-gold{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(255,215,0,.22);}
 .pill-blue{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(96,165,250,.22);}
@@ -124,12 +124,26 @@ tr:hover td{background:rgba(255,255,255,.012);}
 .sb-nav-item:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.04);}
 .sb-nav-item.active{color:var(--gold);background:var(--gold-dim);border-left-color:var(--gold);font-weight:600;}
 
+/* ── Objective ticks ── */
+.obj-tick{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tick-pass{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);}
+.tick-warn{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);}
+.tick-fail{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);}
+
+/* ── Slots ── */
+.slot{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;border:1.5px solid;}
+.slot-done{background:rgba(100,116,139,.1);border-color:rgba(100,116,139,.25);color:var(--text3);}
+.slot-active{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:var(--green);}
+.slot-empty{background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.2);color:var(--gold);}
+.slot-locked{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08);color:rgba(255,255,255,.2);}
+
 /* ── Animations ── */
 @keyframes fade-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .fade-in{animation:fade-in .3s ease forwards;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,215,0,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
 
+/* ── Responsive ── */
 @media(max-width:768px){
   .grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr;}
   .page,.page-wide{padding:20px 16px;}
