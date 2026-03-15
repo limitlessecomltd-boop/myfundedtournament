@@ -64,4 +64,36 @@ async function getMinimumPaymentAmount(currency = 'usdttrc20') {
   return response.data;
 }
 
-module.exports = { createPayment, getPaymentStatus, verifyIpnSignature, getAvailableCurrencies, getMinimumPaymentAmount };
+/**
+ * createEntryPayment — convenience wrapper used by entryService.
+ * Creates a NOWPayments invoice for a tournament entry fee.
+ * Returns { paymentId, address, amount, currency, paymentUrl }
+ */
+async function createEntryPayment(userId, tournamentId, entryId, entryFee) {
+  const BACKEND_URL = process.env.BACKEND_URL || 'https://myfundedtournament-production.up.railway.app';
+
+  const data = await createPayment({
+    orderId:     `entry_${entryId}`,
+    amount:      parseFloat(entryFee),
+    description: `MFT Tournament Entry — ${entryId}`,
+    callbackUrl: `${BACKEND_URL}/api/payments/webhook`,
+  });
+
+  // Persist payment record to DB
+  const db = require('../config/db');
+  await db.query(`
+    INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, currency, status)
+    VALUES ($1,$2,$3,$4,$5,$6,'usdttrc20','waiting')
+    ON CONFLICT (nowpayments_id) DO NOTHING
+  `, [entryId, userId, tournamentId, data.payment_id, data.pay_address, parseFloat(entryFee)]);
+
+  return {
+    paymentId:  data.payment_id,
+    address:    data.pay_address,
+    amount:     data.pay_amount,
+    currency:   data.pay_currency.toUpperCase(),
+    paymentUrl: `https://nowpayments.io/payment/?iid=${data.payment_id}`,
+  };
+}
+
+module.exports = { createPayment, createEntryPayment, getPaymentStatus, verifyIpnSignature, getAvailableCurrencies, getMinimumPaymentAmount };
