@@ -102,10 +102,22 @@ export default function TournamentDetailPage() {
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
       <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 40px" }}>
-        <div style={{ display:"flex", gap:32, flexWrap:"wrap" }}>
+              <style>{`
+        @media(max-width:768px){
+          .detail-layout{ flex-direction:column !important; }
+          .detail-sidebar{ width:100% !important; flex:none !important; }
+          .detail-stats{ grid-template-columns:1fr 1fr !important; }
+          .detail-timing{ grid-template-columns:1fr 1fr !important; }
+        }
+        @media(max-width:480px){
+          .detail-stats{ grid-template-columns:1fr 1fr !important; }
+          .detail-timing{ grid-template-columns:1fr !important; }
+        }
+      `}</style>
+        <div className="detail-layout" style={{ display:"flex", gap:32, flexWrap:"wrap" }}>
 
           {/* ── LEFT COLUMN ── */}
-          <div style={{ flex:"1 1 520px" }}>
+          <div style={{ flex:"1 1 min(100%, 520px)" }}>
 
             {/* Header */}
             <div style={{ marginBottom:28 }}>
@@ -137,7 +149,7 @@ export default function TournamentDetailPage() {
             {tournament.status === "active" && <LiveCountdown endTime={tournament.end_time}/>}
 
             {/* Stats grid */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }} className="detail-stats">
               {[
                 ["Entry Fee",      `$${tournament.entry_fee} USDT`, tierColor],
                 ["Demo Balance",   "$1,000",                        "#fff"],
@@ -156,7 +168,7 @@ export default function TournamentDetailPage() {
             {/* Battle timing — clean, minimal */}
             <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:14, padding:"20px 24px", marginBottom:20 }}>
               <div style={{ fontSize:12, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:16 }}>Battle Timing</div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }} className="detail-timing">
                 <TimeDisplay label="Registration Opens" value={new Date(tournament.registration_open).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}/>
                 <TimeDisplay label="Battle Duration" value="90 Minutes"/>
                 <TimeDisplay label="Starts When" value={`${tournament.max_entries} spots filled`}/>
@@ -205,7 +217,7 @@ export default function TournamentDetailPage() {
           </div>
 
           {/* ── RIGHT COLUMN — Join Panel ── */}
-          <div style={{ width:300, flexShrink:0 }}>
+          <div className="detail-sidebar" style={{ width:300, flexShrink:0 }}>
 
             {/* My entries */}
             {myEntries.length > 0 && (

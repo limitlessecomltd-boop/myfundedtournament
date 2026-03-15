@@ -128,7 +128,33 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{ background:"#050810" }}>
+    <div style={{ background:"#050810", overflowX:"hidden" }}>
+      <style>{`
+        @media(max-width:768px){
+          .hero-grid{ grid-template-columns:1fr !important; padding:28px 16px 20px !important; }
+          .hero-photo{ display:none !important; }
+          .hero-actions{ flex-direction:column !important; }
+          .hero-actions a,.hero-actions button{ width:100% !important; justify-content:center !important; }
+          .stats-bar{ grid-template-columns:1fr 1fr !important; padding:0 16px !important; }
+          .plans-grid{ grid-template-columns:1fr !important; }
+          .prize-grid{ grid-template-columns:1fr !important; }
+          .rules-2col{ grid-template-columns:1fr !important; gap:28px !important; }
+          .steps-grid{ grid-template-columns:1fr 1fr !important; }
+          .comp-wrap{ overflow-x:auto; }
+          .comp-wrap table{ min-width:500px; }
+          .faq-list{ grid-template-columns:1fr !important; }
+          .broker-grid{ grid-template-columns:1fr !important; }
+          .page-pad-inner{ padding-left:16px !important; padding-right:16px !important; }
+          .sec-title{ font-size:24px !important; }
+          .section-title{ font-size:22px !important; }
+          .cta-h{ font-size:28px !important; }
+        }
+        @media(max-width:480px){
+          .stats-bar{ grid-template-columns:1fr !important; }
+          .steps-grid{ grid-template-columns:1fr !important; }
+          .prize-grid{ grid-template-columns:1fr !important; }
+        }
+      `}</style>
       <style>{`
         @media(max-width:900px){
           .hero-grid{grid-template-columns:1fr !important;}
@@ -153,7 +179,7 @@ export default function HomePage() {
       `}</style>
 
       {/* ═══ HERO ═══ */}
-      <section className="hero-pad hero-grid" style={{ maxWidth:1280, margin:"0 auto", padding:"52px 48px 36px", display:"grid", gridTemplateColumns:"1fr 480px", gap:56, alignItems:"center" }}>
+      <section className="hero-pad hero-grid" className="hero-grid" style={{ maxWidth:1280, margin:"0 auto", padding:"52px 48px 36px", display:"grid", gridTemplateColumns:"1fr 480px", gap:56, alignItems:"center" }}>
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, background:"radial-gradient(ellipse 700px 600px at 68% 38%, rgba(34,197,94,.06) 0%, transparent 70%), radial-gradient(ellipse 500px 400px at 12% 65%, rgba(255,215,0,.04) 0%, transparent 60%)" }}/>
         <div style={{ position:"relative", zIndex:1 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.22)", borderRadius:100, padding:"6px 16px 6px 10px", fontSize:13, fontWeight:600, color:"#FFD700", marginBottom:28 }}>
@@ -172,7 +198,7 @@ export default function HomePage() {
             <span className="pill pill-green">Winner takes 90% Funds</span>
             <span className="pill pill-blue">Zero Evaluation</span>
           </div>
-          <div style={{ display:"flex", gap:14, marginBottom:36, flexWrap:"wrap" }}>
+          <div className="hero-actions" style={{ display:"flex", gap:14, marginBottom:36, flexWrap:"wrap" }}>
             <Link href="/tournaments" className="btn btn-primary btn-lg">Join a Battle Now</Link>
             <Link href="/how-it-works" className="btn btn-ghost btn-lg">How It Works</Link>
           </div>

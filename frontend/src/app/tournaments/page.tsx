@@ -314,7 +314,7 @@ export default function TournamentsPage() {
                     Grab your spot!
                   </span>
                 </div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))", gap:20 }}>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,320px),1fr))", gap:20 }} className="tour-grid">
                   {registration.map(t => <RegistrationCard key={t.id} t={t}/>)}
                 </div>
               </div>
@@ -335,7 +335,7 @@ export default function TournamentsPage() {
                     {active.length} in progress
                   </span>
                 </div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))", gap:20 }}>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,320px),1fr))", gap:20 }} className="tour-grid">
                   {active.map(t => <LiveCard key={t.id} t={t}/>)}
                 </div>
               </div>
