@@ -21,7 +21,7 @@ export default function Navbar() {
 
   return (
     <>
-      <style>{&#96;
+      <style>{`
         .nav-links { display: flex; gap: 2px; align-items: center; }
         .nav-auth  { display: flex; gap: 10px; align-items: center; }
         .nav-burger{ display: none; }
@@ -29,7 +29,7 @@ export default function Navbar() {
           .nav-links,.nav-auth{ display:none !important; }
           .nav-burger{ display:flex !important; }
         }
-      ` }</style>
+      `}</style>
 
       <nav style={{
         background:"rgba(5,8,16,0.97)",
@@ -41,14 +41,14 @@ export default function Navbar() {
         padding:"0 20px",
         position:"sticky", top:0, zIndex:200,
       }}>
-        {* -- Logo -- *}
+        {/* ── Logo ── */}
         <Link href="/" onClick={close} style={{ textDecoration:"none", display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-          {* MFT Lgo box - clean yellow box *}
+          {/* MFT Logo box */}
           <div style={{
             width:32, height:32, background:"#FFD700", borderRadius:8,
             display:"flex", alignItems:"center", justifyContent:"center",
             fontWeight:900, fontSize:11, color:"#000",
-            fontFamily:"'Space Grotesk', system-ui,sans-serif",
+            fontFamily:"'Space Grotesk',system-ui,sans-serif",
             letterSpacing:"-0.5px", flexShrink:0,
           }}>MFT</div>
           <span className="nav-logo-text" style={{ fontFamily:"'Space Grotesk',system-ui,sans-serif", fontWeight:800, fontSize:15, letterSpacing:"-0.3px" }}>
@@ -57,7 +57,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {* -- Desktop links -- *}
+        {/* ── Desktop links ── */}
         <div className="nav-links">
           {links.map(l => (
             <Link key={l.href} href={l.href} style={{
@@ -69,7 +69,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        {* -- Desktop auth -- *}
+        {/* ── Desktop auth ── */}
         <div className="nav-auth">
           {user ? (
             <>
@@ -87,7 +87,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {* -- Hamburger -- *}
+        {/* ── Hamburger ── */}
         <button
           className="nav-burger"
           onClick={() => setOpen(o => !o)}
@@ -105,7 +105,7 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {* -- Mobile slide-down menu -- *}
+      {/* ── Mobile slide-down menu ── */}
       {open && (
         <div style={{
           position:"fixed", top:60, left:0, right:0, bottom:0,
@@ -140,7 +140,7 @@ export default function Navbar() {
                 <Link href="/login" onClick={close} className="btn btn-ghost"
                   style={{ width:"100%", justifyContent:"center", display:"flex" }}>Sign In</Link>
                 <Link href="/register" onClick={close} className="btn btn-primary"
-                  style={{ width:"100%", justifyContent:"center", display:"flex" }}>Join a Battle —</Link>
+                  style={{ width:"100%", justifyContent:"center", display:"flex" }}>Join a Battle →</Link>
               </>
             )}
           </div>
