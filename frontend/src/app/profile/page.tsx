@@ -9,8 +9,9 @@ const NAV = [
   { id:"overview",  label:"Overview",         icon:"M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" },
   { id:"active",    label:"Active Tournaments",icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
   { id:"history",   label:"History",           icon:"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
-  { id:"payouts",   label:"Payouts",           icon:"M12 8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" },
-  { id:"settings",  label:"Settings",          icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
+  { id:"payouts",      label:"Payouts",        icon:"M12 8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" },
+  { id:"certificates", label:"Certificates",  icon:"M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" },
+  { id:"settings",     label:"Settings",      icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
 ];
 
 function Icon({ d, size=18, stroke="#fff", opacity=1 }:{ d:string,size?:number,stroke?:string,opacity?:number }) {
@@ -394,6 +395,53 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── CERTIFICATES ── */}
+            {tab === "certificates" && (
+              <div>
+                <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:8, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>My Certificates</div>
+                <div style={{ fontSize:14, color:"rgba(255,255,255,.38)", marginBottom:28 }}>Your personal trading achievements. Each certificate is issued for tournament wins.</div>
+
+                {tournaments.filter(t=>t.is_winner).length === 0 ? (
+                  <div style={{ textAlign:"center", padding:"60px 0" }}>
+                    <div style={{ fontSize:56, marginBottom:16 }}>🏆</div>
+                    <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No certificates yet</div>
+                    <div style={{ fontSize:14, color:"rgba(255,255,255,.3)", marginBottom:28, maxWidth:360, margin:"0 auto 28px" }}>
+                      Win a tournament to earn your first on-chain certificate. Each win earns a Gold, Silver or Bronze certificate.
+                    </div>
+                    <Link href="/tournaments" className="btn btn-primary">Join a Battle Now</Link>
+                  </div>
+                ) : (
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:20 }}>
+                    {tournaments.filter(t=>t.is_winner).map((t:any, i:number)=>{
+                      const medal = i===0?"🥇":i===1?"🥈":"🥉";
+                      const certColor = i===0?"#FFD700":i===1?"#b4c0d8":"#CD7F32";
+                      const certName = i===0?"Gold Certificate":i===1?"Silver Certificate":"Bronze Certificate";
+                      const borderColor = i===0?"rgba(255,215,0,.4)":i===1?"rgba(180,192,216,.3)":"rgba(205,127,50,.3)";
+                      return (
+                        <div key={t.id} style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${borderColor}`, borderRadius:18, padding:28, position:"relative", overflow:"hidden" }}>
+                          {/* Glow bg */}
+                          <div style={{ position:"absolute", top:-30, right:-30, width:120, height:120, borderRadius:"50%", background:`radial-gradient(circle, ${certColor}22 0%, transparent 70%)`, pointerEvents:"none" }}/>
+                          <div style={{ fontSize:48, marginBottom:14 }}>{medal}</div>
+                          <div style={{ fontSize:11, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:6 }}>Tournament Win</div>
+                          <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:4 }}>{t.name}</div>
+                          <div style={{ fontSize:13, color:"rgba(255,255,255,.38)", marginBottom:16 }}>
+                            Best gain: <span style={{ color:"#22C55E", fontWeight:700 }}>+{Number(t.best_profit_pct||0).toFixed(2)}%</span>
+                          </div>
+                          <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${certColor}15`, border:`1px solid ${certColor}44`, borderRadius:20, padding:"4px 12px", marginBottom:20 }}>
+                            <span style={{ fontSize:11, fontWeight:700, color:certColor }}>{certName}</span>
+                          </div>
+                          <div style={{ display:"flex", gap:8 }}>
+                            <Link href={`/certificates?t=${t.id}`} className="btn btn-ghost btn-sm" style={{ flex:1, justifyContent:"center" }}>View</Link>
+                            <Link href={`/certificates?t=${t.id}&download=1`} className="btn btn-sm" style={{ flex:1, justifyContent:"center", background:certColor, color:"#000", fontWeight:700 }}>Download</Link>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
