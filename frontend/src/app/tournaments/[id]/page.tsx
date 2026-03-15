@@ -6,14 +6,45 @@ import { tournamentApi, entryApi, leaderboardApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { usePaymentSocket } from "@/hooks/useSockets";
 import { Tournament, Entry } from "@/types";
-import { format } from "date-fns";
 
 const BROKERS = ["Exness", "ICMarkets", "Tickmill", "Other"];
+
+function TimeDisplay({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,.35)", textTransform:"uppercase", letterSpacing:".08em", marginBottom:4 }}>{label}</div>
+      <div style={{ fontSize:14, color:"rgba(255,255,255,.8)", fontFamily:"'JetBrains Mono','Fira Code',monospace" }}>{value}</div>
+    </div>
+  );
+}
+
+// Live countdown for active tournaments
+function LiveCountdown({ endTime }: { endTime: string }) {
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    const update = () => setSecs(Math.max(0, Math.floor((new Date(endTime).getTime() - Date.now()) / 1000)));
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [endTime]);
+  const m = Math.floor(secs / 60), s = secs % 60;
+  const warn = secs <= 3 * 60 && secs > 0;
+  return (
+    <div style={{ textAlign:"center", padding:"20px", background: warn ? "rgba(239,68,68,.08)" : "rgba(34,197,94,.06)", border:`1px solid ${warn?"rgba(239,68,68,.3)":"rgba(34,197,94,.2)"}`, borderRadius:14, marginBottom:20 }}>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:".12em", color: warn?"#EF4444":"#22C55E", marginBottom:8, textTransform:"uppercase" }}>
+        {warn ? "⚠️ CLOSE ALL TRADES NOW" : "⏱ Time Remaining"}
+      </div>
+      <div style={{ fontSize:48, fontWeight:900, color: warn?"#EF4444":"#22C55E", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", letterSpacing:"-3px", lineHeight:1 }}>
+        {String(m).padStart(2,"0")}:{String(s).padStart(2,"0")}
+      </div>
+      {warn && <div style={{ fontSize:12, color:"rgba(239,68,68,.7)", marginTop:8 }}>Trades open after this will NOT count!</div>}
+    </div>
+  );
+}
 
 export default function TournamentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const router = useRouter();
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [myEntries, setMyEntries] = useState<Entry[]>([]);
@@ -22,11 +53,10 @@ export default function TournamentDetailPage() {
   const [payment, setPayment] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-
-  const [form, setForm] = useState({ mt5Login: "", mt5Password: "", mt5Server: "", broker: "Exness" });
+  const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", broker:"Exness" });
 
   usePaymentSocket(payment?.paymentId || null, () => {
-    setPayment((p: any) => p ? { ...p, confirmed: true } : p);
+    setPayment((p: any) => p ? {...p, confirmed:true} : p);
     loadMyEntries();
   });
 
@@ -37,250 +67,273 @@ export default function TournamentDetailPage() {
     if (user) loadMyEntries();
     leaderboardApi.get(id, 5).then(setTopTraders).catch(() => {});
   }
-
   async function loadMyEntries() {
     entryApi.getMy(id).then(setMyEntries).catch(() => {});
   }
-
   async function handleJoin(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setSubmitting(true);
     try {
-      const result = await entryApi.create({
-        tournamentId: id,
-        mt5Login: form.mt5Login,
-        mt5Password: form.mt5Password,
-        mt5Server: form.mt5Server,
-        broker: form.broker.toLowerCase(),
-      });
+      const result = await entryApi.create({ tournamentId:id, mt5Login:form.mt5Login, mt5Password:form.mt5Password, mt5Server:form.mt5Server, broker:form.broker.toLowerCase() });
       setPayment(result.payment);
       setShowJoinForm(false);
     } catch (err: any) {
       setError(err?.response?.data?.error || "Failed to create entry");
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   }
 
   const activeEntries = myEntries.filter(e => e.status === "active");
-  const canEnter = user && tournament && ["registration","active"].includes(tournament.status) && activeEntries.length < 5 && myEntries.length < 10;
+  // 1 original + 1 re-entry max
+  const canEnter = user && tournament && ["registration","active"].includes(tournament.status) && myEntries.length < 2 && activeEntries.length < 1;
+
+  // Calculate duration in minutes from actual start/end times
+  const durationMins = tournament ? Math.round((new Date(tournament.end_time).getTime() - new Date(tournament.start_time).getTime()) / 60000) : 90;
+  const durationLabel = durationMins >= 60 ? `${Math.round(durationMins)} min (${(durationMins/60).toFixed(1)}h)` : `${durationMins} min`;
+
+  const tierColor = tournament?.tier === "pro" ? "#22C55E" : "#FFD700";
+  const tierName  = tournament?.tier === "pro" ? "Pro Bullet" : "Starter Bullet";
 
   if (!tournament) return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: 400 }}>
-      <div style={{ width: 40, height: 40, border: "3px solid var(--green)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+    <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:400, background:"#050810" }}>
+      <div className="spinner"/>
     </div>
   );
 
   return (
-    <div className="page">
-      <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+    <div style={{ background:"#050810", minHeight:"100vh" }}>
+      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 40px" }}>
+        <div style={{ display:"flex", gap:32, flexWrap:"wrap" }}>
 
-        {/* Left col */}
-        <div style={{ flex: "1 1 520px" }}>
-          <div style={{ marginBottom: 24 }}>
-            <span className="badge" style={{ background: "var(--green-dim)", color: "var(--green)", textTransform: "capitalize", marginBottom: 12, display: "inline-block" }}>
-              {tournament.status}
-            </span>
-            <h1 style={{ fontFamily: "var(--font-head)", fontSize: 36, fontWeight: 800, marginBottom: 8 }}>{tournament.name}</h1>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 40, fontWeight: 600, color: "var(--green)" }}>
-                ${Number(tournament.prize_pool).toLocaleString()}
-              </span>
-              <span style={{ color: "var(--text3)" }}>total prize pool</span>
-            </div>
-          </div>
+          {/* ── LEFT COLUMN ── */}
+          <div style={{ flex:"1 1 520px" }}>
 
-          {/* Stats grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 24 }}>
-            {[
-              ["Entry Fee",    `$${tournament.entry_fee} USDT`],
-              ["Sim Balance",  "$10,000"],
-              ["Profit Share", "90%"],
-              ["Max Entries",  tournament.max_entries],
-              ["Active Now",   tournament.active_entries],
-              ["Unique Traders", tournament.unique_traders],
-            ].map(([l,v]) => (
-              <div key={l} className="stat-block">
-                <div className="stat-label">{l}</div>
-                <div className="stat-value" style={{ fontSize: 18 }}>{v}</div>
+            {/* Header */}
+            <div style={{ marginBottom:28 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+                <span style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:20, background:`${tierColor}18`, border:`1px solid ${tierColor}44`, color:tierColor }}>{tierName}</span>
+                <span style={{ fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:20,
+                  background: tournament.status==="active" ? "rgba(34,197,94,.12)" : tournament.status==="registration" ? "rgba(255,215,0,.1)" : "rgba(255,255,255,.06)",
+                  border: tournament.status==="active" ? "1px solid rgba(34,197,94,.3)" : "1px solid rgba(255,255,255,.1)",
+                  color: tournament.status==="active" ? "#22C55E" : tournament.status==="registration" ? "#FFD700" : "rgba(255,255,255,.5)",
+                  textTransform:"capitalize" }}>
+                  {tournament.status==="registration" ? "Open for Registration" : tournament.status}
+                </span>
               </div>
-            ))}
-          </div>
+              <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:34, fontWeight:900, color:"#fff", letterSpacing:"-1px", marginBottom:10 }}>
+                {tournament.name}
+              </h1>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,.4)", fontStyle:"italic" }}>
+                Are you good enough to beat only {tournament.max_entries} traders?
+              </div>
+              <div style={{ display:"flex", alignItems:"baseline", gap:8, marginTop:12 }}>
+                <span style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:38, fontWeight:900, color:tierColor }}>
+                  ${Number(tournament.prize_pool).toLocaleString()}
+                </span>
+                <span style={{ color:"rgba(255,255,255,.4)", fontSize:14 }}>total prize pool</span>
+              </div>
+            </div>
 
-          {/* Dates */}
-          <div className="card-sm" style={{ marginBottom: 24 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {/* Live countdown if active */}
+            {tournament.status === "active" && <LiveCountdown endTime={tournament.end_time}/>}
+
+            {/* Stats grid */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
               {[
-                ["Registration Opens", format(new Date(tournament.registration_open), "MMM d yyyy, HH:mm")],
-                ["Tournament Starts",  format(new Date(tournament.start_time), "MMM d yyyy, HH:mm")],
-                ["Tournament Ends",    format(new Date(tournament.end_time), "MMM d yyyy, HH:mm")],
-                ["Duration",          "7 days"],
-              ].map(([l,v]) => (
-                <div key={l}>
-                  <div style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "var(--font-mono)", marginBottom: 3 }}>{l}</div>
-                  <div style={{ fontSize: 14, color: "var(--text)", fontFamily: "var(--font-mono)" }}>{v}</div>
+                ["Entry Fee",      `$${tournament.entry_fee} USDT`, tierColor],
+                ["Demo Balance",   "$1,000",                        "#fff"],
+                ["Profit Share",   "90%",                           "#22C55E"],
+                ["Max Traders",    tournament.max_entries,          "#fff"],
+                ["Traders Joined", tournament.active_entries || 0,  tierColor],
+                ["Unique Traders", tournament.unique_traders || 0,  "#fff"],
+              ].map(([l,v,c]) => (
+                <div key={String(l)} style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"rgba(255,255,255,.35)", marginBottom:6 }}>{l}</div>
+                  <div style={{ fontSize:20, fontWeight:800, color:String(c), fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>{v}</div>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Re-entry rules */}
-          <div className="card-sm" style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: "var(--text2)" }}>Re-entry Rules</div>
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-              {["Up to 10 total entries per trader", "Maximum 5 active entries at once", "Entries 6-10 unlock only after first 5 are breached", "Each re-entry pays full fee — same as original"].map(r => (
-                <li key={r} style={{ fontSize: 13, color: "var(--text2)", display: "flex", gap: 8 }}>
-                  <span style={{ color: "var(--amber)" }}>→</span> {r}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Top 5 leaderboard preview */}
-          {topTraders.length > 0 && (
-            <div className="card-sm">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text2)" }}>Current Leaders</span>
-                <Link href={`/leaderboard?t=${id}`} style={{ fontSize: 12, color: "var(--green)", textDecoration: "none" }}>Full leaderboard →</Link>
+            {/* Battle timing — clean, minimal */}
+            <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:14, padding:"20px 24px", marginBottom:20 }}>
+              <div style={{ fontSize:12, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:16 }}>Battle Timing</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                <TimeDisplay label="Registration Opens" value={new Date(tournament.registration_open).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}/>
+                <TimeDisplay label="Battle Duration" value="90 Minutes"/>
+                <TimeDisplay label="Starts When" value={`${tournament.max_entries} spots filled`}/>
+                <TimeDisplay label="3-Minute Rule" value="Close all trades 3 min before end"/>
               </div>
-              {topTraders.map((e, i) => (
-                <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: i < topTraders.length - 1 ? "1px solid var(--border)" : "none" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: i === 0 ? "var(--amber)" : "var(--text3)", fontWeight: 600 }}>#{i+1}</span>
-                    <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", color: "var(--text2)" }}>{e.display_name}</span>
-                  </div>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: Number(e.profit_pct) >= 0 ? "var(--green)" : "var(--red)" }}>
-                    {Number(e.profit_pct) >= 0 ? "+" : ""}{Number(e.profit_pct).toFixed(2)}%
-                  </span>
-                </div>
-              ))}
             </div>
-          )}
-        </div>
 
-        {/* Right col — join panel */}
-        <div style={{ width: 320, flexShrink: 0 }}>
-
-          {/* My entries */}
-          {myEntries.length > 0 && (
-            <div className="card" style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>My Entries</div>
-              {myEntries.map(e => (
-                <div key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontFamily: "var(--font-mono)", color: "var(--text2)" }}>Entry #{e.entry_number} — {e.broker}</div>
-                    <span className={`badge badge-sm ${e.status === "active" ? "badge-green" : e.status === "disqualified" ? "badge-red" : "badge-gray"}`} style={{ marginTop: 4, fontSize: 11 }}>{e.status}</span>
+            {/* Re-entry rules — updated */}
+            <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:14, padding:"20px 24px", marginBottom:20 }}>
+              <div style={{ fontSize:12, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:14 }}>Re-entry Rules</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {[
+                  ["✅", "1 re-entry allowed per tournament",                          "#22C55E"],
+                  ["⚡", "Re-entry unlocks only after your first entry is breached",   "#FFD700"],
+                  ["💰", "Each re-entry pays the full entry fee",                       "rgba(255,255,255,.6)"],
+                  ["🚫", "Maximum 2 entries total per trader per battle",              "rgba(255,255,255,.6)"],
+                ].map(([icon, rule, color]) => (
+                  <div key={String(rule)} style={{ display:"flex", alignItems:"flex-start", gap:10, fontSize:13, color:String(color) }}>
+                    <span style={{ fontSize:14, flexShrink:0 }}>{icon}</span>
+                    {rule}
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 600, color: Number(e.profit_pct) >= 0 ? "var(--green)" : "var(--red)" }}>
-                      {Number(e.profit_pct) >= 0 ? "+" : ""}{Number(e.profit_pct).toFixed(2)}%
+                ))}
+              </div>
+            </div>
+
+            {/* Top 5 leaderboard */}
+            {topTraders.length > 0 && (
+              <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:14, padding:"20px 24px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.7)" }}>Current Leaders</span>
+                  <Link href={`/leaderboard?t=${id}`} style={{ fontSize:12, color:"#FFD700", textDecoration:"none", fontWeight:600 }}>Full leaderboard →</Link>
+                </div>
+                {topTraders.map((e, i) => (
+                  <div key={e.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom: i < topTraders.length-1 ? "1px solid rgba(255,255,255,.05)" : "none" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <span style={{ fontSize:16 }}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":"#"+(i+1)}</span>
+                      <span style={{ fontSize:13, color:"rgba(255,255,255,.65)", fontFamily:"'JetBrains Mono','Fira Code',monospace" }}>{e.display_name}</span>
                     </div>
-                    {e.status === "active" && (
-                      <Link href={`/tournaments/${id}/trade?entry=${e.id}`} style={{ fontSize: 12, color: "var(--green)", textDecoration: "none" }}>View →</Link>
-                    )}
+                    <span style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:15, fontWeight:800, color: Number(e.profit_pct)>=0?"#22C55E":"#EF4444" }}>
+                      {Number(e.profit_pct)>=0?"+":""}{Number(e.profit_pct).toFixed(2)}%
+                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Payment pending */}
-          {payment && !payment.confirmed && (
-            <div className="card" style={{ marginBottom: 20, borderColor: "var(--amber)" }}>
-              <div style={{ fontWeight: 600, marginBottom: 12, color: "var(--amber)" }}>Payment Pending</div>
-              <div style={{ fontSize: 13, color: "var(--text2)", marginBottom: 16 }}>Send exactly this amount to the address below:</div>
-              <div style={{ background: "var(--bg3)", borderRadius: "var(--radius)", padding: 12, marginBottom: 12 }}>
-                <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4, fontFamily: "var(--font-mono)" }}>Amount</div>
-                <div style={{ fontFamily: "var(--font-mono)", fontWeight: 600, color: "var(--amber)" }}>{payment.amount} {payment.currency}</div>
+                ))}
               </div>
-              <div style={{ background: "var(--bg3)", borderRadius: "var(--radius)", padding: 12, marginBottom: 16 }}>
-                <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4, fontFamily: "var(--font-mono)" }}>USDT TRC-20 Address</div>
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, wordBreak: "break-all", color: "var(--text)" }}>{payment.address}</div>
-              </div>
-              <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ width: "100%", textAlign: "center", marginBottom: 8 }}>
-                Pay via NOWPayments Link
-              </a>
-              <div style={{ fontSize: 11, color: "var(--text3)", textAlign: "center" }}>Waiting for confirmation...</div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {payment?.confirmed && (
-            <div className="card" style={{ marginBottom: 20, borderColor: "var(--green)" }}>
-              <div style={{ color: "var(--green)", fontWeight: 600, marginBottom: 8 }}>Payment Confirmed!</div>
-              <p style={{ fontSize: 13, color: "var(--text2)" }}>Your entry is active. Connect to MetaApi and start trading.</p>
-            </div>
-          )}
+          {/* ── RIGHT COLUMN — Join Panel ── */}
+          <div style={{ width:300, flexShrink:0 }}>
 
-          {/* Join card */}
-          <div className="card">
-            <div style={{ fontFamily: "var(--font-head)", fontSize: 18, fontWeight: 700, marginBottom: 20 }}>
-              {myEntries.length > 0 ? "Re-enter Tournament" : "Join Tournament"}
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
-              {[
-                ["Entry fee", `$${tournament.entry_fee} USDT`],
-                ["Your sim balance", "$10,000"],
-                ["If you win", "Funded account (90% of prize pool)"],
-                ["Profit share", "90% to you / 10% platform"],
-              ].map(([l,v]) => (
-                <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-                  <span style={{ color: "var(--text3)" }}>{l}</span>
-                  <span style={{ color: "var(--text)", fontWeight: 500 }}>{v}</span>
-                </div>
-              ))}
-            </div>
-
-            {error && (
-              <div style={{ background: "var(--red-dim)", border: "1px solid rgba(255,78,106,0.3)", borderRadius: "var(--radius)", padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "var(--red)" }}>
-                {error}
+            {/* My entries */}
+            {myEntries.length > 0 && (
+              <div style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${tierColor}33`, borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.7)", marginBottom:14 }}>My Entries ({myEntries.length}/2)</div>
+                {myEntries.map(e => (
+                  <div key={e.id} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:"1px solid rgba(255,255,255,.05)" }}>
+                    <div>
+                      <div style={{ fontSize:12, color:"rgba(255,255,255,.5)", marginBottom:4 }}>Entry #{e.entry_number} · {e.broker}</div>
+                      <span style={{ fontSize:11, fontWeight:700, padding:"2px 8px", borderRadius:20,
+                        background: e.status==="active"?"rgba(34,197,94,.12)":"rgba(255,255,255,.06)",
+                        color: e.status==="active"?"#22C55E":"rgba(255,255,255,.4)",
+                        border: e.status==="active"?"1px solid rgba(34,197,94,.3)":"1px solid rgba(255,255,255,.1)" }}>
+                        {e.status}
+                      </span>
+                    </div>
+                    <div style={{ textAlign:"right" }}>
+                      <div style={{ fontSize:16, fontWeight:800, color: Number(e.profit_pct)>=0?"#22C55E":"#EF4444", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>
+                        {Number(e.profit_pct)>=0?"+":""}{Number(e.profit_pct).toFixed(2)}%
+                      </div>
+                      {e.status==="active" && (
+                        <Link href={`/tournaments/${id}/trade?entry=${e.id}`} style={{ fontSize:11, color:"#FFD700", textDecoration:"none" }}>View →</Link>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            {!user ? (
-              <Link href="/login" className="btn btn-primary" style={{ width: "100%", textAlign: "center" }}>Login to Join</Link>
-            ) : !canEnter ? (
-              <div style={{ fontSize: 13, color: "var(--text3)", textAlign: "center", padding: "12px 0" }}>
-                {myEntries.length >= 10 ? "Maximum entries reached (10/10)" :
-                 activeEntries.length >= 5 ? "You have 5 active entries. Wait for one to breach." :
-                 "Tournament not open for entries"}
+            {/* Payment pending */}
+            {payment && !payment.confirmed && (
+              <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,215,0,.3)", borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#FFD700", marginBottom:12 }}>⏳ Payment Pending</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.45)", marginBottom:14 }}>Send exactly this amount to the address below:</div>
+                <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"12px", marginBottom:10 }}>
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:4 }}>AMOUNT</div>
+                  <div style={{ fontSize:16, fontWeight:800, color:"#FFD700" }}>{payment.amount} {payment.currency}</div>
+                </div>
+                <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"12px", marginBottom:14 }}>
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:4 }}>USDT TRC-20 ADDRESS</div>
+                  <div style={{ fontSize:11, wordBreak:"break-all", color:"rgba(255,255,255,.7)", fontFamily:"'JetBrains Mono','Fira Code',monospace" }}>{payment.address}</div>
+                </div>
+                <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ width:"100%", justifyContent:"center", display:"flex", marginBottom:8 }}>
+                  Pay via NOWPayments →
+                </a>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", textAlign:"center" }}>Waiting for confirmation...</div>
               </div>
-            ) : !showJoinForm ? (
-              <button onClick={() => setShowJoinForm(true)} className="btn btn-primary" style={{ width: "100%" }}>
-                {myEntries.length > 0 ? `Re-enter (${myEntries.length}/10 used)` : "Enter Tournament"}
-              </button>
-            ) : (
-              <form onSubmit={handleJoin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 12, color: "var(--text3)", fontFamily: "var(--font-mono)", marginBottom: 6, display: "block" }}>MT5 Account Number</label>
-                  <input className="input" placeholder="e.g. 123456789" value={form.mt5Login} onChange={e => setForm(f => ({...f, mt5Login: e.target.value}))} required />
+            )}
+
+            {payment?.confirmed && (
+              <div style={{ background:"rgba(34,197,94,.06)", border:"1px solid rgba(34,197,94,.3)", borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#22C55E", marginBottom:8 }}>✅ Payment Confirmed!</div>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,.5)" }}>Your entry is active. Open MT5 and start trading when the battle begins!</p>
+              </div>
+            )}
+
+            {/* Join / Re-enter card */}
+            <div style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${tierColor}44`, borderRadius:16, padding:"22px" }}>
+              <div style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:18, fontWeight:800, color:"#fff", marginBottom:20 }}>
+                {myEntries.length > 0 ? "Re-enter Battle" : "Join Battle"}
+              </div>
+
+              <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
+                {[
+                  ["Entry fee",      `$${tournament.entry_fee} USDT`],
+                  ["Demo balance",   "$1,000"],
+                  ["Duration",       "90 Minutes"],
+                  ["If you win",     "Funded account (90%)"],
+                  ["Profit share",   "90% to you"],
+                ].map(([l,v]) => (
+                  <div key={l} style={{ display:"flex", justifyContent:"space-between", fontSize:13 }}>
+                    <span style={{ color:"rgba(255,255,255,.38)" }}>{l}</span>
+                    <span style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+
+              {error && (
+                <div style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.3)", borderRadius:8, padding:"10px 14px", marginBottom:14, fontSize:13, color:"#EF4444" }}>
+                  {error}
                 </div>
-                <div>
-                  <label style={{ fontSize: 12, color: "var(--text3)", fontFamily: "var(--font-mono)", marginBottom: 6, display: "block" }}>Investor Password (read-only)</label>
-                  <input className="input" type="password" placeholder="Investor password only" value={form.mt5Password} onChange={e => setForm(f => ({...f, mt5Password: e.target.value}))} required />
+              )}
+
+              {!user ? (
+                <Link href="/login" className="btn btn-primary" style={{ width:"100%", justifyContent:"center", display:"flex" }}>Login to Join</Link>
+              ) : !canEnter ? (
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.4)", textAlign:"center", padding:"14px 0", background:"rgba(255,255,255,.03)", borderRadius:10, border:"1px solid rgba(255,255,255,.06)" }}>
+                  {myEntries.length >= 2 ? "Maximum entries reached (2/2)" :
+                   activeEntries.length >= 1 ? "Re-entry unlocks after your entry is breached." :
+                   "Tournament not open for entries"}
                 </div>
-                <div>
-                  <label style={{ fontSize: 12, color: "var(--text3)", fontFamily: "var(--font-mono)", marginBottom: 6, display: "block" }}>MT5 Server</label>
-                  <input className="input" placeholder="e.g. Exness-MT5Trial8" value={form.mt5Server} onChange={e => setForm(f => ({...f, mt5Server: e.target.value}))} required />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, color: "var(--text3)", fontFamily: "var(--font-mono)", marginBottom: 6, display: "block" }}>Broker</label>
-                  <select className="input" value={form.broker} onChange={e => setForm(f => ({...f, broker: e.target.value}))}>
-                    {BROKERS.map(b => <option key={b}>{b}</option>)}
-                  </select>
-                </div>
-                <div style={{ fontSize: 12, color: "var(--text3)", background: "var(--bg3)", borderRadius: "var(--radius)", padding: "10px 12px" }}>
-                  Submit the investor password only — never your main account password. We have read-only access.
-                </div>
-                <button type="submit" disabled={submitting} className="btn btn-primary">
-                  {submitting ? "Processing..." : `Pay $${tournament.entry_fee} USDT`}
+              ) : !showJoinForm ? (
+                <button onClick={() => setShowJoinForm(true)} className="btn" style={{ width:"100%", background:tierColor, color:"#000", fontWeight:800, fontSize:15, padding:"14px", border:"none", borderRadius:10, cursor:"pointer" }}>
+                  {myEntries.length > 0 ? "Use Re-entry →" : "Grab Your Spot →"}
                 </button>
-                <button type="button" onClick={() => setShowJoinForm(false)} className="btn btn-secondary">Cancel</button>
-              </form>
-            )}
+              ) : (
+                <form onSubmit={handleJoin} style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                  {[
+                    ["MT5 Account Number",         "e.g. 123456789",         "mt5Login",    "text"],
+                    ["Investor Password (read-only)","Investor password only","mt5Password", "password"],
+                    ["MT5 Server",                 "e.g. Exness-MT5Trial8",  "mt5Server",   "text"],
+                  ].map(([label,ph,field,type]) => (
+                    <div key={field}>
+                      <label className="input-label">{label}</label>
+                      <input className="input" type={type} placeholder={ph}
+                        value={(form as any)[field]}
+                        onChange={e => setForm(f => ({...f,[field]:e.target.value}))} required/>
+                    </div>
+                  ))}
+                  <div>
+                    <label className="input-label">Broker</label>
+                    <select className="input" value={form.broker} onChange={e => setForm(f => ({...f,broker:e.target.value}))}>
+                      {BROKERS.map(b => <option key={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", background:"rgba(255,255,255,.03)", borderRadius:8, padding:"10px 12px" }}>
+                    🔒 Investor password only — we have read-only access, zero ability to trade or withdraw.
+                  </div>
+                  <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width:"100%" }}>
+                    {submitting ? "Processing..." : `Pay $${tournament.entry_fee} USDT`}
+                  </button>
+                  <button type="button" onClick={() => setShowJoinForm(false)} className="btn btn-ghost" style={{ width:"100%" }}>Cancel</button>
+                </form>
+              )}
 
-            <div style={{ fontSize: 12, color: "var(--text3)", textAlign: "center", marginTop: 16 }}>
-              Payment processed via NOWPayments. Entry fee adds to prize pool.
+              <div style={{ fontSize:11, color:"rgba(255,255,255,.25)", textAlign:"center", marginTop:14 }}>
+                Payment via NOWPayments · Entry fee adds to prize pool
+              </div>
             </div>
           </div>
         </div>
