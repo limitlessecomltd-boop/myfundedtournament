@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
-const { pool } = require('../config/database');
+const { pool } = require('../config/db');
 const { auth } = require('../middleware/auth');
 
 // POST /api/payments/create — create a NOWPayments payment for an entry
