@@ -53,7 +53,7 @@ const FAQS = [
 // ── Mascot SVG (approved v2) ──────────────────────────────────────────────
 function MFTMascot() {
   return (
-    <svg viewBox="0 0 780 900" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", maxWidth:480, display:"block" }}>
+    <svg viewBox="0 0 780 900" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", maxWidth:640, display:"block" }}>
       <defs>
         <radialGradient id="mbgG" cx="50%" cy="45%" r="60%">
           <stop offset="0%" stopColor="#0d1a0a"/>
@@ -252,7 +252,7 @@ export default function HomePage() {
       `}</style>
 
       {/* HERO */}
-      <section className="hero-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"60px 40px 40px", display:"grid", gridTemplateColumns:"1fr 420px", gap:40, alignItems:"center", minHeight:"88vh", position:"relative" }} >
+      <section className="hero-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"60px 20px 40px 40px", display:"grid", gridTemplateColumns:"1fr 560px", gap:24, alignItems:"center", minHeight:"88vh", position:"relative" }} >
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, background:"radial-gradient(ellipse 700px 600px at 65% 35%, rgba(34,197,94,.06) 0%, transparent 70%), radial-gradient(ellipse 500px 400px at 15% 70%, rgba(255,215,0,.04) 0%, transparent 60%)" }}/>
         <div className="hero-text" style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"flex-start" }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.2)", borderRadius:100, padding:"5px 14px 5px 8px", fontSize:12, fontWeight:600, color:"#FFD700", marginBottom:24 }}>
@@ -282,7 +282,7 @@ export default function HomePage() {
           </div>
         </div>
         {/* MASCOT */}
-        <div className="mascot-wrap" style={{ position:"relative", zIndex:1 }}>
+        <div className="mascot-wrap" style={{ position:"relative", zIndex:1, display:"flex", alignItems:"center", justifyContent:"flex-end" }}>
           <MFTMascot/>
         </div>
       </section>
