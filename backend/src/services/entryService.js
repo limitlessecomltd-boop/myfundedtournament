@@ -2,8 +2,8 @@ const db = require("../config/db");
 const { connectAccount } = require("./metaApiService");
 const { createEntryPayment } = require("./paymentService");
 
-const MAX_ACTIVE_PER_TRADER  = 5;
-const MAX_TOTAL_PER_TRADER   = 10;
+const MAX_ACTIVE_PER_TRADER  = 1;  // 1 active at a time
+const MAX_TOTAL_PER_TRADER   = 2;   // 1 original + 1 re-entry
 
 /**
  * Create a new entry (or re-entry) for a trader in a tournament.
@@ -34,26 +34,26 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
   const active = parseInt(existing[0].active_count);
 
   if (total >= MAX_TOTAL_PER_TRADER) {
-    throw new Error(`Maximum ${MAX_TOTAL_PER_TRADER} total entries per tournament reached`);
+    throw new Error("Maximum 1 re-entry allowed per tournament. You have used both entries.");
   }
 
-  // Batch 2 (entries 6-10) only unlocked if first 5 are all breached/disqualified
-  if (total >= MAX_ACTIVE_PER_TRADER) {
-    const { rows: firstBatch } = await db.query(`
+  // Re-entry only unlocks after first entry is breached/completed
+  if (total >= 1) {
+    const { rows: firstEntry } = await db.query(`
       SELECT COUNT(*) AS still_alive
       FROM entries
       WHERE tournament_id=$1 AND user_id=$2
         AND status NOT IN ('breached','disqualified','completed')
     `, [tournamentId, userId]);
 
-    if (parseInt(firstBatch[0].still_alive) > 0) {
-      throw new Error("You can only access entries 6-10 after your first 5 entries are breached or completed");
+    if (parseInt(firstEntry[0].still_alive) > 0) {
+      throw new Error("Re-entry only unlocks after your first entry is breached or completed.");
     }
   }
 
-  // Max 5 active at once
+  // Max 1 active at a time
   if (active >= MAX_ACTIVE_PER_TRADER) {
-    throw new Error(`You already have ${MAX_ACTIVE_PER_TRADER} active entries. Wait for one to breach before adding another`);
+    throw new Error("You already have an active entry. Re-entry unlocks after it is breached.");
   }
 
   const entryNumber = total + 1;
