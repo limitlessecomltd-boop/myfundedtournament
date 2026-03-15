@@ -21,9 +21,7 @@ const PLANS = [
       "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
       "Winner gets 90% funds in live account",
-      "2nd place: 4× fee returned",
-      "3rd place: 2× fee returned",
-      "Battle starts when all 25 spots fill",
+                  "Battle starts when all 25 spots fill",
     ],
   },
   {
@@ -41,24 +39,21 @@ const PLANS = [
       "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
       "Winner gets 90% funds in live account",
-      "2nd place: 4× fee returned",
-      "3rd place: 2× fee returned",
-      "Battle starts when all 25 spots fill",
+                  "Battle starts when all 25 spots fill",
     ],
   },
 ];
 
 const PRIZES = [
-  { place:"1st", medal:"🥇", color:"#FFD700", bg:"rgba(255,215,0,.06)", border:"rgba(255,215,0,.2)", label:"Tournament Champion", reward:"Funded Account", detail:"90% of total prize pool", cert:"Gold Certificate issued on-chain", featured:true },
-  { place:"2nd", medal:"🥈", color:"#b4c0d8", bg:"rgba(180,192,216,.04)", border:"rgba(180,192,216,.15)", label:"Runner Up", reward:"4× Entry Fee", detail:"Cash returned in USDT", cert:"Silver Certificate issued on-chain" },
-  { place:"3rd", medal:"🥉", color:"#CD7F32", bg:"rgba(205,127,50,.04)", border:"rgba(205,127,50,.15)", label:"Top Finisher", reward:"2× Entry Fee", detail:"Cash returned in USDT", cert:"Bronze Certificate issued on-chain" },
+  { place:"1st", medal:"🥇", color:"#FFD700", bg:"rgba(255,215,0,.06)", border:"rgba(255,215,0,.2)", label:"Tournament Champion", reward:"90% Funded Account", detail:"Live broker account — trade with real capital", cert:"Gold Certificate issued on-chain", featured:true },
+  { place:"1st", medal:"💵", color:"#22C55E", bg:"rgba(34,197,94,.05)", border:"rgba(34,197,94,.2)", label:"Instant Cashout Option", reward:"75% USDT Cashout", detail:"Prefer cash? Take 75% instantly in USDT", cert:"Gold Certificate issued on-chain", featured:false },
 ];
 
 const STEPS = [
   { n:"01", title:"Register & pay entry", desc:"Pay USDT via crypto link or wallet. Works from Binance or any exchange — no personal wallet needed.", icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" },
   { n:"02", title:"Open your MT5 demo", desc:"Create a free demo at Exness, ICMarkets or Tickmill. Submit your investor (read-only) password.", icon:"M22 12h-4l-3 9L9 3l-3 9H2" },
   { n:"03", title:"Trade Actively till End", desc:"We track your % gain live via MetaApi every 60 seconds. Close all trades 3 minutes before the 90-minute mark.", icon:"M18 20V10M12 20V4M6 20v-6" },
-  { n:"04", title:"Win your funded account", desc:"Highest % gain wins 90% of the prize pool as a real funded account. 2nd gets 4× fee, 3rd gets 2× fee.", icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
+  { n:"04", title:"Win your funded account", desc:"Highest % gain wins! Choose: 90% as a live funded broker account, or take 75% as instant USDT cashout. Only the winner gets paid.", icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
 ];
 
 const RULES = [
@@ -90,7 +85,7 @@ const FAQS = [
   { q:"Do I need a real trading account?", a:"No. You open a free MT5 demo account at Exness, ICMarkets, or Tickmill. You only submit your investor (read-only) password — we never touch your real funds." },
   { q:"How is the winner decided?", a:"The trader with the highest percentage gain on their starting $1,000 demo balance wins. Purely performance-based — best trader in 90 minutes wins, period." },
   { q:"How do I pay the entry fee?", a:"Entry fees are paid in USDT (TRC-20) via NOWPayments. Pay directly from Binance, any crypto exchange, or your wallet — no personal wallet setup required." },
-  { q:"What are the prizes?", a:"1st place: Funded live trading account (90% of prize pool). 2nd place: 4× entry fee returned in USDT. 3rd place: 2× entry fee returned. All top 3 receive an on-chain certificate. For a $25 entry with 25 traders: prize pool is $625, winner gets $562 as a funded account." },
+  { q:"What does the winner receive?", a:"The winner gets their choice: either 90% of the prize pool as a real funded trading account (live broker, real capital, daily withdrawals), OR 75% of the prize pool as an instant USDT cashout. Only the 1st place winner is rewarded. For a $25 entry with 25 traders: pool is $625, so winner gets $562 funded account or $468 instant USDT." },
 ];
 
 
@@ -229,9 +224,9 @@ export default function HomePage() {
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Prize Structure</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>What winners receive</h2>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:500, margin:"0 auto" }}>Every 90-minute battle rewards the top 3 traders. First place wins a fully funded trading account.</p>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:520, margin:"0 auto" }}>Winner takes all. Choose 90% as a live funded account or 75% as instant USDT cashout. Only the champion wins.</p>
         </div>
-        <div className="grid-3-r" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:22 }}>
+        <div className="grid-3-r" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:22, maxWidth:760, margin:"0 auto" }}>
           {PRIZES.map(p=>(
             <div key={p.place} style={{ background:p.bg, border:`1px solid ${p.border}`, borderRadius:18, padding:30, position:"relative" }}>
               {p.featured&&<div style={{ position:"absolute", top:16, right:16, background:"#FFD700", color:"#000", fontSize:10, fontWeight:800, padding:"3px 12px", borderRadius:20, textTransform:"uppercase" }}>Top Prize</div>}
@@ -394,20 +389,18 @@ export default function HomePage() {
                 name:"Starter Bullet", color:"#FFD700", border:"rgba(255,215,0,.25)",
                 bg:"rgba(255,215,0,.05)", pool:625, sub:"25 traders × $25 USDT",
                 rows:[
-                  { medal:"🥇", label:"1st Place (Funded Account)", val:562.5,  color:"#FFD700" },
-                  { medal:"🥈", label:"2nd Place (4× fee)",          val:100,    color:"#b4c0d8" },
-                  { medal:"🥉", label:"3rd Place (2× fee)",          val:50,     color:"#CD7F32" },
-                  { medal:"🏛️", label:"Platform Fee (10%)",          val:62.5,   color:"rgba(255,255,255,.3)" },
+                  { medal:"🥇", label:"Winner — Funded Account (90%)", val:562.5,  color:"#FFD700" },
+                  { medal:"💵", label:"Winner — Instant Cashout (75%)", val:468.75, color:"#22C55E" },
+                  { medal:"🏛️", label:"Platform Fee (10%)",             val:62.5,   color:"rgba(255,255,255,.3)" },
                 ]
               },
               {
                 name:"Pro Bullet", color:"#22C55E", border:"rgba(34,197,94,.25)",
                 bg:"rgba(34,197,94,.05)", pool:1250, sub:"25 traders × $50 USDT",
                 rows:[
-                  { medal:"🥇", label:"1st Place (Funded Account)", val:1125,   color:"#FFD700" },
-                  { medal:"🥈", label:"2nd Place (4× fee)",          val:200,    color:"#b4c0d8" },
-                  { medal:"🥉", label:"3rd Place (2× fee)",          val:100,    color:"#CD7F32" },
-                  { medal:"🏛️", label:"Platform Fee (10%)",          val:125,    color:"rgba(255,255,255,.3)" },
+                  { medal:"🥇", label:"Winner — Funded Account (90%)", val:1125,   color:"#FFD700" },
+                  { medal:"💵", label:"Winner — Instant Cashout (75%)", val:937.5,  color:"#22C55E" },
+                  { medal:"🏛️", label:"Platform Fee (10%)",             val:125,    color:"rgba(255,255,255,.3)" },
                 ]
               },
             ].map(plan => (

@@ -82,14 +82,13 @@ const STEPS = [
     dim: "rgba(34,197,94,.08)",
     border: "rgba(34,197,94,.22)",
     tagline: "Real capital. Real withdrawals. No evaluation.",
-    desc: "The trader with the highest % gain wins 90% of the prize pool as a real funded trading account — ready to trade with, with daily withdrawal rights. 2nd place gets 4× their entry fee back. 3rd gets 2× their fee back.",
+    desc: "The trader with the highest % gain wins! Choose your reward: take 90% of the prize pool as a real funded trading account with daily withdrawals, or take 75% as an instant USDT cashout. Only the 1st place winner is rewarded — no 2nd or 3rd place.",
     substeps: [
-      { icon:"🥇", text:"1st place: Funded live account (90% of prize pool) — no evaluation, just trade" },
-      { icon:"🥈", text:"2nd place: 4× entry fee returned instantly in USDT" },
-      { icon:"🥉", text:"3rd place: 2× entry fee returned instantly in USDT" },
-      { icon:"🎖️", text:"All top 3 receive an on-chain certificate (Gold / Silver / Bronze)" },
+      { icon:"🥇", text:"Option A: Funded live account (90% of prize pool) — real capital, daily withdrawals" },
+      { icon:"💵", text:"Option B: Instant USDT cashout (75% of prize pool) — paid within 24 hours" },
+                  { icon:"🎖️", text:"Winner receives a Gold Certificate issued on-chain as proof of achievement" },
     ],
-    why: "A $25 entry with 25 participants = $625 prize pool. Winner gets $562 as a funded account — no evaluation, no BS. A $50 entry with 25 participants = $1,250 pool. Winner gets $1,125 as a funded account.",
+    why: "A $25 entry with 25 participants = $625 prize pool. Winner chooses: $562 funded account OR $468 instant USDT. A $50 entry with 25 participants = $1,250 pool. Winner chooses: $1,125 funded account OR $937 instant USDT.",
     whyIcon: "💰",
   },
 ];
@@ -261,9 +260,7 @@ export default function HowItWorksPage() {
           ].map(p => {
             const pool = p.fee * p.entries;
             const first = pool * 0.9;
-            const second = p.fee * 4;
-            const third = p.fee * 2;
-            const platform = pool * 0.1;
+                            const platform = pool * 0.1;
             return (
               <div key={p.plan} style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${p.border}`, borderRadius:16, padding:"24px" }}>
                 <div style={{ fontSize:12, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:6 }}>{p.plan}</div>
@@ -272,8 +269,7 @@ export default function HowItWorksPage() {
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {[
                     { label:"🥇 1st Place (Funded Account)", val:`$${first.toLocaleString()}`, color:p.color },
-                    { label:"🥈 2nd Place (4× fee)", val:`$${second}`, color:"#b4c0d8" },
-                    { label:"🥉 3rd Place (2× fee)", val:`$${third}`, color:"#CD7F32" },
+{ label:"💵 Winner Cashout Option (75%)", val:`$${Math.floor(pool*0.75)}`, color:"#22C55E" },
                     { label:"🏛️ Platform Fee (10%)", val:`$${platform}`, color:"rgba(255,255,255,.3)" },
                   ].map(r => (
                     <div key={r.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(255,255,255,.04)" }}>

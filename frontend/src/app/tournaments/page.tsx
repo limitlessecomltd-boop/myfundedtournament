@@ -184,8 +184,7 @@ function PastModal({ t, onClose }: { t: any, onClose: ()=>void }) {
             textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>🏆 Winners</div>
           {[
             { place:"1st", medal:"🥇", color:"#FFD700", prize:`Funded Account — $${Math.floor(pool*0.9).toLocaleString()}` },
-            { place:"2nd", medal:"🥈", color:"#b4c0d8", prize:`$${(parseFloat(t.entry_fee||0)*4).toFixed(0)} USDT (4× fee)` },
-            { place:"3rd", medal:"🥉", color:"#CD7F32", prize:`$${(parseFloat(t.entry_fee||0)*2).toFixed(0)} USDT (2× fee)` },
+{ place:"Alt", medal:"💵", color:"#22C55E", prize:`$${Math.floor(Number(t.prize_pool||0)*0.75).toLocaleString()} USDT (75% cashout)` },
           ].map(w => (
             <div key={w.place} style={{ display:"flex", alignItems:"center", gap:12,
               padding:"10px 14px", background:"rgba(255,255,255,.03)",

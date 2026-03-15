@@ -411,16 +411,16 @@ export default function ProfilePage() {
                     <div style={{ fontSize:56, marginBottom:16 }}>🏆</div>
                     <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No certificates yet</div>
                     <div style={{ fontSize:14, color:"rgba(255,255,255,.3)", marginBottom:28, maxWidth:360, margin:"0 auto 28px" }}>
-                      Win a tournament to earn your first on-chain certificate. Each win earns a Gold, Silver or Bronze certificate.
+                      Win a tournament to earn your Gold Certificate. Only the 1st place winner receives a certificate.
                     </div>
                     <Link href="/tournaments" className="btn btn-primary">Join a Battle Now</Link>
                   </div>
                 ) : (
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:20 }}>
                     {tournaments.filter(t=>t.is_winner).map((t:any, i:number)=>{
-                      const medal = i===0?"🥇":i===1?"🥈":"🥉";
+                      const medal = "🥇";
                       const certColor = i===0?"#FFD700":i===1?"#b4c0d8":"#CD7F32";
-                      const certName = i===0?"Gold Certificate":i===1?"Silver Certificate":"Bronze Certificate";
+                      const certName = "Gold Certificate";
                       const borderColor = i===0?"rgba(255,215,0,.4)":i===1?"rgba(180,192,216,.3)":"rgba(205,127,50,.3)";
                       return (
                         <div key={t.id} style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${borderColor}`, borderRadius:18, padding:28, position:"relative", overflow:"hidden" }}>
