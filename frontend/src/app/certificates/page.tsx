@@ -1,0 +1,237 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
+import Link from "next/link";
+import MFTLogo from "@/components/ui/MFTLogo";
+
+interface Certificate {
+  id: string;
+  place: 1 | 2 | 3;
+  tournamentName: string;
+  winnerName: string;
+  walletId: string;
+  profitPct: number;
+  profitAbs: number;
+  winRate: number;
+  tradingDays: number;
+  prizeAmount: number;
+  prizeDesc: string;
+  issueDate: string;
+  certId: string;
+  broker: string;
+}
+
+const DEMO_CERTS: Certificate[] = [
+  {
+    id: "1", place: 1, tournamentName: "December Pro Challenge",
+    winnerName: "John Doe", walletId: "0x4f8a3e9c...b7d2",
+    profitPct: 22.18, profitAbs: 2218, winRate: 72, tradingDays: 7,
+    prizeAmount: 13365, prizeDesc: "Funded Account · 90% of $14,850 prize pool",
+    issueDate: "15 Dec 2024", certId: "MFT-2024-1219-1ST-JD4F8A", broker: "ICMarkets",
+  },
+  {
+    id: "2", place: 2, tournamentName: "December Pro Challenge",
+    winnerName: "Alex Chen", walletId: "0x9a2fb3c1...d4e7",
+    profitPct: 18.43, profitAbs: 1843, winRate: 64, tradingDays: 7,
+    prizeAmount: 150, prizeDesc: "3× entry fee returned · $50 × 3 = $150 USDT",
+    issueDate: "15 Dec 2024", certId: "MFT-2024-1219-2ND-AC9A2F", broker: "Exness",
+  },
+  {
+    id: "3", place: 3, tournamentName: "December Pro Challenge",
+    winnerName: "Sara Williams", walletId: "0x7c1da4e2...f9c3",
+    profitPct: 15.92, profitAbs: 1592, winRate: 61, tradingDays: 7,
+    prizeAmount: 100, prizeDesc: "2× entry fee returned · $50 × 2 = $100 USDT",
+    issueDate: "15 Dec 2024", certId: "MFT-2024-1219-3RD-SW7C1D", broker: "Tickmill",
+  },
+];
+
+const PLACE_CONFIG = {
+  1: { medal:"🥇", label:"Tournament Champion", headline:"Tournament Champion", typeLabel:"Certificate of Achievement",  color:"#FFD700", border:"rgba(255,215,0,.5)",  bg:"#0c0c0c", stripe:"rgba(255,215,0,.08)",  corner:"rgba(255,215,0,.5)"  },
+  2: { medal:"🥈", label:"Runner Up",           headline:"Runner Up",            typeLabel:"Certificate of Excellence", color:"#b4c0d8", border:"rgba(180,192,230,.4)",bg:"#08090e", stripe:"rgba(170,185,230,.06)",corner:"rgba(170,185,230,.4)" },
+  3: { medal:"🥉", label:"Top Finisher",        headline:"Top Finisher",         typeLabel:"Certificate of Performance",color:"#CD7F32", border:"rgba(205,127,50,.45)",bg:"#090a0c", stripe:"rgba(205,127,50,.07)", corner:"rgba(205,127,50,.45)" },
+};
+
+function CertificateCard({ cert }: { cert: Certificate }) {
+  const cfg = PLACE_CONFIG[cert.place];
+  return (
+    <div style={{ marginBottom: 40 }}>
+      {/* Label */}
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+        <div style={{ width:28, height:28, borderRadius:"50%", background:`${cfg.color}22`, border:`1px solid ${cfg.color}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>{cfg.medal}</div>
+        <div style={{ fontFamily:"var(--font-head)", fontSize:12, fontWeight:700, letterSpacing:".16em", textTransform:"uppercase", color:`${cfg.color}cc` }}>
+          {cert.place === 1 ? "1st" : cert.place === 2 ? "2nd" : "3rd"} Place Certificate
+        </div>
+      </div>
+
+      {/* Certificate */}
+      <div style={{ background:cfg.bg, borderRadius:14, aspectRatio:"16/9", position:"relative", overflow:"hidden", border:`1px solid rgba(255,255,255,.05)` }}>
+        {/* BG glow */}
+        <div style={{ position:"absolute", inset:0, background:`radial-gradient(ellipse 70% 50% at 76% 44%,${cfg.color}11 0%,transparent 60%)` }}/>
+        {/* Stripe */}
+        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:"36%", background:`linear-gradient(135deg,${cfg.stripe} 0%,transparent 100%)`, borderLeft:`1px solid ${cfg.color}12` }}/>
+        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:"26%", borderLeft:`1px solid ${cfg.color}07` }}/>
+        {/* Diagonal lines */}
+        <div style={{ position:"absolute", inset:0, background:`repeating-linear-gradient(55deg,transparent,transparent 56px,${cfg.color}15 56px,${cfg.color}15 57px)` }}/>
+        {/* Corner frames */}
+        {[["top:16px","left:16px","borderTop","borderLeft"],["top:16px","right:16px","borderTop","borderRight"],["bottom:16px","left:16px","borderBottom","borderLeft"],["bottom:16px","right:16px","borderBottom","borderRight"]].map(([t,s,b1,b2],i)=>(
+          <div key={i} style={{ position:"absolute", width:28, height:28, [t.split(":")[0]]:16, [s.split(":")[0]]:16, [b1.split("border")[1].toLowerCase()+"Border" as any]:`1.5px solid ${cfg.corner}`, [b2.split("border")[1].toLowerCase()+"Border" as any]:`1.5px solid ${cfg.corner}` } as any}/>
+        ))}
+
+        {/* Content */}
+        <div style={{ position:"absolute", inset:0, padding:"20px 24px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+          {/* Top row */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
+                <rect width="64" height="64" rx="10" fill={`${cfg.color}20`}/>
+                <g transform="translate(8,8)">
+                  <polygon points="24,3 26.8,9.2 33.5,9.2 28.3,13.2 30.5,19.5 24,15.6 17.5,19.5 19.7,13.2 14.5,9.2 21.2,9.2" fill={cfg.color}/>
+                  <rect x="6" y="22" width="5.5" height="15" rx="1.2" fill={cfg.color}/>
+                  <rect x="13.5" y="18" width="5.5" height="22" rx="1.2" fill="#22C55E"/>
+                  <rect x="21" y="25" width="5.5" height="11" rx="1.2" fill={cfg.color}/>
+                  <rect x="28.5" y="20" width="5.5" height="19" rx="1.2" fill="#22C55E"/>
+                  <rect x="36" y="27" width="5.5" height="10" rx="1.2" fill={cfg.color}/>
+                  <rect x="9" y="43" width="30" height="4.5" rx="2.2" fill={cfg.color} opacity="0.9"/>
+                </g>
+              </svg>
+              <span style={{ fontFamily:"var(--font-head)", fontWeight:900, fontSize:12 }}>
+                <span style={{ color:"#fff" }}>MyFunded</span>
+                <span style={{ color:cfg.color }}>Tournament</span>
+              </span>
+            </div>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontSize:8, fontWeight:600, letterSpacing:".14em", textTransform:"uppercase", color:"rgba(255,255,255,.35)" }}>{cfg.label}</div>
+              <div style={{ fontFamily:"var(--font-head)", fontSize:22, fontWeight:900, color:cfg.color, lineHeight:1.1 }}>
+                {cert.place === 1 ? "1" : cert.place === 2 ? "2" : "3"}
+                <span style={{ fontSize:13 }}>{cert.place === 1 ? "ST" : cert.place === 2 ? "ND" : "RD"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Middle */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flex:1, padding:"10px 0 6px" }}>
+            <div>
+              <div style={{ fontFamily:"var(--font-head)", fontSize:8, fontWeight:600, letterSpacing:".2em", textTransform:"uppercase", color:`${cfg.color}99`, marginBottom:5 }}>{cfg.typeLabel}</div>
+              <div style={{ fontFamily:"var(--font-head)", fontSize:20, fontWeight:900, color:"#fff", textTransform:"uppercase", lineHeight:1.05, marginBottom:10 }}>{cfg.headline}</div>
+              <div style={{ fontSize:9, color:"rgba(255,255,255,.38)", marginBottom:3 }}>Proudly presented to:</div>
+              <div style={{ fontFamily:"var(--font-head)", fontSize:16, fontWeight:900, color:cfg.color, letterSpacing:"-.2px", marginBottom:2 }}>{cert.winnerName}</div>
+              <div style={{ fontSize:9, fontFamily:"var(--font-mono)", color:"rgba(255,255,255,.3)", marginBottom:8 }}>{cert.walletId} · {cert.tournamentName}</div>
+              <div style={{ display:"flex", gap:12 }}>
+                {[["% Gain", `+${cert.profitPct}%`, "#22C55E"],[`Profit`, `$${cert.profitAbs.toLocaleString()}`, cfg.color],["Win Rate", `${cert.winRate}%`, "rgba(255,255,255,.7)"],[`Duration`, `${cert.tradingDays}d`, "rgba(255,255,255,.7)"]].map(([l,v,c])=>(
+                  <div key={l as string}>
+                    <div style={{ fontFamily:"var(--font-head)", fontSize:11, fontWeight:700, color:c as string }}>{v}</div>
+                    <div style={{ fontSize:7.5, textTransform:"uppercase", letterSpacing:".09em", color:"rgba(255,255,255,.3)" }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:10 }}>
+              <div style={{ textAlign:"right" }}>
+                <div style={{ fontSize:8, color:"rgba(255,255,255,.32)", textTransform:"uppercase", letterSpacing:".1em", marginBottom:2 }}>Prize Award</div>
+                <div style={{ fontFamily:"var(--font-head)", fontSize:36, fontWeight:900, color:cfg.color, letterSpacing:"-1.2px", lineHeight:1 }}>
+                  {cert.place === 1 ? `$${cert.prizeAmount.toLocaleString()}` : `$${cert.prizeAmount}`}
+                </div>
+                <div style={{ fontSize:9, color:"rgba(255,255,255,.38)", textAlign:"right", lineHeight:1.4, marginTop:3 }}>{cert.prizeDesc}</div>
+              </div>
+              {/* QR placeholder */}
+              <div style={{ width:50, height:50, background:"#fff", borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ width:40, height:40, background:"repeating-linear-gradient(0deg,#000 0px,#000 2px,#fff 2px,#fff 5px),repeating-linear-gradient(90deg,#000 0px,#000 2px,#fff 2px,#fff 5px)", borderRadius:2 }}/>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", paddingBottom:18 }}>
+            <div>
+              <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,.55)" }}>{cert.issueDate}</div>
+              <div style={{ fontSize:8, textTransform:"uppercase", letterSpacing:".08em", color:"rgba(255,255,255,.28)" }}>Issue Date</div>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:1, opacity:.5 }}>
+              <div style={{ width:90, height:1, background:`${cfg.color}60`, marginBottom:3 }}/>
+              <div style={{ fontFamily:"var(--font-body)", fontStyle:"italic", fontSize:11, color:"rgba(255,255,255,.8)" }}>MFT Admin</div>
+              <div style={{ fontSize:7.5, textTransform:"uppercase", letterSpacing:".09em", color:"rgba(255,255,255,.3)" }}>Platform Director</div>
+            </div>
+            <div style={{ fontSize:8, color:"rgba(255,255,255,.22)", textAlign:"right", lineHeight:1.5, fontFamily:"var(--font-mono)" }}>
+              Verified · cert.mft.io<br/>{cert.certId}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom strip */}
+        <div style={{ position:"absolute", bottom:0, left:0, right:0, height:20, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", borderTop:"1px solid rgba(255,255,255,.05)" }}>
+          <span style={{ fontSize:7.5, color:"rgba(255,255,255,.18)", letterSpacing:".07em", fontFamily:"var(--font-mono)" }}>CERTIFICATE ID: {cert.certId} · {cert.tournamentName.toUpperCase()}</span>
+          <span style={{ fontSize:7.5, color:"rgba(255,255,255,.18)", letterSpacing:".07em", fontFamily:"var(--font-mono)" }}>CERT.MFT.IO</span>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display:"flex", gap:8, marginTop:12 }}>
+        <button className="btn btn-primary btn-sm" style={{ flex:1, justifyContent:"center" }}>Download PDF</button>
+        <button className="btn btn-secondary btn-sm" style={{ flex:1, justifyContent:"center" }}>Download Image</button>
+        <button className="btn btn-ghost btn-sm" style={{ flex:.5, justifyContent:"center" }}>Share</button>
+      </div>
+    </div>
+  );
+}
+
+export default function CertificatesPage() {
+  const { user, loading } = useAuth();
+
+  return (
+    <div className="page" style={{ maxWidth:900 }}>
+      {/* Header */}
+      <div style={{ textAlign:"center", marginBottom:52 }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:16 }}>
+          <MFTLogo size={40}/>
+          <div style={{ textAlign:"left" }}>
+            <div style={{ fontFamily:"var(--font-head)", fontSize:22, fontWeight:700, color:"#fff", letterSpacing:".04em" }}>
+              MyFunded<span style={{ color:"var(--gold)" }}>Tournament</span>
+            </div>
+            <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", letterSpacing:".2em", textTransform:"uppercase", marginTop:2 }}>Winner Certificates</div>
+          </div>
+        </div>
+        <div style={{ width:80, height:1, background:"linear-gradient(90deg,transparent,rgba(255,215,0,.4),transparent)", margin:"0 auto 16px" }}/>
+        <p style={{ fontSize:14, color:"rgba(255,255,255,.4)", maxWidth:500, margin:"0 auto" }}>
+          Download and share your certificate of achievement. Every top-3 finisher receives a verifiable on-chain certificate.
+        </p>
+      </div>
+
+      {/* Filter tabs */}
+      <div style={{ display:"flex", gap:8, marginBottom:36, justifyContent:"center" }}>
+        {[["All","all"],["1st Place","1"],["2nd Place","2"],["3rd Place","3"]].map(([l,v])=>(
+          <button key={v} className={`btn btn-sm ${v==="all"?"btn-primary":"btn-ghost"}`}>{l}</button>
+        ))}
+      </div>
+
+      {/* No certs state */}
+      {!user && (
+        <div style={{ textAlign:"center", padding:"60px 0", color:"rgba(255,255,255,.3)" }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No certificates yet</div>
+          <p style={{ fontSize:14, marginBottom:24 }}>Enter a tournament and finish in the top 3 to earn your certificate.</p>
+          <Link href="/tournaments" className="btn btn-primary">Browse Tournaments →</Link>
+        </div>
+      )}
+
+      {/* Demo certificates (replace with real API data) */}
+      {user && DEMO_CERTS.map(cert => (
+        <CertificateCard key={cert.id} cert={cert} />
+      ))}
+
+      {/* Info section */}
+      <div style={{ background:"rgba(255,255,255,.02)", border:"1px solid var(--border)", borderRadius:14, padding:24, marginTop:20 }}>
+        <div style={{ fontFamily:"var(--font-head)", fontSize:15, fontWeight:700, marginBottom:12 }}>About MFT Certificates</div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+          {[["🥇 1st Place","Funded trading account worth 90% of the prize pool. Your trading career starts here.","var(--gold)"],
+            ["🥈 2nd Place","3× your entry fee returned in USDT. Proof you're among the elite.","var(--silver)"],
+            ["🥉 3rd Place","2× your entry fee returned in USDT. Top finisher recognition.","var(--bronze)"]].map(([t,d,c])=>(
+            <div key={t as string}>
+              <div style={{ fontSize:13, fontWeight:700, color:c as string, marginBottom:6 }}>{t}</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", lineHeight:1.6 }}>{d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
