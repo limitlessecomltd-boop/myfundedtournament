@@ -45,7 +45,7 @@ router.post("/login", async (req, res, next) => {
 router.get("/me", authenticate, async (req, res, next) => {
   try {
     const { rows } = await db.query(`
-      SELECT u.id, u.email, u.username, u.wallet_address, u.created_at,
+      SELECT u.id, u.email, u.username, u.is_admin, u.wallet_address, u.created_at,
         COUNT(DISTINCT e.id) AS total_entries,
         COUNT(DISTINCT e.tournament_id) AS total_tournaments,
         COUNT(DISTINCT t.id) FILTER (WHERE t.winner_entry_id = e.id) AS wins
