@@ -93,15 +93,25 @@ const FAQS = [
 export default function HomePage() {
   // Live tournament data from API
   const [liveTournaments, setLiveTournaments] = useState<any[]>([]);
+  const [liveCount, setLiveCount] = useState(0);
+  const [traderCount, setTraderCount] = useState(0);
 
   useEffect(() => {
     const load = () => {
       tournamentApi.getAll("all")
-        .then(data => setLiveTournaments(data))
+        .then(data => {
+          setLiveTournaments(data);
+          // Count: both active AND registration battles count as "live"
+          const open = data.filter((t:any) => ["active","registration"].includes(t.status));
+          setLiveCount(open.length);
+          // Total unique traders across all open battles
+          const total = open.reduce((s:number,t:any) => s + parseInt(String(t.unique_traders||0)), 0);
+          setTraderCount(total);
+        })
         .catch(() => {});
     };
     load();
-    // Refresh every 30s so counts stay live
+    // Refresh every 30s
     const iv = setInterval(load, 30000);
     return () => clearInterval(iv);
   }, []);
@@ -147,7 +157,7 @@ export default function HomePage() {
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, background:"radial-gradient(ellipse 700px 600px at 68% 38%, rgba(34,197,94,.06) 0%, transparent 70%), radial-gradient(ellipse 500px 400px at 12% 65%, rgba(255,215,0,.04) 0%, transparent 60%)" }}/>
         <div style={{ position:"relative", zIndex:1 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.22)", borderRadius:100, padding:"6px 16px 6px 10px", fontSize:13, fontWeight:600, color:"#FFD700", marginBottom:28 }}>
-            <span className="live-dot"/>4 Live Battles &middot; 347 Active Traders
+            <span className="live-dot"/>{liveCount} Live Battle{liveCount !== 1 ? "s" : ""} &middot; {traderCount} Active Trader{traderCount !== 1 ? "s" : ""}
           </div>
           <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:"clamp(40px,4.8vw,64px)", fontWeight:800, lineHeight:1.08, letterSpacing:"-2px", marginBottom:22, color:"#fff" }}>
             90-Minute Trading<br/>
