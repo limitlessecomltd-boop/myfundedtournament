@@ -194,4 +194,13 @@ router.get("/entries", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.delete("/tournaments/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await db.query("DELETE FROM entries WHERE tournament_id=$1", [id]);
+    await db.query("DELETE FROM tournaments WHERE id=$1", [id]);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

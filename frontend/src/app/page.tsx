@@ -16,12 +16,12 @@ const PLANS = [
     features: [
       "A 90 Minutes trading battle",
       "Starts with $1,000 demo balance",
-      "Up to 5 re-entries per tournament",
+      "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
       "Winner gets 90% funds in live account",
       "2nd place: 4× fee returned",
       "3rd place: 2× fee returned",
-      "Tournament starts with minimum 25 entries",
+      "Battle starts when all 25 spots fill",
     ],
   },
   {
@@ -31,17 +31,17 @@ const PLANS = [
     color: "#22C55E",
     bg: "rgba(34,197,94,.06)",
     border: "rgba(34,197,94,.25)",
-    maxEntries: 50,
+    maxEntries: 25,
     featured: true,
     features: [
       "A 90 Minutes trading battle",
       "Starts with $1,000 demo balance",
-      "Up to 5 re-entries per tournament",
+      "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
       "Winner gets 90% funds in live account",
       "2nd place: 4× fee returned",
       "3rd place: 2× fee returned",
-      "Tournament starts with minimum 25 entries",
+      "Battle starts when all 25 spots fill",
     ],
   },
 ];
@@ -80,15 +80,15 @@ const COMPARISON = [
 
 const FAQS = [
   { q:"What is MyFundedTournament?", a:"MyFundedTournament is a 90-minute forex trading battle where traders pay a small USDT entry fee to compete on MT5 demo accounts. The trader with the highest % gain wins a real funded trading account — no evaluation needed." },
-  { q:"How long is each tournament?", a:"Each tournament is exactly 90 minutes. Once 25 entries are collected, the countdown starts. You must close all trades at least 3 minutes before the end." },
-  { q:"Do I need a real trading account?", a:"No. You open a free MT5 demo account at Exness, ICMarkets, or Tickmill. You only submit your investor (read-only) password — we never touch your funds." },
-  { q:"How is the winner decided?", a:"The trader with the highest percentage gain on their starting $1,000 demo balance wins. Purely performance-based — best trader wins, period." },
-  { q:"How do I pay the entry fee?", a:"Entry fees are paid in USDT (TRC-20) via NOWPayments. Pay directly from Binance, any crypto exchange, or your wallet." },
-  { q:"Can I enter multiple times?", a:"Yes! You can re-enter up to 5 times per tournament, each with a fresh MT5 demo account. Each re-entry is a new chance to win." },
-  { q:"When does a tournament start?", a:"Tournaments start automatically once a minimum of 25 entries are collected. The 90-minute countdown begins immediately." },
-  { q:"What is the 3-minute rule?", a:"All open trades must be closed at least 3 minutes before the 90-minute mark. Any trade still open in the final 3 minutes will not count toward your score." },
-  { q:"How do I receive my winnings?", a:"1st place receives a funded trading account. 2nd and 3rd receive USDT payouts within 24-48 hours of tournament end." },
-  { q:"What brokers are supported?", a:"Exness, ICMarkets, and Tickmill. All offer free MT5 demo accounts you can open in minutes with no deposit required." },
+  { q:"How long is each battle?", a:"Each battle is exactly 90 minutes. The countdown starts automatically once 25 traders have joined. You must close all your trades at least 3 minutes before the end." },
+  { q:"How many traders compete per battle?", a:"Exactly 25 traders per battle — for both Starter Bullet ($25) and Pro Bullet ($50). Are you good enough to beat just 25 traders? The small field makes every battle winnable." },
+  { q:"How many re-entries can I make?", a:"You get 1 re-entry per tournament. If your first entry doesn't go well, you can enter once more with a fresh MT5 demo account for another chance to win." },
+  { q:"When does a battle start?", a:"The 90-minute battle starts automatically once all 25 spots are filled. After the last spot fills, there's a 5-minute prep window, then the countdown begins for everyone." },
+  { q:"What is the 3-minute close rule?", a:"All open trades must be closed at least 3 minutes before the 90-minute end time. Any trade still open in the final 3 minutes will NOT count toward your score. The circle turns red to warn you." },
+  { q:"Do I need a real trading account?", a:"No. You open a free MT5 demo account at Exness, ICMarkets, or Tickmill. You only submit your investor (read-only) password — we never touch your real funds." },
+  { q:"How is the winner decided?", a:"The trader with the highest percentage gain on their starting $1,000 demo balance wins. Purely performance-based — best trader in 90 minutes wins, period." },
+  { q:"How do I pay the entry fee?", a:"Entry fees are paid in USDT (TRC-20) via NOWPayments. Pay directly from Binance, any crypto exchange, or your wallet — no personal wallet setup required." },
+  { q:"What are the prizes?", a:"1st place: Funded live trading account (90% of prize pool). 2nd place: 4× entry fee returned in USDT. 3rd place: 2× entry fee returned. All top 3 receive an on-chain certificate. For a $25 entry with 25 traders: prize pool is $625, winner gets $562 as a funded account." },
 ];
 
 // ── Live Countdown Circle ──────────────────────────────────────────────────────

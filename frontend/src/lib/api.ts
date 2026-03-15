@@ -72,6 +72,7 @@ export const adminApi = {
   getTournaments: () => api.get("/api/admin/tournaments").then(r => r.data.data),
   createTournament: (data: any) => api.post("/api/admin/tournaments", data).then(r => r.data.data),
   updateTournament: (id: string, data: any) => api.patch(`/api/admin/tournaments/${id}`, data).then(r => r.data.data),
+  deleteTournament: (id: string) => api.delete(`/api/admin/tournaments/${id}`).then(r => r.data),
   getPayouts: (status = "pending") => api.get("/api/admin/payouts", { params: { status } }).then(r => r.data.data),
   updatePayout: (id: string, data: any) => api.patch(`/api/admin/payouts/${id}`, data).then(r => r.data.data),
   getFundedAccounts: () => api.get("/api/admin/funded-accounts").then(r => r.data.data),

@@ -11,7 +11,6 @@ export default function Navbar() {
   const links = [
     { href: "/tournaments",  label: "Tournaments" },
     { href: "/leaderboard",  label: "Leaderboard" },
-    { href: "/certificates", label: "Certificates" },
     { href: "/how-it-works", label: "How It Works" },
     ...(user ? [{ href: "/profile", label: "My Account" }] : []),
     ...(user?.is_admin ? [{ href: "/admin", label: "Admin" }] : []),
@@ -32,7 +31,6 @@ export default function Navbar() {
       top: 0,
       zIndex: 100,
     }}>
-      {/* Logo */}
       <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 30, height: 30, background: "#FFD700", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12, color: "#000", letterSpacing: "-0.5px" }}>
           MFT
@@ -43,7 +41,6 @@ export default function Navbar() {
         </span>
       </Link>
 
-      {/* Nav Links */}
       <div style={{ display: "flex", gap: 2, alignItems: "center" }}>
         {links.map(l => (
           <Link key={l.href} href={l.href} style={{
@@ -61,7 +58,6 @@ export default function Navbar() {
         ))}
       </div>
 
-      {/* Auth */}
       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
         {user ? (
           <>
@@ -75,7 +71,7 @@ export default function Navbar() {
         ) : (
           <>
             <Link href="/login" className="btn btn-ghost btn-sm">Sign In</Link>
-            <Link href="/register" className="btn btn-primary btn-sm">Join a Tournament</Link>
+            <Link href="/register" className="btn btn-primary btn-sm">Join a Battle</Link>
           </>
         )}
       </div>
