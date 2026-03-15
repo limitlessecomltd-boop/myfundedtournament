@@ -6,220 +6,304 @@ const STEPS = [
     n: "01",
     title: "Register & Pay Entry",
     emoji: "🔐",
-    color: "#60a5fa",
-    dim: "rgba(96,165,250,.08)",
-    border: "rgba(96,165,250,.2)",
+    color: "#FFD700",
+    dim: "rgba(255,215,0,.08)",
+    border: "rgba(255,215,0,.22)",
     tagline: "Takes 2 minutes. No bank needed.",
-    desc: "Create your free MFT account and pick a tournament tier that suits you — Hours Bullet ($20), Daily Pill ($50), or Weekly Marathon ($100). Pay your entry fee in USDT from Binance, any exchange, or a crypto wallet.",
+    desc: "Create your free MFT account and choose your battle tier — Starter Bullet ($25) or Pro Bullet ($50). Pay your entry fee in USDT (TRC-20) directly from Binance, any crypto exchange, or your own wallet.",
     substeps: [
-      { icon: "👤", text: "Sign up with email at myfundedtournament.vercel.app" },
-      { icon: "🏆", text: "Browse open tournaments and pick your tier" },
-      { icon: "💳", text: "Pay entry fee in USDT — scan a QR or copy the address" },
-      { icon: "✅", text: "Payment confirms automatically — you're registered!" },
+      { icon:"👤", text:"Sign up with email at myfundedtournament.vercel.app" },
+      { icon:"⚔️", text:"Browse open battles and pick Starter ($25) or Pro ($50)" },
+      { icon:"💳", text:"Pay entry fee in USDT — scan a QR or copy the wallet address" },
+      { icon:"✅", text:"Payment confirms automatically — you're registered for the battle!" },
     ],
-    why: "Unlike prop firms charging $155+ for an evaluation, your entry fee goes directly into the prize pool. Most of it comes back to YOU.",
+    why: "Unlike prop firms charging $155+ for an evaluation, your entire entry fee goes straight into the prize pool. The top 3 traders get most of it back — as real capital.",
     whyIcon: "💡",
   },
   {
     n: "02",
     title: "Open Your FREE MT5 Demo",
     emoji: "📊",
-    color: "#FFD700",
-    dim: "rgba(255,215,0,.08)",
-    border: "rgba(255,215,0,.2)",
+    color: "#60a5fa",
+    dim: "rgba(96,165,250,.08)",
+    border: "rgba(96,165,250,.22)",
     tagline: "Free in 5 minutes. No deposit required.",
-    desc: "Open a free demo account at one of our supported brokers: Exness, ICMarkets, or Tickmill. It's completely free — no real money required. Then submit your investor (read-only) password to MFT.",
+    desc: "Open a free MT5 demo account at one of our 3 supported brokers — Exness, ICMarkets, or Tickmill. Get a $1,000 demo balance. Submit your investor (read-only) password to MFT so we can track your trades live.",
     substeps: [
-      { icon: "🌐", text: "Go to Exness, ICMarkets, or Tickmill" },
-      { icon: "📝", text: "Register and open a free MT5 demo account" },
-      { icon: "🔑", text: "Copy your account number and INVESTOR password (read-only)" },
-      { icon: "📤", text: "Submit them to MFT — we connect via MetaApi" },
+      { icon:"🏦", text:"Go to Exness, ICMarkets, or Tickmill — all free, no deposit needed" },
+      { icon:"📱", text:"Download MetaTrader 5 (MT5) — available on mobile, tablet and desktop" },
+      { icon:"🔑", text:"Copy your investor (read-only) password from your broker dashboard" },
+      { icon:"📋", text:"Paste your account number and investor password into MFT" },
     ],
-    why: "Investor password is READ-ONLY — we can only VIEW your trades, never touch your money. Your account is 100% safe.",
+    why: "We only ask for your read-only investor password — this means we can watch your trades live but have ZERO ability to place trades or withdraw funds. Your money is 100% safe.",
     whyIcon: "🔒",
   },
   {
     n: "03",
-    title: "Trade Actively Till the End",
-    emoji: "📈",
+    title: "Wait for the 90-Minute Battle to Start",
+    emoji: "⏳",
     color: "#22C55E",
     dim: "rgba(34,197,94,.08)",
-    border: "rgba(34,197,94,.2)",
-    tagline: "Trade your best. We track everything live.",
-    desc: "Once the tournament starts, trade your MT5 demo account however you like. Scalp, swing, day trade — any strategy. Our system syncs your stats every 60 seconds. Watch your rank on the live leaderboard.",
+    border: "rgba(34,197,94,.22)",
+    tagline: "Starts automatically when 25 entries are collected.",
+    desc: "Once your payment is confirmed, watch the live countdown circle on the homepage and your dashboard. When 25 entries are collected, the 90-minute battle begins automatically and the countdown starts for everyone.",
     substeps: [
-      { icon: "🚀", text: "Tournament starts when minimum entries are reached" },
-      { icon: "📉", text: "Trade on your MT5 demo account normally" },
-      { icon: "📡", text: "MetaApi syncs your stats every 60 seconds" },
-      { icon: "🏅", text: "Watch your % gain ranking on the live leaderboard" },
+      { icon:"🔵", text:"Watch the live circle fill up as more traders join — fills to 25 or 50" },
+      { icon:"⚡", text:"At 25 entries: battle starts instantly, 90-minute countdown begins" },
+      { icon:"📲", text:"You get a notification — open MT5 and start trading immediately" },
+      { icon:"👀", text:"Live leaderboard shows everyone's % gain in real time every 60 seconds" },
     ],
-    why: "Unlike brokers where you risk real money, your demo balance is virtual. Maximum upside, zero financial risk.",
-    whyIcon: "🛡️",
+    why: "The countdown is live for everyone — traders, spectators, everyone on the homepage can see exactly how long the battle has left. Full transparency.",
+    whyIcon: "🌐",
   },
   {
     n: "04",
-    title: "Win & Claim Your Reward",
-    emoji: "🏆",
+    title: "Trade for 90 Minutes — Beat Everyone",
+    emoji: "📈",
     color: "#FFD700",
     dim: "rgba(255,215,0,.08)",
-    border: "rgba(255,215,0,.2)",
-    tagline: "Highest % gain wins. Simple.",
-    desc: "When the tournament ends, the trader with the highest percentage gain wins 90% of the prize pool as a real funded trading account. 2nd place gets 3× entry fee back, 3rd gets 2× entry fee — all in USDT.",
+    border: "rgba(255,215,0,.22)",
+    tagline: "Pure skill. Highest % gain wins.",
+    desc: "Trade any forex pairs on your MT5 demo. We track your % gain every 60 seconds via MetaApi. The leaderboard updates live. Your goal: end with the highest percentage gain on your starting $1,000 balance.",
     substeps: [
-      { icon: "⏰", text: "Tournament ends at the scheduled time" },
-      { icon: "🥇", text: "1st: Funded trading account worth 90% of prize pool" },
-      { icon: "🥈", text: "2nd: 3× your entry fee returned in USDT" },
-      { icon: "🥉", text: "3rd: 2× your entry fee returned in USDT" },
+      { icon:"💹", text:"Trade any currency pairs — EURUSD, GBPUSD, XAUUSD, any pair" },
+      { icon:"📊", text:"Your % gain is tracked every 60 seconds — leaderboard updates live" },
+      { icon:"⚠️", text:"CRITICAL: Close all trades 3 minutes before the 90-minute end time" },
+      { icon:"🏁", text:"Final leaderboard locks — top 3 traders are declared winners" },
     ],
-    why: "No payout denial. No KYC delays. Winners receive funds within 24-48 hours. We built this for traders, not bureaucrats.",
-    whyIcon: "⚡",
+    why: "The 3-minute close rule is strict: any trade still open in the final 3 minutes will NOT count toward your score. Set an alarm — don't lose your gains to an open trade!",
+    whyIcon: "⚠️",
+  },
+  {
+    n: "05",
+    title: "Win & Receive Your Funded Account",
+    emoji: "🏆",
+    color: "#22C55E",
+    dim: "rgba(34,197,94,.08)",
+    border: "rgba(34,197,94,.22)",
+    tagline: "Real capital. Real withdrawals. No evaluation.",
+    desc: "The trader with the highest % gain wins 90% of the prize pool as a real funded trading account — ready to trade with, with daily withdrawal rights. 2nd place gets 4× their entry fee back. 3rd gets 2× their fee back.",
+    substeps: [
+      { icon:"🥇", text:"1st place: Funded live account (90% of prize pool) — no evaluation, just trade" },
+      { icon:"🥈", text:"2nd place: 4× entry fee returned instantly in USDT" },
+      { icon:"🥉", text:"3rd place: 2× entry fee returned instantly in USDT" },
+      { icon:"🎖️", text:"All top 3 receive an on-chain certificate (Gold / Silver / Bronze)" },
+    ],
+    why: "A $25 entry with 25 participants = $625 prize pool. Winner gets $562 as a funded account — no evaluation, no BS. A $50 entry with 50 participants = $2,500 pool. Winner gets $2,250.",
+    whyIcon: "💰",
   },
 ];
 
-const VS_POINTS = [
-  { icon: "💰", title: "vs Prop Firms (FTMO etc.)", points: ["FTMO charges $155+ just to START", "You can fail and lose everything", "Evaluation rules are strict & stressful", "Takes weeks to get a payout", "MFT: Pay $20, compete on a FREE demo, win in hours"] },
-  { icon: "🏦", title: "vs Brokers (Exness etc.)", points: ["Real broker = real money at risk", "Spreads and swaps eat your profits", "You can blow your account in minutes", "No competitive prize structure", "MFT: Zero real money risk. Compete for prizes on demo accounts"] },
-  { icon: "📚", title: "vs Trading Courses", points: ["Courses cost $500–$5,000", "You still have to trade with real money", "No guaranteed outcome", "Certificates mean nothing", "MFT: Put $20 in, prove your skill LIVE, win real capital"] },
+const RULES = [
+  { icon:"⏱️", title:"Min 31 seconds per trade", desc:"Any trade closed in under 31 seconds is excluded from your score. It won't disqualify you — the trade just doesn't count.", color:"#FFD700" },
+  { icon:"🚫", title:"No hedging allowed", desc:"Opening simultaneous buy and sell on the same pair is not allowed. Hedged trades are excluded from your score.", color:"#60a5fa" },
+  { icon:"💰", title:"No external deposits", desc:"Adding funds to your demo account after the tournament starts results in instant, permanent disqualification. No exceptions.", color:"#EF4444" },
+  { icon:"🔒", title:"Account locked at start", desc:"Your MT5 credentials are locked the moment the battle starts. No changing accounts or credentials mid-battle.", color:"#22C55E" },
+  { icon:"⚠️", title:"Close all trades 3 min early", desc:"All open trades MUST be closed at least 3 minutes before the 90-minute mark. Open trades in the final 3 minutes will NOT count toward your score.", color:"#EF4444" },
+  { icon:"📊", title:"Starting balance fixed at $1,000", desc:"All traders start with exactly $1,000 demo balance. Your score is measured as % gain from this starting point.", color:"#60a5fa" },
+];
+
+const BROKERS = [
+  { name:"Exness", logo:"🟢", desc:"Most popular. Fast execution. Supports MT5 demo. Takes 2 min to open.", color:"#22C55E" },
+  { name:"ICMarkets", logo:"🔵", desc:"Raw spreads. Excellent for scalping. MT5 demo available instantly.", color:"#60a5fa" },
+  { name:"Tickmill", logo:"🟡", desc:"Low latency. Professional-grade MT5. Demo in under 3 minutes.", color:"#FFD700" },
 ];
 
 export default function HowItWorksPage() {
   return (
-    <div style={{ background: "#050810", minHeight: "100vh" }}>
+    <div style={{ background:"#050810", minHeight:"100vh" }}>
+      <style>{`
+        @media(max-width:768px){
+          .hiw-hero h1{font-size:32px !important;}
+          .step-grid{flex-direction:column !important;}
+          .rules-grid{grid-template-columns:1fr !important;}
+          .brokers-grid{grid-template-columns:1fr !important;}
+          .page-pad{padding:48px 20px !important;}
+        }
+      `}</style>
 
-      {/* Header */}
-      <div style={{ borderBottom: "1px solid rgba(255,255,255,.06)", background: "rgba(7,9,15,.8)" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 40px 40px", textAlign: "center" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,215,0,.08)", border: "1px solid rgba(255,215,0,.2)", borderRadius: 100, padding: "5px 16px", fontSize: 12, fontWeight: 600, color: "#FFD700", marginBottom: 24 }}>
-            ⚡ Simplest path to a funded account
-          </div>
-          <h1 style={{ fontFamily: "'Space Grotesk','Inter',system-ui,sans-serif", fontSize: "clamp(32px,4vw,52px)", fontWeight: 800, letterSpacing: "-1.5px", color: "#fff", marginBottom: 16, lineHeight: 1.1 }}>
-            How MyFundedTournament Works
-          </h1>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,.45)", lineHeight: 1.7, maxWidth: 580, margin: "0 auto 32px" }}>
-            From zero to a funded account in 4 simple steps. No evaluation. No real money risk. Just your trading skill.
-          </p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/register" className="btn btn-primary btn-lg">Start for $20</Link>
-            <Link href="/tournaments" className="btn btn-ghost btn-lg">Browse Tournaments</Link>
-          </div>
+      {/* ─── Hero ─── */}
+      <div className="hiw-hero" style={{ textAlign:"center", padding:"72px 40px 56px", maxWidth:800, margin:"0 auto" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.22)", borderRadius:100, padding:"6px 18px", fontSize:13, fontWeight:700, color:"#FFD700", marginBottom:28, letterSpacing:".04em" }}>
+          ⚡ Simplest path to a funded account
+        </div>
+        <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:48, fontWeight:900, color:"#fff", letterSpacing:"-2px", lineHeight:1.05, marginBottom:20 }}>
+          How <span style={{ color:"#FFD700" }}>MyFundedTournament</span> Works
+        </h1>
+        <p style={{ fontSize:17, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:36, maxWidth:620, margin:"0 auto 36px" }}>
+          From zero to a funded account in <strong style={{ color:"rgba(255,255,255,.85)" }}>90 minutes</strong>. No evaluation. No minimum target. Just trade your MT5 demo and beat the competition.
+        </p>
+        <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+          <Link href="/register" className="btn btn-primary btn-lg">Start for $25</Link>
+          <Link href="/tournaments" className="btn btn-ghost btn-lg">Browse Live Battles</Link>
         </div>
       </div>
 
-      {/* Steps */}
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "60px 40px" }}>
+      {/* ─── Timeline Steps ─── */}
+      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"0 40px 80px" }}>
         {STEPS.map((step, i) => (
-          <div key={step.n}>
-            {/* Connector */}
-            {i > 0 && (
-              <div style={{ display: "flex", justifyContent: "center", padding: "8px 0" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <div style={{ width: 2, height: 40, background: "linear-gradient(to bottom, rgba(255,215,0,.3), rgba(255,215,0,.08))", borderRadius: 2 }} />
-                  <div style={{ fontSize: 18, color: "rgba(255,215,0,.5)" }}>↓</div>
-                </div>
-              </div>
+          <div key={step.n} style={{ position:"relative", marginBottom:i < STEPS.length-1 ? 0 : 0 }}>
+            {/* Connector line */}
+            {i < STEPS.length - 1 && (
+              <div style={{ position:"absolute", left:31, top:72, bottom:-32, width:2, background:"linear-gradient(180deg,rgba(255,215,0,.3),rgba(255,255,255,.04))", zIndex:0 }}/>
             )}
 
-            {/* Step card */}
-            <div style={{ background: step.dim, border: `1px solid ${step.border}`, borderRadius: 20, padding: "36px 40px", position: "relative", overflow: "hidden" }}>
-              {/* Step number badge */}
-              <div style={{ position: "absolute", top: 28, right: 32, fontSize: 80, fontWeight: 900, color: step.color, opacity: .05, fontFamily: "'Space Grotesk','Inter',system-ui,sans-serif", lineHeight: 1 }}>
-                {step.n}
+            <div style={{ display:"flex", gap:24, marginBottom:32, position:"relative", zIndex:1 }}>
+              {/* Step number circle */}
+              <div style={{ flexShrink:0, width:64, height:64, borderRadius:"50%", background:step.dim, border:`2px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>
+                {step.emoji}
               </div>
 
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 20, marginBottom: 28 }}>
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: `${step.color}20`, border: `1.5px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>
-                  {step.emoji}
+              {/* Content */}
+              <div style={{ flex:1, background:"rgba(13,18,29,.95)", border:`1px solid ${step.border}`, borderRadius:18, padding:"28px 32px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:11, fontWeight:800, letterSpacing:".14em", color:step.color, textTransform:"uppercase" }}>STEP {step.n}</span>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,.35)", fontStyle:"italic" }}>{step.tagline}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: step.color, letterSpacing: ".15em", textTransform: "uppercase", marginBottom: 6 }}>STEP {step.n}</div>
-                  <h2 style={{ fontFamily: "'Space Grotesk','Inter',system-ui,sans-serif", fontSize: 26, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px", marginBottom: 6, lineHeight: 1.2 }}>{step.title}</h2>
-                  <div style={{ fontSize: 13, color: step.color, fontWeight: 600 }}>{step.tagline}</div>
+                <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:22, fontWeight:800, color:"#fff", marginBottom:12, letterSpacing:"-.5px" }}>{step.title}</h3>
+                <p style={{ fontSize:14.5, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:22 }}>{step.desc}</p>
+
+                {/* Sub-steps */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:22 }}>
+                  {step.substeps.map((sub, j) => (
+                    <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, padding:"10px 14px" }}>
+                      <span style={{ fontSize:18, flexShrink:0 }}>{sub.icon}</span>
+                      <span style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.5 }}>{sub.text}</span>
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              <p style={{ fontSize: 15, color: "rgba(255,255,255,.55)", lineHeight: 1.75, marginBottom: 28 }}>{step.desc}</p>
-
-              {/* Sub-steps */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
-                {step.substeps.map((sub, j) => (
-                  <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "rgba(0,0,0,.3)", borderRadius: 12, padding: "14px 16px", border: "1px solid rgba(255,255,255,.05)" }}>
-                    <span style={{ fontSize: 20, flexShrink: 0 }}>{sub.icon}</span>
-                    <span style={{ fontSize: 13, color: "rgba(255,255,255,.65)", lineHeight: 1.5, fontWeight: 500 }}>{sub.text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Why it's better callout */}
-              <div style={{ background: "rgba(0,0,0,.35)", borderRadius: 12, padding: "14px 18px", border: `1px solid ${step.border}`, display: "flex", alignItems: "flex-start", gap: 12 }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>{step.whyIcon}</span>
-                <div style={{ fontSize: 13, color: step.color, fontWeight: 600, lineHeight: 1.6 }}>{step.why}</div>
+                {/* Why box */}
+                <div style={{ display:"flex", gap:12, background:step.dim, border:`1px solid ${step.border}`, borderRadius:12, padding:"14px 18px" }}>
+                  <span style={{ fontSize:20, flexShrink:0 }}>{step.whyIcon}</span>
+                  <p style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.65, margin:0 }}>{step.why}</p>
+                </div>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Why better section */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", background: "rgba(7,9,15,.7)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 40px" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".15em", textTransform: "uppercase", color: "rgba(255,255,255,.3)", marginBottom: 12 }}>The honest comparison</div>
-            <h2 style={{ fontFamily: "'Space Grotesk','Inter',system-ui,sans-serif", fontSize: 32, fontWeight: 800, color: "#fff", letterSpacing: "-1px", marginBottom: 12 }}>
-              Why MFT beats the alternatives
-            </h2>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,.4)", maxWidth: 480, margin: "0 auto" }}>
-              We built MFT because every other option either costs too much, risks your real money, or both.
+      {/* ─── The 3-Minute Rule Callout ─── */}
+      <div style={{ background:"rgba(239,68,68,.06)", borderTop:"1px solid rgba(239,68,68,.2)", borderBottom:"1px solid rgba(239,68,68,.2)" }}>
+        <div style={{ maxWidth:900, margin:"0 auto", padding:"36px 40px", display:"flex", gap:24, alignItems:"center", flexWrap:"wrap" }}>
+          <div style={{ fontSize:52, flexShrink:0 }}>⚠️</div>
+          <div>
+            <div style={{ fontSize:18, fontWeight:800, color:"#EF4444", marginBottom:8, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>The 3-Minute Close Rule — Read This Carefully</div>
+            <p style={{ fontSize:14.5, color:"rgba(255,255,255,.55)", lineHeight:1.75, margin:0 }}>
+              When the countdown hits <strong style={{ color:"#EF4444" }}>3:00 remaining</strong>, you MUST have all your trades closed. Any trade still open after that point <strong style={{ color:"#EF4444" }}>will not count toward your score</strong> — no exceptions. The leaderboard circle turns red at 3 minutes to warn you. Set an alarm. Don't lose your profit because of an open trade.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
-            {VS_POINTS.map(vs => (
-              <div key={vs.title} style={{ background: "rgba(13,18,29,.8)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 16, padding: 28 }}>
-                <div style={{ fontSize: 28, marginBottom: 12 }}>{vs.icon}</div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 20, lineHeight: 1.3 }}>{vs.title}</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {vs.points.map((p, i) => (
-                    <div key={i} style={{ fontSize: 13, lineHeight: 1.5, color: i === vs.points.length - 1 ? "#22C55E" : "rgba(255,255,255,.4)", fontWeight: i === vs.points.length - 1 ? 600 : 400, paddingTop: i === vs.points.length - 1 ? 10 : 0, borderTop: i === vs.points.length - 1 ? "1px solid rgba(255,255,255,.07)" : "none" }}>
-                      {i === vs.points.length - 1 ? "✅ " : "❌ "}{p}
-                    </div>
-                  ))}
+        </div>
+      </div>
+
+      {/* ─── Rules ─── */}
+      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+        <div style={{ textAlign:"center", marginBottom:48 }}>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>Fair Play</div>
+          <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>Battle Rules</h2>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:480, margin:"0 auto" }}>All rules are auto-enforced by our system in real time. No manual review, no grey areas.</p>
+        </div>
+        <div className="rules-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+          {RULES.map(r => (
+            <div key={r.title} style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:14, padding:"18px 20px", display:"flex", gap:14 }}>
+              <span style={{ fontSize:24, flexShrink:0 }}>{r.icon}</span>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:r.color, marginBottom:5 }}>{r.title}</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.4)", lineHeight:1.6 }}>{r.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── Supported Brokers ─── */}
+      <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.6)" }}>
+        <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+          <div style={{ textAlign:"center", marginBottom:48 }}>
+            <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>Supported Platforms</div>
+            <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>3 Supported Brokers</h2>
+            <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:480, margin:"0 auto" }}>All three offer free MT5 demo accounts with no deposit required. Open one in under 5 minutes.</p>
+          </div>
+          <div className="brokers-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:18 }}>
+            {BROKERS.map(b => (
+              <div key={b.name} style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${b.color}33`, borderRadius:16, padding:"24px 22px", textAlign:"center" }}>
+                <div style={{ fontSize:40, marginBottom:14 }}>{b.logo}</div>
+                <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:8 }}>{b.name}</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.42)", lineHeight:1.6, marginBottom:16 }}>{b.desc}</div>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${b.color}15`, border:`1px solid ${b.color}44`, borderRadius:20, padding:"4px 14px" }}>
+                  <span style={{ fontSize:11, fontWeight:700, color:b.color }}>✓ Supported</span>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Quick FAQ */}
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "60px 40px" }}>
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk','Inter',system-ui,sans-serif", fontSize: 28, fontWeight: 800, color: "#fff" }}>Still have questions?</h2>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 40 }}>
-          {[
-            { q: "What if I lose?", a: "You simply don't win the prize. Your only loss is the entry fee — just like any competition. No blown accounts, no debt." },
-            { q: "How long does payout take?", a: "1st place (funded account) within 48hrs. 2nd & 3rd place USDT payouts within 24hrs of tournament end." },
-            { q: "Can I use any trading strategy?", a: "Yes! Scalping, swing trading, news trading — any strategy is allowed as long as trades stay open 31+ seconds." },
-            { q: "What if the tournament doesn't fill?", a: "If minimum 20 entries aren't reached, the tournament doesn't start and all entry fees are refunded automatically." },
-          ].map((item, i) => (
-            <div key={i} style={{ background: "rgba(13,18,29,.8)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#FFD700", marginBottom: 8 }}>{item.q}</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,.5)", lineHeight: 1.6 }}>{item.a}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div style={{ textAlign: "center", background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 20, padding: "40px 32px" }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>🚀</div>
-          <h3 style={{ fontFamily: "'Space Grotesk','Inter',system-ui,sans-serif", fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 10 }}>Ready to compete?</h3>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,.45)", marginBottom: 24 }}>Join thousands of traders competing for real funded accounts every day.</p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/register" className="btn btn-primary btn-lg">Start for $20 USDT</Link>
-            <Link href="/tournaments" className="btn btn-ghost btn-lg">See Live Tournaments</Link>
+          <div style={{ marginTop:28, background:"rgba(96,165,250,.06)", border:"1px solid rgba(96,165,250,.18)", borderRadius:12, padding:"16px 20px", textAlign:"center" }}>
+            <p style={{ fontSize:13, color:"rgba(255,255,255,.4)", margin:0 }}>
+              💡 <strong style={{ color:"rgba(255,255,255,.65)" }}>Important:</strong> You only submit your <strong style={{ color:"rgba(96,165,250,.8)" }}>investor (read-only) password</strong> — never your master password. We have zero ability to place trades or withdraw funds from your account.
+            </p>
           </div>
         </div>
       </div>
 
+      {/* ─── Prize Structure ─── */}
+      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+        <div style={{ textAlign:"center", marginBottom:48 }}>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>Prize Breakdown</div>
+          <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>How the Prize Pool Works</h2>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:520, margin:"0 auto" }}>100% transparent. Every entry fee goes into the pool. Here's exactly what each winner receives.</p>
+        </div>
+
+        {/* Example calculations */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:28 }}>
+          {[
+            { plan:"Starter Bullet", fee:25, entries:25, color:"#FFD700", border:"rgba(255,215,0,.25)" },
+            { plan:"Pro Bullet", fee:50, entries:50, color:"#22C55E", border:"rgba(34,197,94,.25)" },
+          ].map(p => {
+            const pool = p.fee * p.entries;
+            const first = pool * 0.9;
+            const second = p.fee * 4;
+            const third = p.fee * 2;
+            const platform = pool * 0.1;
+            return (
+              <div key={p.plan} style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${p.border}`, borderRadius:16, padding:"24px" }}>
+                <div style={{ fontSize:12, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:6 }}>{p.plan}</div>
+                <div style={{ fontSize:28, fontWeight:900, color:p.color, letterSpacing:"-1px", marginBottom:4, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>${pool.toLocaleString()} Pool</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.35)", marginBottom:20 }}>{p.entries} traders × ${p.fee} USDT</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {[
+                    { label:"🥇 1st Place (Funded Account)", val:`$${first.toLocaleString()}`, color:p.color },
+                    { label:"🥈 2nd Place (4× fee)", val:`$${second}`, color:"#b4c0d8" },
+                    { label:"🥉 3rd Place (2× fee)", val:`$${third}`, color:"#CD7F32" },
+                    { label:"🏛️ Platform Fee (10%)", val:`$${platform}`, color:"rgba(255,255,255,.3)" },
+                  ].map(r => (
+                    <div key={r.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(255,255,255,.04)" }}>
+                      <span style={{ fontSize:13, color:"rgba(255,255,255,.45)" }}>{r.label}</span>
+                      <span style={{ fontSize:14, fontWeight:700, color:r.color }}>{r.val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ─── CTA ─── */}
+      <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.6)" }}>
+        <div style={{ maxWidth:700, margin:"0 auto", padding:"72px 40px", textAlign:"center" }}>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:18 }}>Ready?</div>
+          <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:36, fontWeight:900, color:"#fff", letterSpacing:"-1.2px", marginBottom:16, lineHeight:1.1 }}>
+            90 minutes to prove your skill.<br/><span style={{ color:"#FFD700" }}>Win a funded account.</span>
+          </h2>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", marginBottom:36, lineHeight:1.75 }}>
+            Start for just $25 USDT. Trade your MT5 demo for 90 minutes. If you have the best % gain — you win real funded capital. No evaluation. No minimum balance. Just results.
+          </p>
+          <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+            <Link href="/register" className="btn btn-primary btn-lg">Create Free Account</Link>
+            <Link href="/tournaments" className="btn btn-ghost btn-lg">View Live Battles →</Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
