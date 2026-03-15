@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { BulletTrain } from "@/components/ui/BulletTrain";
+import { tournamentApi } from "@/lib/api";
 
 // ── Two Plans ─────────────────────────────────────────────────────────────────
 const PLANS = [
@@ -95,9 +96,31 @@ const FAQS = [
 
 
 export default function HomePage() {
-  // Demo state — in production this comes from API
-  const [demoJoined] = useState(18);
-  const [demoEndTime] = useState<Date|null>(null); // null = not started yet
+  // Live tournament data from API
+  const [liveTournaments, setLiveTournaments] = useState<any[]>([]);
+
+  useEffect(() => {
+    const load = () => {
+      tournamentApi.getAll("all")
+        .then(data => setLiveTournaments(data))
+        .catch(() => {});
+    };
+    load();
+    // Refresh every 30s so counts stay live
+    const iv = setInterval(load, 30000);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Get live data for a specific plan tier
+  function getPlanData(tier: string) {
+    const t = liveTournaments.find(t => t.tier === tier && ["registration","active"].includes(t.status));
+    return {
+      joined: parseInt(String(t?.active_entries || 0)),
+      max: t?.max_entries || 25,
+      endTime: t?.end_time ? new Date(t.end_time) : null,
+      status: t?.status || "registration",
+    };
+  }
 
   return (
     <div style={{ background:"#050810" }}>
@@ -267,7 +290,11 @@ export default function HomePage() {
 
               {/* Bullet Train Registration */}
               <div style={{ marginBottom:20 }}>
-                <BulletTrain joined={demoJoined} max={p.maxEntries} fee={parseInt(p.fee.replace('$','').replace(' USDT',''))} tier={p.name.includes('Pro') ? 'pro' : 'starter'}/>
+                {(() => {
+                  const tier = p.name.includes('Pro') ? 'pro' : 'starter';
+                  const live = getPlanData(tier);
+                  return <BulletTrain joined={live.joined} max={live.max} fee={parseInt(p.fee.replace('$','').replace(' USDT',''))} tier={tier}/>;
+                })()}
               </div>
 
               <div style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:26 }}>

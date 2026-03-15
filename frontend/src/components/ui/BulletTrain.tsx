@@ -9,8 +9,10 @@ interface BulletTrainProps {
   isActive?: boolean;
 }
 
-export function BulletTrain({ joined, max, fee, tier, isActive = false }: BulletTrainProps) {
+export function BulletTrain({ joined: joinedRaw, max: maxRaw, fee, tier, isActive = false }: BulletTrainProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const joined = parseInt(String(joinedRaw)) || 0;
+  const max = parseInt(String(maxRaw)) || 25;
   const color = tier === "pro" ? "#22C55E" : "#FFD700";
   const pct = Math.min(1, joined / max);
   const isFull = joined >= max;
