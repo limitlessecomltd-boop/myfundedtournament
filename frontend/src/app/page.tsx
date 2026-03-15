@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { BulletTrain } from "@/components/ui/BulletTrain";
 
 // ── Two Plans ─────────────────────────────────────────────────────────────────
 const PLANS = [
@@ -91,72 +92,7 @@ const FAQS = [
   { q:"What are the prizes?", a:"1st place: Funded live trading account (90% of prize pool). 2nd place: 4× entry fee returned in USDT. 3rd place: 2× entry fee returned. All top 3 receive an on-chain certificate. For a $25 entry with 25 traders: prize pool is $625, winner gets $562 as a funded account." },
 ];
 
-// ── Live Countdown Circle ──────────────────────────────────────────────────────
-function CountdownCircle({ joined, max, endTime, size=200 }: { joined:number, max:number, endTime:Date|null, size?:number }) {
-  const [timeLeft, setTimeLeft] = useState(90*60);
-  const [started, setStarted] = useState(false);
 
-  useEffect(() => {
-    if (!endTime) return;
-    const now = Date.now();
-    const end = endTime.getTime();
-    const diff = Math.max(0, Math.floor((end - now) / 1000));
-    setTimeLeft(diff);
-    setStarted(true);
-    const iv = setInterval(() => {
-      const d = Math.max(0, Math.floor((end - Date.now()) / 1000));
-      setTimeLeft(d);
-      if (d === 0) clearInterval(iv);
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [endTime]);
-
-  const total = 90 * 60;
-  const progress = started ? (timeLeft / total) : (joined / max);
-  const r = (size / 2) - 12;
-  const circ = 2 * Math.PI * r;
-  const dash = circ * (started ? (1 - progress) : progress);
-  const mins = Math.floor(timeLeft / 60);
-  const secs = timeLeft % 60;
-  const isWarning = started && timeLeft <= 3 * 60;
-
-  return (
-    <div style={{ position:"relative", width:size, height:size, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <svg width={size} height={size} style={{ position:"absolute", transform:"rotate(-90deg)" }}>
-        {/* Track */}
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,.07)" strokeWidth={10}/>
-        {/* Progress */}
-        <circle cx={size/2} cy={size/2} r={r} fill="none"
-          stroke={isWarning ? "#EF4444" : started ? "#22C55E" : "#FFD700"}
-          strokeWidth={10} strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={started ? circ - dash : circ - dash}
-          style={{ transition:"stroke-dashoffset 1s linear, stroke .3s" }}
-        />
-      </svg>
-      <div style={{ textAlign:"center", position:"relative", zIndex:1 }}>
-        {started ? (
-          <>
-            <div style={{ fontSize:size*0.18, fontWeight:900, color: isWarning ? "#EF4444" : "#22C55E", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", lineHeight:1, letterSpacing:"-1px" }}>
-              {String(mins).padStart(2,"0")}:{String(secs).padStart(2,"0")}
-            </div>
-            <div style={{ fontSize:size*0.07, color:"rgba(255,255,255,.45)", marginTop:4 }}>
-              {isWarning ? "⚠️ CLOSE TRADES!" : "remaining"}
-            </div>
-          </>
-        ) : (
-          <>
-            <div style={{ fontSize:size*0.18, fontWeight:900, color:"#FFD700", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", lineHeight:1 }}>
-              {joined}<span style={{ fontSize:size*0.1, color:"rgba(255,255,255,.4)" }}>/{max}</span>
-            </div>
-            <div style={{ fontSize:size*0.07, color:"rgba(255,255,255,.45)", marginTop:4 }}>traders joined</div>
-            <div style={{ fontSize:size*0.065, color:"rgba(255,215,0,.6)", marginTop:2 }}>filling up...</div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export default function HomePage() {
   // Demo state — in production this comes from API
@@ -329,14 +265,9 @@ export default function HomePage() {
                 <div style={{ fontSize:13, color:"rgba(255,255,255,.45)", marginBottom:18, fontStyle:"italic" }}>{p.tagline}</div>
               </div>
 
-              {/* Live countdown circle */}
-              <div style={{ display:"flex", justifyContent:"center", marginBottom:24 }}>
-                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
-                  <CountdownCircle joined={demoJoined} max={p.maxEntries} endTime={demoEndTime} size={160}/>
-                  <div style={{ fontSize:11, color:"rgba(255,255,255,.35)", textAlign:"center" }}>
-                    {demoEndTime ? "Battle in progress" : `Starts after ${p.maxEntries} entries`}
-                  </div>
-                </div>
+              {/* Bullet Train Registration */}
+              <div style={{ marginBottom:20 }}>
+                <BulletTrain joined={demoJoined} max={p.maxEntries} fee={parseInt(p.fee.replace('$','').replace(' USDT',''))} tier={p.name.includes('Pro') ? 'pro' : 'starter'}/>
               </div>
 
               <div style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:26 }}>

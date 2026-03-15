@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { tournamentApi } from "@/lib/api";
 import { Tournament } from "@/types";
+import { BulletTrain } from "@/components/ui/BulletTrain";
 
 function PlanBadge({ tier }: { tier: string }) {
   const color = tier === "pro" ? "#22C55E" : "#FFD700";
@@ -60,24 +61,12 @@ function RegistrationCard({ t }: { t: Tournament }) {
         ))}
       </div>
 
-      {/* Fill bar */}
+      {/* Bullet Train */}
       <div style={{ marginBottom:6 }}>
-        <div style={{ display:"flex", justifyContent:"space-between", fontSize:12,
-          color:"rgba(255,255,255,.4)", marginBottom:5 }}>
-          <span>{filled} / {max} spots filled</span>
-          <span style={{ color, fontWeight:700 }}>{spotsLeft} spots left!</span>
-        </div>
-        <div style={{ height:8, background:"rgba(255,255,255,.07)", borderRadius:4, overflow:"hidden" }}>
-          <div style={{ height:"100%", width:`${pct}%`,
-            background:`linear-gradient(90deg,${color},${color}cc)`,
-            borderRadius:4, transition:"width .5s" }}/>
-        </div>
-        <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:5 }}>
-          ⚡ Battle starts automatically when all {max} spots fill · 5-min prep · then 90 min
-        </div>
+        <BulletTrain joined={filled} max={max} fee={Number(t.entry_fee)} tier={t.tier as "starter"|"pro"}/>
       </div>
 
-      <div style={{ marginTop:18 }}>
+      <div style={{ marginTop:14 }}>
         <Link href={`/tournaments/${t.id}`} className="btn" style={{ width:"100%",
           justifyContent:"center", display:"flex",
           background:color, color:"#000", fontWeight:800, fontSize:15, padding:"13px" }}>
