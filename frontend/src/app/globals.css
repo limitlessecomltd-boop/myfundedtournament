@@ -149,3 +149,91 @@ tr:hover td{background:rgba(255,255,255,.012);}
   .page,.page-wide{padding:20px 16px;}
   .section-title{font-size:26px;}
 }
+
+/* ══════════════════════════════════════════════
+   COMPREHENSIVE MOBILE + TABLET RESPONSIVE
+   ══════════════════════════════════════════════ */
+
+/* Tablet: 768px - 1024px */
+@media(max-width:1024px){
+  .page,.page-wide{padding:28px 24px;}
+  .grid-4,.grid-5{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:repeat(2,1fr);}
+}
+
+/* Mobile: ≤768px */
+@media(max-width:768px){
+  /* Base layout */
+  .page,.page-wide{padding:20px 16px;}
+  .grid-2,.grid-3,.grid-4,.grid-5{grid-template-columns:1fr;}
+  .section-title{font-size:26px !important;}
+
+  /* Homepage hero */
+  .hero-pad{padding:32px 16px 24px !important;}
+  .hero-grid{grid-template-columns:1fr !important;}
+  .hero-photo{display:none !important;}
+
+  /* Stats bar */
+  .stats-bar{grid-template-columns:1fr 1fr !important;}
+  .stats-bar > div{border-right:none !important;border-bottom:1px solid rgba(255,255,255,.06);}
+
+  /* Plans grid */
+  .plans-grid{grid-template-columns:1fr !important;}
+
+  /* Rules 2-col */
+  .rules-2col{grid-template-columns:1fr !important;gap:32px !important;}
+
+  /* Page-specific pads */
+  .page-pad{padding:48px 16px !important;}
+  .hero-pad{padding:40px 16px 28px !important;}
+  .faq-pad{padding:48px 16px !important;}
+
+  /* Typography */
+  .cta-h{font-size:28px !important;}
+  .sec-title{font-size:24px !important;}
+
+  /* Comparison table scroll */
+  .comp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .comp-scroll table{min-width:500px;}
+
+  /* Grid 3 responsive */
+  .grid-3-r{grid-template-columns:1fr !important;}
+  .grid-4-r{grid-template-columns:1fr 1fr !important;}
+
+  /* Buttons full width on mobile in flex */
+  .mobile-full{width:100% !important;}
+
+  /* Hide non-essential decorative elements */
+  .hide-mobile{display:none !important;}
+
+  /* Card padding reduce */
+  .card{padding:16px !important;}
+  .card-sm{padding:12px !important;}
+
+  /* Sidebar → stack on mobile */
+  .sidebar-layout{flex-direction:column !important;}
+  .sidebar-layout > div:first-child{width:100% !important;}
+}
+
+/* Small mobile: ≤480px */
+@media(max-width:480px){
+  .stats-bar{grid-template-columns:1fr !important;}
+  .grid-4-r{grid-template-columns:1fr !important;}
+  .hero-pad{padding:28px 14px 20px !important;}
+  .page-pad{padding:36px 14px !important;}
+  .faq-pad{padding:36px 14px !important;}
+
+  /* Navbar logo text hide on tiny screens */
+  .nav-logo-text{display:none !important;}
+
+  /* Font size scale down */
+  h1{font-size:clamp(28px,8vw,42px) !important;}
+}
+
+/* Ensure images don't overflow */
+img{max-width:100%;height:auto;}
+
+/* Smooth scrolling on mobile */
+@media(max-width:768px){
+  html{scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+}
