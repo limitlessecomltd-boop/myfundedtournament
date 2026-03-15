@@ -120,8 +120,8 @@ export default function TradePage() {
           {/* Re-entry strip */}
           <div style={{ background:"linear-gradient(135deg,rgba(255,215,0,.05) 0%,rgba(255,215,0,.02) 100%)", border:"1px solid rgba(255,215,0,.14)", borderRadius:12, padding:"14px 20px", display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
             <div>
-              <div style={{ fontSize:12, fontWeight:700, color:"var(--gold)", marginBottom:3 }}>Re-entry Slots — 2 used of 10 total · 2 active now</div>
-              <div style={{ fontSize:10, color:"rgba(255,255,255,.3)" }}>Max 5 active at once · Slots 6–10 unlock after first 5 are breached</div>
+              <div style={{ fontSize:12, fontWeight:700, color:"var(--gold)", marginBottom:3 }}>Re-entry — 1 original + 1 re-entry allowed</div>
+              <div style={{ fontSize:10, color:"rgba(255,255,255,.3)" }}>Re-entry unlocks only after your first entry is breached · Full fee applies</div>
             </div>
             <div style={{ display:"flex", gap:5, alignItems:"center" }}>
               {slots.map((s,i) => s.s === "divider" ? (
