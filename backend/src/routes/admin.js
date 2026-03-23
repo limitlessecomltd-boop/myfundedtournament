@@ -243,6 +243,7 @@ router.post('/run-migration', async (req, res) => {
     }
   };
 
+  await run('Add guild to tier enum',         `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel='guild' AND enumtypid=(SELECT oid FROM pg_type WHERE typname='tournament_tier')) THEN ALTER TYPE tournament_tier ADD VALUE 'guild'; END IF; END $$`);
   await run('Add tier_type to tournaments',            `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS tier_type VARCHAR(20) DEFAULT 'standard'`);
   await run('Add organiser_id to tournaments',         `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS organiser_id UUID REFERENCES users(id)`);
   await run('Add winner_pct to tournaments',           `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS winner_pct NUMERIC(5,2) DEFAULT 90.00`);
