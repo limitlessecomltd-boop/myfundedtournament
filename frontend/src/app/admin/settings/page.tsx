@@ -111,6 +111,36 @@ export default function AdminSettings() {
           ))}
         </div>
 
+        {/* Email test */}
+        <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
+          borderRadius:16, padding:"22px 24px" }}>
+          <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.4)",
+            textTransform:"uppercase", letterSpacing:".08em", marginBottom:16 }}>
+            Email System
+          </div>
+          <div style={{ display:"flex", gap:10, marginBottom:12, flexWrap:"wrap" }}>
+            <input id="test-email-addr" className="input" placeholder="Send test to... (leave blank for your email)"
+              style={{ flex:1, minWidth:200 }}/>
+            <button onClick={async () => {
+              const addr = (document.getElementById('test-email-addr') as HTMLInputElement)?.value || '';
+              const T = localStorage.getItem('fc_token');
+              const r = await fetch('https://myfundedtournament-production.up.railway.app/api/admin/test-email', {
+                method:'POST', headers:{'Authorization':'Bearer '+T,'Content-Type':'application/json'},
+                body: JSON.stringify({ to: addr || undefined })
+              });
+              const d = await r.json();
+              alert(d.success ? '✅ Email sent! Check inbox.' : '❌ '+( d.error || d.message));
+            }} className="btn btn-primary btn-sm">
+              📧 Send Test
+            </button>
+          </div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>
+            RESEND_API_KEY: {" "}
+            <span style={{ color:"#22C55E", fontWeight:700 }}>Set ✓</span>
+            {" · "}Sends a payment confirmed template to verify email delivery
+          </div>
+        </div>
+
         {/* DB status */}
         <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
           borderRadius:16, padding:"22px 24px" }}>

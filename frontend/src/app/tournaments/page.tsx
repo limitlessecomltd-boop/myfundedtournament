@@ -1,4 +1,11 @@
 "use client";
+
+// Strip ugly timestamp suffix from auto-generated tournament names
+// e.g. "Pro Bullet #1773578962970" -> "Pro Bullet"
+function cleanTournamentName(name: string): string {
+  return name?.replace(/ #\d{10,}$/, '') || name;
+}
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { tournamentApi, guildApi } from "@/lib/api";
@@ -172,7 +179,7 @@ function PastModal({ t, onClose }: { t: any; onClose: ()=>void }) {
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:20 }}>
           <div>
             <PlanBadge tier={t.tier} tierType={t.tier_type}/>
-            <div style={{ fontSize:22, fontWeight:800, color:"#fff", marginTop:8 }}>{t.name}</div>
+            <div style={{ fontSize:22, fontWeight:800, color:"#fff", marginTop:8 }}>{cleanTournamentName(t.name)}</div>
             <div style={{ fontSize:13, color:"rgba(255,255,255,.38)", marginTop:4 }}>
               {t.active_entries} traders · ${t.entry_fee} entry · ${pool.toLocaleString()} pool
             </div>
@@ -216,7 +223,7 @@ function PastCard({ t, onClick }: { t: Tournament & { tier_type?: string }; onCl
       onMouseLeave={e=>{(e.currentTarget as any).style.borderColor="rgba(255,255,255,.07)";}}>
       <div style={{ fontSize:28 }}>📊</div>
       <div style={{ flex:1 }}>
-        <div style={{ fontSize:15, fontWeight:700, color:"rgba(255,255,255,.8)", marginBottom:5 }}>{t.name}</div>
+        <div style={{ fontSize:15, fontWeight:700, color:"rgba(255,255,255,.8)", marginBottom:5 }}>{cleanTournamentName(t.name)}</div>
         <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
           <PlanBadge tier={t.tier} tierType={t.tier_type}/>
           <span style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>

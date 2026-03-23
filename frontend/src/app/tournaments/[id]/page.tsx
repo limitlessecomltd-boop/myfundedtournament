@@ -1,4 +1,9 @@
 "use client";
+
+function cleanName(name: string): string {
+  return name?.replace(/ #\d{10,}$/, '') || name;
+}
+
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -324,7 +329,7 @@ export default function TournamentDetailPage() {
                 </span>
               </div>
               <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:34, fontWeight:900, color:"#fff", letterSpacing:"-1px", marginBottom:10 }}>
-                {tournament.name}
+                {cleanName(tournament.name)}
               </h1>
               <div style={{ fontSize:13, color:"rgba(255,255,255,.4)", fontStyle:"italic" }}>
                 Are you good enough to beat only {tournament.max_entries} traders?

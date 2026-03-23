@@ -95,22 +95,46 @@ router.get("/me/tournaments", authenticate, async (req, res, next) => {
 // Submit payout request
 router.post("/payout-request", authenticate, async (req, res, next) => {
   try {
-    const { fundedAccountId, grossProfit, walletAddress, currency } = req.body;
+    const { fundedAccountId, walletAddress, currency, type, grossProfit } = req.body;
 
+    if (!walletAddress) return res.status(400).json({ error: "Wallet address required" });
+
+    // Accept pending_kyc (cashout choice) or active accounts
     const { rows: fa } = await db.query(
-      "SELECT * FROM funded_accounts WHERE id=$1 AND user_id=$2 AND status='active'",
+      `SELECT * FROM funded_accounts WHERE id=$1 AND user_id=$2 AND status IN ('pending_kyc','active')`,
       [fundedAccountId, req.user.id]
     );
-    if (!fa.length) return res.status(404).json({ error: "Funded account not found or not active" });
+    if (!fa.length) return res.status(404).json({ error: "Funded account not found" });
+    const account = fa[0];
 
-    const traderAmount   = grossProfit * (fa[0].trader_split_pct / 100);
-    const platformAmount = grossProfit * (fa[0].platform_split_pct / 100);
+    // For cashout type: trader gets 75% of prize pool
+    // For profit withdrawal from active account: trader gets their split
+    let traderAmount, platformAmount;
+    if (type === 'cashout') {
+      // account_size is the 90% of pool — 75% cashout = account_size * (75/90)
+      const poolEquivalent = parseFloat(account.account_size) / 0.9;
+      traderAmount   = poolEquivalent * 0.75;
+      platformAmount = poolEquivalent * 0.15; // platform keeps difference
+    } else {
+      const profit  = parseFloat(grossProfit || 0);
+      const tSplit  = parseFloat(account.trader_split_pct || 90) / 100;
+      traderAmount   = profit * tSplit;
+      platformAmount = profit * (1 - tSplit);
+    }
+
+    // Mark funded account as cashout_requested to prevent duplicate claims
+    await db.query(
+      `UPDATE funded_accounts SET status = 'cashout_requested' WHERE id = $1 AND status = 'pending_kyc'`,
+      [fundedAccountId]
+    );
 
     const { rows } = await db.query(`
       INSERT INTO payout_requests
         (funded_account_id, user_id, gross_profit, trader_amount, platform_amount, wallet_address, currency)
       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *
-    `, [fundedAccountId, req.user.id, grossProfit, traderAmount, platformAmount, walletAddress, currency || "usdttrc20"]);
+    `, [fundedAccountId, req.user.id,
+        type === 'cashout' ? traderAmount : parseFloat(grossProfit || 0),
+        traderAmount, platformAmount, walletAddress, currency || "usdttrc20"]);
 
     res.status(201).json({ success: true, data: rows[0] });
   } catch (err) { next(err); }

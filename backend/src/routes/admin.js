@@ -203,6 +203,33 @@ router.delete("/tournaments/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// POST /api/admin/test-email — send a test email to verify Resend is working
+router.post('/test-email', authenticate, isAdmin, async (req, res) => {
+  try {
+    const { to } = req.body;
+    const recipient = to || req.user.email;
+
+    const result = await email.sendPaymentConfirmed({
+      email:          recipient,
+      username:       'Admin Test',
+      tournamentName: 'Test Battle',
+      entryFee:       25,
+      tournamentId:   'test-123',
+    });
+
+    if (result.skipped) {
+      return res.json({ success: false, message: 'RESEND_API_KEY not set — email skipped' });
+    }
+    if (result.error) {
+      return res.status(400).json({ success: false, error: result.error });
+    }
+
+    res.json({ success: true, message: `Test email sent to ${recipient}`, id: result.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
