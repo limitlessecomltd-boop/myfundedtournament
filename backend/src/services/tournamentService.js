@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const { lockTournamentEntries } = require("./entryService");
+const email = require("./emailService");
 const cron = require("node-cron");
 
 async function getAllTournaments(filter) {
@@ -188,6 +189,53 @@ async function finalizeDueTournaments() {
       }
 
       console.log(`[Finalized] ${t.name} → 🏆 Winner: ${winner.username || winner.email} +${parseFloat(winner.profit_pct).toFixed(2)}% | Prize: $${fundedSize.toFixed(2)}`);
+
+      // Send winner notification email
+      try {
+        await email.sendWinnerNotification({
+          email: winner.email, username: winner.username,
+          tournamentName: t.name, profitPct: winner.profit_pct,
+          prizeAmount: fundedSize, tournamentId: t.id,
+        });
+      } catch(e) { console.warn('[Email] Winner email failed:', e.message); }
+
+      // Send results to all participants
+      try {
+        const { rows: allEntries } = await db.query(`
+          SELECT e.profit_pct, u.email, u.username,
+            RANK() OVER (ORDER BY e.profit_pct DESC) AS position
+          FROM entries e
+          JOIN users u ON u.id = e.user_id
+          WHERE e.tournament_id = $1 AND e.status = 'completed'
+        `, [t.id]);
+        for (const entry of allEntries) {
+          if (entry.email === winner.email) continue; // winner already got a better email
+          await email.sendBattleResults({
+            email: entry.email, username: entry.username,
+            tournamentName: t.name, position: parseInt(entry.position),
+            profitPct: entry.profit_pct, winnerName: winner.username || winner.email,
+            winnerPct: winner.profit_pct, tournamentId: t.id,
+          }).catch(() => {});
+        }
+      } catch(e) { console.warn('[Email] Results emails failed:', e.message); }
+
+      // Send organiser payout email for guild battles
+      if ((t.tier_type === 'guild' || t.tier === 'guild') && t.organiser_id) {
+        try {
+          const orgAmount = pool * (parseFloat(t.organiser_pct || 0) / 100);
+          if (orgAmount > 0) {
+            const { rows: org } = await db.query(
+              'SELECT email, username FROM users WHERE id=$1', [t.organiser_id]
+            );
+            if (org.length) {
+              await email.sendOrganiserPayout({
+                email: org[0].email, username: org[0].username,
+                tournamentName: t.name, payoutAmount: orgAmount,
+              });
+            }
+          }
+        } catch(e) { console.warn('[Email] Organiser payout email failed:', e.message); }
+      }
     } else {
       // No entries — just end the tournament
       await db.query(`UPDATE tournaments SET status='ended' WHERE id=$1`, [t.id]);

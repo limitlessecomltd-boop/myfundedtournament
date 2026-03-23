@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
 const { activateEntryMetaApi } = require('../services/entryService');
+const email = require('../services/emailService');
 const db = require('../config/db');
 const { authenticate } = require('../middleware/auth');
 
@@ -270,6 +271,28 @@ async function activateEntry(entryId, tournamentId, userId) {
     );
 
     console.log(`✅ [Payment] Entry ${entryId} activated, prize pool updated`);
+
+    // Send confirmation email
+    try {
+      const { rows: entryInfo } = await db.query(`
+        SELECT u.email, u.username, t.name AS tournament_name, t.entry_fee, t.id AS tournament_id
+        FROM entries e
+        JOIN users u ON u.id = e.user_id
+        JOIN tournaments t ON t.id = e.tournament_id
+        WHERE e.id = $1
+      `, [entryId]);
+      if (entryInfo.length) {
+        await email.sendPaymentConfirmed({
+          email:          entryInfo[0].email,
+          username:       entryInfo[0].username,
+          tournamentName: entryInfo[0].tournament_name,
+          entryFee:       parseFloat(entryInfo[0].entry_fee),
+          tournamentId:   entryInfo[0].tournament_id,
+        });
+      }
+    } catch (emailErr) {
+      console.warn('[Email] Payment confirmed email failed:', emailErr.message);
+    }
 
     // Connect MT5 account to MetaApi (async — don't block the response)
     activateEntryMetaApi(entryId).catch(err => {
