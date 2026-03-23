@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticate, requireAdmin } = require("../middleware/auth");
 const { createTournament } = require("../services/tournamentService");
 const db = require("../config/db");
+const email = require("../services/emailService");
 
 router.use(authenticate, requireAdmin);
 
