@@ -123,27 +123,74 @@ async function finalizeDueTournaments() {
   `);
 
   for (const t of rows) {
+    console.log(`[Finalizing] ${t.name}`);
+
+    // Enforce 3-minute rule: exclude trades still open in final 3 minutes
+    await db.query(`
+      UPDATE trades SET excluded = TRUE, violation = 'late_close'
+      WHERE entry_id IN (
+        SELECT id FROM entries WHERE tournament_id = $1 AND status = 'active'
+      )
+      AND status = 'open'
+      AND excluded = FALSE
+    `, [t.id]);
+
+    // Get winner — highest profit_pct among non-disqualified active entries
     const { rows: top } = await db.query(`
-      SELECT e.id, e.user_id, e.profit_pct, u.username, u.email
+      SELECT e.id, e.user_id, e.profit_pct, e.profit_abs, u.username, u.email
       FROM entries e
       JOIN users u ON u.id = e.user_id
-      WHERE e.tournament_id=$1 AND e.status='active'
+      WHERE e.tournament_id = $1
+        AND e.status = 'active'
+        AND e.status != 'disqualified'
       ORDER BY e.profit_pct DESC
       LIMIT 1
     `, [t.id]);
 
     if (top.length) {
       const winner = top[0];
-      // fundedSize calculated below per tier
-      await db.query(`UPDATE tournaments SET status='ended', winner_entry_id=$1 WHERE id=$2`, [winner.id, t.id]);
-      await db.query("UPDATE entries SET status='completed' WHERE tournament_id=$1 AND status='active'", [t.id]);
-      await db.query(`
-        INSERT INTO funded_accounts (entry_id, user_id, tournament_id, account_size, status)
-        VALUES ($1,$2,$3,$4,'pending_kyc')
-      `, [winner.id, winner.user_id, t.id, fundedSize]);
-      console.log(`[Finalized] ${t.name} → Winner: ${winner.username || winner.email} +${winner.profit_pct?.toFixed(2)}%`);
+
+      // Calculate prize using correct payout percentages
+      const pool    = parseFloat(t.prize_pool || 0);
+      const wPct    = parseFloat(t.winner_pct  || 90);
+      const oPct    = parseFloat(t.organiser_pct || 0);
+      const fundedSize = pool > 0 ? pool * (wPct / 100) : 0;
+
+      // Mark tournament ended with winner
+      await db.query(
+        `UPDATE tournaments SET status='ended', winner_entry_id=$1 WHERE id=$2`,
+        [winner.id, t.id]
+      );
+
+      // Mark all active entries as completed
+      await db.query(
+        `UPDATE entries SET status='completed' WHERE tournament_id=$1 AND status='active'`,
+        [t.id]
+      );
+
+      // Create funded account record for winner
+      if (fundedSize > 0) {
+        await db.query(`
+          INSERT INTO funded_accounts (entry_id, user_id, tournament_id, account_size, status)
+          VALUES ($1, $2, $3, $4, 'pending_kyc')
+          ON CONFLICT DO NOTHING
+        `, [winner.id, winner.user_id, t.id, fundedSize]);
+      }
+
+      // For guild battles — record organiser payout amount
+      if ((t.tier_type === 'guild' || t.tier === 'guild') && t.organiser_id && oPct > 0) {
+        const orgAmount = pool * (oPct / 100);
+        await db.query(
+          `UPDATE tournaments SET organiser_payout_amount = $1 WHERE id = $2`,
+          [orgAmount, t.id]
+        );
+        console.log(`[Finalized] Guild organiser payout: $${orgAmount.toFixed(2)}`);
+      }
+
+      console.log(`[Finalized] ${t.name} → 🏆 Winner: ${winner.username || winner.email} +${parseFloat(winner.profit_pct).toFixed(2)}% | Prize: $${fundedSize.toFixed(2)}`);
     } else {
-      await db.query("UPDATE tournaments SET status='ended' WHERE id=$1", [t.id]);
+      // No entries — just end the tournament
+      await db.query(`UPDATE tournaments SET status='ended' WHERE id=$1`, [t.id]);
       console.log(`[Finalized] ${t.name} → No entries, ended.`);
     }
   }
