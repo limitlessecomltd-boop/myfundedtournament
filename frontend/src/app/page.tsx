@@ -216,7 +216,7 @@ export default function HomePage() {
           <div style={{ position:"absolute", inset:"-4%", borderRadius:"50%", border:"1px solid rgba(255,215,0,.14)" }}/>
           <div style={{ position:"absolute", inset:"-10%", borderRadius:"50%", border:"1px solid rgba(255,215,0,.07)" }}/>
           <div style={{ position:"relative" }}>
-            <svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", height:"auto", display:"block" }}>
+            <svg width="480" height="480" viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", height:"auto", display:"block" }}>
               {/* Dark background circle */}
               <circle cx="240" cy="240" r="220" fill="#0a0f1e" opacity="0.8"/>
               <circle cx="240" cy="240" r="200" fill="none" stroke="rgba(255,215,0,0.08)" strokeWidth="1"/>
@@ -271,18 +271,13 @@ export default function HomePage() {
               <polyline points="89,360 119,320 149,290 179,270 209,230 239,195 269,160 299,180 329,140 359,110"
                 fill="none" stroke="rgba(255,215,0,0.6)" strokeWidth="2" strokeDasharray="none" strokeLinecap="round"/>
 
-              {/* +% gain badge at top */}
-              <rect x="300" y="30" width="130" height="44" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.5)" strokeWidth="1.5"/>
-              <text x="365" y="48" textAnchor="middle" fill="#22C55E" fontSize="13" fontWeight="800" fontFamily="'Space Grotesk',system-ui,sans-serif">+47.3% gain</text>
-              <text x="365" y="64" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontFamily="system-ui,sans-serif">XAUUSD · 90 min</text>
+              {/* +% gain badge — top center, clear of candles */}
+              <rect x="158" y="22" width="164" height="46" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.5)" strokeWidth="1.5"/>
+              <text x="240" y="41" textAnchor="middle" fill="#22C55E" fontSize="14" fontWeight="800" fontFamily="'Space Grotesk',system-ui,sans-serif">+47.3% gain</text>
+              <text x="240" y="58" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontFamily="system-ui,sans-serif">XAUUSD · 90 min battle</text>
 
               {/* Bottom axis line */}
-              <line x1="70" y1="380" x2="410" y2="380" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-
-              {/* MFT Badge */}
-              <rect x="155" y="405" width="170" height="48" rx="10" fill="rgba(5,8,16,0.9)" stroke="rgba(255,215,0,0.5)" strokeWidth="1.5"/>
-              <text x="240" y="425" textAnchor="middle" fill="#FFD700" fontSize="14" fontWeight="900" fontFamily="'Space Grotesk',system-ui,sans-serif" letterSpacing="3">MFT</text>
-              <text x="240" y="443" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="system-ui,sans-serif" letterSpacing="1">MyFundedTournament</text>
+              <line x1="70" y1="390" x2="410" y2="390" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
 
               {/* Glow effect behind chart */}
               <ellipse cx="240" cy="240" rx="150" ry="120" fill="rgba(34,197,94,0.04)"/>
