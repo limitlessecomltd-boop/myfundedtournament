@@ -76,6 +76,24 @@ export const guildApi = {
 };
 
 export const adminApi = {
+  dashboard:    () => api.get("/api/admin/dashboard").then(r => r.data.data),
+  activity:     () => api.get("/api/admin/activity").then(r => r.data.data),
+  finance:      () => api.get("/api/admin/finance").then(r => r.data.data),
+  settings:     () => api.get("/api/admin/settings").then(r => r.data.data),
+  updateSettings:(data: any) => api.patch("/api/admin/settings", data).then(r => r.data.data),
+  // users
+  getUsers:     (search?: string, limit=50, offset=0) => api.get(`/api/admin/users?${search?`search=${search}&`:''}limit=${limit}&offset=${offset}`).then(r => r.data),
+  updateUser:   (id: string, data: any) => api.patch(`/api/admin/users/${id}`, data).then(r => r.data.data),
+  // payments
+  getPayments:  (status?: string) => api.get(`/api/admin/payments${status?`?status=${status}`:''}`).then(r => r.data.data),
+  confirmPayment:(id: string) => api.patch(`/api/admin/payments/${id}/confirm`).then(r => r.data),
+  // guild
+  getGuildBattles: () => api.get("/api/admin/guild").then(r => r.data.data),
+  // tournament controls
+  forceStart:   (id: string) => api.post(`/api/admin/tournaments/${id}/force-start`).then(r => r.data),
+  forceEnd:     (id: string) => api.post(`/api/admin/tournaments/${id}/force-end`).then(r => r.data),
+  renameTournament: (id: string, name: string) => api.patch(`/api/admin/tournaments/${id}/rename`, { name }).then(r => r.data),
+
   getDashboard: () => api.get("/api/admin/dashboard").then(r => r.data.data),
   getTournaments: () => api.get("/api/admin/tournaments").then(r => r.data.data),
   createTournament: (data: any) => api.post("/api/admin/tournaments", data).then(r => r.data.data),
