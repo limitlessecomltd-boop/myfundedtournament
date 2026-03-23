@@ -133,11 +133,11 @@ export default function GuildBattlePage() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
                 <Field label="Entry Fee (USDT)" hint="$1 – $10,000 per trader">
                   <input className="input" type="number" min="1" max="10000" step="1"
-                    value={form.entryFee} onChange={e => setForm(f=>({...f, entryFee:e.target.value}))}/>
+                    value={form.entryFee} onChange={e => setForm(f=>({...f, entryFee:e.target.value}))} onKeyDown={e => e.stopPropagation()}/>
                 </Field>
-                <Field label="Max Players" hint="5 – 200 traders">
+                <Field label="Max Players" hint="2 – 200 traders">
                   <input className="input" type="number" min="2" max="200" step="1"
-                    value={form.maxEntries} onChange={e => setForm(f=>({...f, maxEntries:e.target.value}))}/>
+                    value={form.maxEntries} onChange={e => setForm(f=>({...f, maxEntries:e.target.value}))} onKeyDown={e => e.stopPropagation()}/>
                 </Field>
               </div>
 
@@ -146,6 +146,7 @@ export default function GuildBattlePage() {
                 <div style={{ marginBottom:10 }}>
                   <input type="range" min="50" max="90" step="5" value={form.winnerPct}
                     onChange={e => setForm(f=>({...f, winnerPct:e.target.value}))}
+                    onKeyDown={e => { if(e.key === " ") e.preventDefault(); }}
                     style={{ width:"100%", accentColor:"#FF6400" }}/>
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", fontSize:11,
