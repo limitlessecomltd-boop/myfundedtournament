@@ -5,6 +5,18 @@ import { useRouter } from "next/navigation";
 import { guildApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
+// Defined outside component to prevent remount on every state change
+function Field({ label, hint, children }: { label:string; hint?:string; children:React.ReactNode }) {
+  return (
+    <div style={{ marginBottom:20 }}>
+      <label style={{ display:"block", fontSize:12, fontWeight:700, letterSpacing:".06em",
+        textTransform:"uppercase", color:"rgba(255,255,255,.45)", marginBottom:7 }}>{label}</label>
+      {children}
+      {hint && <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:5 }}>{hint}</div>}
+    </div>
+  );
+}
+
 export default function GuildBattlePage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -52,14 +64,6 @@ export default function GuildBattlePage() {
     } finally { setCreating(false); }
   }
 
-  const Field = ({ label, hint, children }: any) => (
-    <div style={{ marginBottom:20 }}>
-      <label style={{ display:"block", fontSize:12, fontWeight:700, letterSpacing:".06em",
-        textTransform:"uppercase", color:"rgba(255,255,255,.45)", marginBottom:7 }}>{label}</label>
-      {children}
-      {hint && <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:5 }}>{hint}</div>}
-    </div>
-  );
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
