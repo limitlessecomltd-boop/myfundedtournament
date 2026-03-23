@@ -67,6 +67,13 @@ export const userApi = {
   submitPayout: (data: any) => api.post("/api/users/payout-request", data).then(r => r.data.data),
 };
 
+export const guildApi = {
+  getAll:    () => api.get("/api/guild").then(r => r.data.data),
+  getMine:   () => api.get("/api/guild/mine").then(r => r.data.data),
+  getById:   (id: string) => api.get(`/api/guild/${id}`).then(r => r.data.data),
+  create:    (data: any) => api.post("/api/guild", data).then(r => r.data.data),
+};
+
 export const adminApi = {
   getDashboard: () => api.get("/api/admin/dashboard").then(r => r.data.data),
   getTournaments: () => api.get("/api/admin/tournaments").then(r => r.data.data),

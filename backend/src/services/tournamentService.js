@@ -134,7 +134,7 @@ async function finalizeDueTournaments() {
 
     if (top.length) {
       const winner = top[0];
-      const fundedSize = parseFloat(t.prize_pool) * 0.9;
+      // fundedSize calculated below per tier
       await db.query(`UPDATE tournaments SET status='ended', winner_entry_id=$1 WHERE id=$2`, [winner.id, t.id]);
       await db.query("UPDATE entries SET status='completed' WHERE tournament_id=$1 AND status='active'", [t.id]);
       await db.query(`
@@ -170,5 +170,51 @@ function startTournamentCron() {
 
 module.exports = {
   getAllTournaments, getTournamentById,
-  createTournament, startTournamentCron
+  createTournament, startTournamentCron,
+  createGuildBattle, getMyGuildBattles
 };
+
+// ─── Guild Battle ─────────────────────────────────────────────────────────────
+
+async function createGuildBattle(organiserId, { name, entryFee, maxEntries, winnerPct }) {
+  // Validate
+  const fee     = parseFloat(entryFee);
+  const max     = parseInt(maxEntries);
+  const wPct    = parseFloat(winnerPct);   // e.g. 80
+  const platPct = 10;                       // always 10%
+  const oPct    = 100 - wPct - platPct;     // organiser gets the rest
+
+  if (fee < 1 || fee > 10000)   throw new Error("Entry fee must be between $1 and $10,000");
+  if (max < 5 || max > 200)     throw new Error("Players must be between 5 and 200");
+  if (wPct < 50 || wPct > 90)   throw new Error("Winner payout must be between 50% and 90%");
+  if (oPct < 0)                  throw new Error("Percentages exceed 100%");
+
+  const now       = new Date();
+  const farFuture = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { rows } = await db.query(`
+    INSERT INTO tournaments (
+      name, tier, tier_type, entry_fee, max_entries,
+      registration_open, start_time, end_time, status,
+      organiser_id, winner_pct, organiser_pct, platform_pct
+    ) VALUES ($1,'guild','guild',$2,$3,$4,$5,$6,'registration',$7,$8,$9,$10)
+    RETURNING *
+  `, [name, fee, max, now.toISOString(), farFuture, farFuture,
+      organiserId, wPct, oPct, platPct]);
+
+  return rows[0];
+}
+
+async function getMyGuildBattles(organiserId) {
+  const { rows } = await db.query(`
+    SELECT t.*,
+      COUNT(DISTINCT e.id) FILTER (WHERE e.status != 'pending_payment') AS active_entries,
+      COUNT(DISTINCT e.user_id) AS unique_traders
+    FROM tournaments t
+    LEFT JOIN entries e ON e.tournament_id = t.id
+    WHERE t.organiser_id = $1
+    GROUP BY t.id
+    ORDER BY t.created_at DESC
+  `, [organiserId]);
+  return rows;
+}

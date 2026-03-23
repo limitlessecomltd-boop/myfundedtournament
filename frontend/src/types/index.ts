@@ -1,4 +1,5 @@
-export type TournamentTier   = "starter" | "pro" | "elite";
+export type TournamentTier   = "starter" | "pro" | "elite" | "guild";
+export type TournamentTierType = "standard" | "guild";
 export type TournamentStatus = "upcoming" | "registration" | "active" | "ended" | "cancelled";
 export type EntryStatus      = "pending_payment" | "active" | "breached" | "disqualified" | "completed";
 export type ViolationType    = "hft" | "hedge" | "deposit" | "account_change";
@@ -22,6 +23,15 @@ export interface Tournament {
   active_entries: number;
   unique_traders: number;
   created_at: string;
+  // Guild Battle fields
+  tier_type?: string;
+  organiser_id?: string;
+  organiser_username?: string;
+  winner_pct?: number;
+  organiser_pct?: number;
+  platform_pct?: number;
+  organiser_payout_amount?: number;
+  organiser_paid?: boolean;
 }
 
 export interface Entry {

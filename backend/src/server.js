@@ -12,6 +12,7 @@ const paymentRoutes    = require("./routes/payments");
 const leaderboardRoutes = require("./routes/leaderboard");
 const userRoutes       = require("./routes/users");
 const adminRoutes      = require("./routes/admin");
+const guildRoutes      = require("./routes/guild");
 const errorHandler     = require("./middleware/errorHandler");
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/payments",     paymentRoutes);
 app.use("/api/leaderboard",  leaderboardRoutes);
 app.use("/api/users",        userRoutes);
 app.use("/api/admin",        adminRoutes);
+app.use("/api/guild",         guildRoutes);
 
 app.get("/health", (req, res) => res.json({ status: "ok", ts: new Date() }));
 app.use(errorHandler);

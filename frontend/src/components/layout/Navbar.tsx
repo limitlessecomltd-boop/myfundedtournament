@@ -15,7 +15,7 @@ export default function Navbar() {
     { href: "/tournaments",  label: "Tournaments" },
     { href: "/leaderboard",  label: "Leaderboard" },
     { href: "/how-it-works", label: "How It Works" },
-    ...(user ? [{ href: "/profile", label: "My Account" }] : []),
+    ...(user ? [{ href: "/profile", label: "My Account" }, { href: "/guild/mine", label: "My Battles 🔥" }] : []),
     ...(user?.is_admin ? [{ href: "/admin", label: "Admin" }] : []),
   ];
 

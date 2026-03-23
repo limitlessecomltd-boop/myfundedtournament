@@ -406,6 +406,70 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        {/* ── Guild Battle Card ── */}
+        <div style={{ marginTop:24, background:"rgba(255,100,0,.05)", border:"2px solid rgba(255,100,0,.3)",
+          borderRadius:20, padding:"28px 32px", display:"flex", gap:32, alignItems:"center",
+          flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
+          {/* Background glow */}
+          <div style={{ position:"absolute", top:0, right:0, width:200, height:200,
+            background:"radial-gradient(circle, rgba(255,100,0,.12) 0%, transparent 70%)", pointerEvents:"none" }}/>
+
+          <div style={{ flex:1, minWidth:260, position:"relative", zIndex:1 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+              background:"rgba(255,100,0,.12)", border:"1px solid rgba(255,100,0,.3)",
+              borderRadius:20, padding:"3px 12px", fontSize:11, fontWeight:700,
+              color:"#FF6400", marginBottom:12 }}>
+              🔥 NEW — Guild Battle
+            </div>
+            <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
+              fontSize:24, fontWeight:900, color:"#fff", marginBottom:8, letterSpacing:"-0.5px" }}>
+              Run Your Own Battle
+            </h3>
+            <p style={{ fontSize:14, color:"rgba(255,255,255,.5)", lineHeight:1.7, marginBottom:16, maxWidth:440 }}>
+              You're the organiser. Set your own entry fee, player count and winner payout.
+              You collect <strong style={{ color:"#FF6400" }}>your share automatically</strong> when the battle ends.
+            </p>
+            <div style={{ display:"flex", gap:16, flexWrap:"wrap", marginBottom:20 }}>
+              {[
+                { icon:"⚙️", text:"Custom entry fee & players" },
+                { icon:"💰", text:"You earn organiser %" },
+                { icon:"🏆", text:"You set winner payout %" },
+                { icon:"🏛", text:"Platform takes flat 10%" },
+              ].map(f => (
+                <div key={f.text} style={{ display:"flex", alignItems:"center", gap:7,
+                  fontSize:13, color:"rgba(255,255,255,.55)" }}>
+                  <span>{f.icon}</span>{f.text}
+                </div>
+              ))}
+            </div>
+            <Link href="/guild" className="btn" style={{ background:"#FF6400", color:"#fff",
+              fontWeight:800, fontSize:15, padding:"12px 28px", border:"none" }}>
+              🔥 Create Guild Battle →
+            </Link>
+          </div>
+
+          {/* Example calc */}
+          <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,100,0,.2)",
+            borderRadius:14, padding:"20px 22px", minWidth:220, position:"relative", zIndex:1 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,100,0,.7)",
+              letterSpacing:".08em", textTransform:"uppercase", marginBottom:12 }}>
+              Example Payout
+            </div>
+            {[
+              { label:"50 traders × $20", value:"$1,000 pool", color:"rgba(255,255,255,.7)" },
+              { label:"🥇 Winner (80%)", value:"$800", color:"#FFD700" },
+              { label:"🏆 You (10%)", value:"$100", color:"#FF6400" },
+              { label:"🏛 Platform (10%)", value:"$100", color:"rgba(255,255,255,.35)" },
+            ].map(r => (
+              <div key={r.label} style={{ display:"flex", justifyContent:"space-between",
+                alignItems:"center", padding:"7px 0", borderBottom:"1px solid rgba(255,255,255,.05)" }}>
+                <span style={{ fontSize:12, color:"rgba(255,255,255,.45)" }}>{r.label}</span>
+                <span style={{ fontSize:13, fontWeight:800, color:r.color }}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ═══ RULES ═══ */}
