@@ -1,18 +1,20 @@
 const express = require('express');
-const router = express.Router();
+const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
-const { pool } = require('../config/db');
+const { activateEntryMetaApi } = require('../services/entryService');
+const db = require('../config/db');
 const { authenticate } = require('../middleware/auth');
 
-// POST /api/payments/create — create a NOWPayments payment for an entry
+// ─── POST /api/payments/create ────────────────────────────────────────────────
+// Called by frontend after entry is created — generates a NOWPayments invoice
 router.post('/create', authenticate, async (req, res) => {
   try {
     const { entry_id, tournament_id } = req.body;
     const userId = req.user.id;
 
-    // Get tournament entry fee
-    const { rows } = await pool.query(
-      `SELECT t.entry_fee, t.name, e.id as entry_id, e.status
+    // Get entry + tournament details
+    const { rows } = await db.query(
+      `SELECT t.entry_fee, t.name AS tournament_name, e.id AS entry_id, e.status, e.tournament_id
        FROM entries e
        JOIN tournaments t ON t.id = e.tournament_id
        WHERE e.id = $1 AND e.user_id = $2`,
@@ -20,60 +22,263 @@ router.post('/create', authenticate, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Entry not found' });
     const entry = rows[0];
-    if (entry.status !== 'pending_payment') return res.status(400).json({ error: 'Entry already paid' });
+    if (entry.status !== 'pending_payment') {
+      return res.status(400).json({ error: 'Entry is already paid or active' });
+    }
 
-    const orderId = `MFT-${entry_id}-${Date.now()}`;
-    const callbackUrl = `${process.env.API_URL}/api/payments/webhook`;
+    // Check if payment already exists for this entry
+    const { rows: existing } = await db.query(
+      `SELECT * FROM payments WHERE entry_id = $1 AND status IN ('waiting','confirming','confirmed')`,
+      [entry_id]
+    );
+    if (existing.length) {
+      // Return existing payment
+      return res.json({
+        success: true,
+        payment_id: existing[0].nowpayments_id,
+        pay_address: existing[0].payment_address,
+        pay_amount: existing[0].amount_usd,
+        price_amount: existing[0].amount_usd,
+        pay_currency: 'USDT (TRC-20)',
+        paymentUrl: `https://nowpayments.io/payment?iid=${existing[0].nowpayments_id}`,
+        status: existing[0].status,
+        reused: true,
+      });
+    }
 
+    const BACKEND = process.env.BACKEND_URL || process.env.RAILWAY_STATIC_URL
+      ? `https://${process.env.RAILWAY_STATIC_URL}`
+      : 'https://myfundedtournament-production.up.railway.app';
+
+    const callbackUrl = `${BACKEND}/api/payments/webhook`;
+
+    // Create NOWPayments invoice
     const payment = await createPayment({
-      orderId,
+      orderId: `entry_${entry_id}_${Date.now()}`,
       amount: parseFloat(entry.entry_fee),
-      description: `MFT Entry Fee — ${entry.name}`,
+      description: `MFT Entry — ${entry.tournament_name}`,
       callbackUrl,
     });
 
-    await pool.query(
+    // Save to DB
+    await db.query(
       `INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, currency, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'usdttrc20', 'waiting')`,
-      [entry_id, userId, tournament_id, payment.payment_id, payment.pay_address, entry.entry_fee]
+       VALUES ($1, $2, $3, $4, $5, $6, 'usdttrc20', 'waiting')
+       ON CONFLICT (nowpayments_id) DO NOTHING`,
+      [entry_id, userId, entry.tournament_id || tournament_id,
+       payment.payment_id.toString(), payment.pay_address,
+       parseFloat(entry.entry_fee)]
     );
-    await pool.query(`UPDATE entries SET payment_id = $1 WHERE id = $2`, [payment.payment_id, entry_id]);
 
-    res.json({ success: true, payment_id: payment.payment_id, pay_address: payment.pay_address, pay_amount: payment.pay_amount, pay_currency: 'USDT (TRC-20)', status: payment.payment_status });
+    // Link payment to entry
+    await db.query(`UPDATE entries SET payment_id = $1 WHERE id = $2`,
+      [payment.payment_id.toString(), entry_id]);
+
+    res.json({
+      success: true,
+      payment_id: payment.payment_id,
+      pay_address: payment.pay_address,
+      pay_amount: payment.pay_amount,
+      price_amount: payment.price_amount,
+      pay_currency: 'USDT (TRC-20)',
+      paymentUrl: `https://nowpayments.io/payment?iid=${payment.payment_id}`,
+      expires_at: payment.expiration_estimate_date,
+      status: payment.payment_status,
+    });
   } catch (err) {
-    console.error('Payment create error:', err.message);
-    res.status(500).json({ error: 'Failed to create payment' });
+    console.error('[Payment] Create error:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to create payment. Please try again.' });
   }
 });
 
+// ─── GET /api/payments/:paymentId/status ─────────────────────────────────────
+// Frontend polls this to check payment status
 router.get('/:paymentId/status', authenticate, async (req, res) => {
   try {
-    const status = await getPaymentStatus(req.params.paymentId);
-    res.json({ success: true, status: status.payment_status, payment: status });
+    const paymentId = req.params.paymentId;
+
+    // Check local DB first
+    const { rows } = await db.query(
+      `SELECT p.*, e.status AS entry_status
+       FROM payments p
+       LEFT JOIN entries e ON e.id = p.entry_id
+       WHERE p.nowpayments_id = $1`,
+      [paymentId]
+    );
+
+    if (!rows.length) return res.status(404).json({ error: 'Payment not found' });
+
+    // If already confirmed locally, return that
+    if (rows[0].status === 'confirmed') {
+      return res.json({
+        success: true,
+        status: 'confirmed',
+        confirmed: true,
+        entry_status: rows[0].entry_status,
+        payment: rows[0],
+      });
+    }
+
+    // Otherwise check live status from NOWPayments API
+    try {
+      const live = await getPaymentStatus(paymentId);
+      const statusMap = {
+        waiting: 'waiting', confirming: 'confirming',
+        confirmed: 'confirmed', finished: 'confirmed',
+        failed: 'failed', expired: 'expired', refunded: 'failed',
+      };
+      const ourStatus = statusMap[live.payment_status] || rows[0].status;
+
+      // Update if status changed
+      if (ourStatus !== rows[0].status) {
+        await db.query(
+          `UPDATE payments SET status = $1,
+           confirmed_at = CASE WHEN $1 = 'confirmed' THEN NOW() ELSE confirmed_at END
+           WHERE nowpayments_id = $2`,
+          [ourStatus, paymentId]
+        );
+
+        // Activate entry if now confirmed
+        if (ourStatus === 'confirmed' && rows[0].entry_id) {
+          await activateEntry(rows[0].entry_id, rows[0].tournament_id, rows[0].user_id);
+        }
+      }
+
+      res.json({
+        success: true,
+        status: ourStatus,
+        confirmed: ourStatus === 'confirmed',
+        live_status: live.payment_status,
+        payment: rows[0],
+      });
+    } catch {
+      // NOWPayments API down — return local status
+      res.json({
+        success: true,
+        status: rows[0].status,
+        confirmed: rows[0].status === 'confirmed',
+        payment: rows[0],
+      });
+    }
   } catch (err) {
+    console.error('[Payment] Status error:', err.message);
     res.status(500).json({ error: 'Failed to get payment status' });
   }
 });
 
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+// ─── POST /api/payments/webhook ───────────────────────────────────────────────
+// NOWPayments IPN callback — called when payment status changes
+// IMPORTANT: Must be registered BEFORE express.json() globally parses the body,
+// OR we just use the already-parsed body (since express.json is global in server.js)
+router.post('/webhook', async (req, res) => {
   try {
     const signature = req.headers['x-nowpayments-sig'];
-    const body = JSON.parse(req.body);
-    const valid = await verifyIpnSignature(body, signature);
-    if (!valid) return res.status(401).json({ error: 'Invalid signature' });
-    const { payment_id, payment_status } = body;
-    const statusMap = { waiting: 'waiting', confirming: 'confirming', confirmed: 'confirmed', finished: 'confirmed', failed: 'failed', expired: 'expired' };
-    const ourStatus = statusMap[payment_status] || 'waiting';
-    await pool.query(`UPDATE payments SET status = $1 WHERE nowpayments_id = $2`, [ourStatus, payment_id.toString()]);
-    if (ourStatus === 'confirmed') {
-      const { rows } = await pool.query(`UPDATE entries e SET status = 'active' FROM payments p WHERE p.nowpayments_id = $1 AND p.entry_id = e.id RETURNING e.tournament_id`, [payment_id.toString()]);
-      if (rows.length) await pool.query(`UPDATEtournaments SET prize_pool = prize_pool + entry_fee WHERE id = $1`, [rows[0].tournament_id]);
+    // Body is already parsed by global express.json() — use req.body directly
+    const body = req.body;
+
+    if (!body || !body.payment_id) {
+      console.warn('[Webhook] Empty or invalid body');
+      return res.status(400).json({ error: 'Invalid webhook body' });
     }
+
+    // Verify IPN signature (skip in dev/test)
+    if (signature && process.env.NOWPAYMENTS_IPN_SECRET) {
+      const valid = await verifyIpnSignature(body, signature);
+      if (!valid) {
+        console.warn('[Webhook] Invalid signature for payment', body.payment_id);
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
+    }
+
+    const { payment_id, payment_status, order_id } = body;
+    const paymentIdStr = payment_id.toString();
+
+    console.log(`[Webhook] Payment ${paymentIdStr} → ${payment_status}`);
+
+    const statusMap = {
+      waiting: 'waiting', confirming: 'confirming',
+      confirmed: 'confirmed', finished: 'confirmed',
+      failed: 'failed', expired: 'expired', refunded: 'failed',
+    };
+    const ourStatus = statusMap[payment_status] || 'waiting';
+
+    // Update payment record
+    const { rows: updated } = await db.query(
+      `UPDATE payments SET status = $1,
+       confirmed_at = CASE WHEN $1 = 'confirmed' THEN NOW() ELSE confirmed_at END
+       WHERE nowpayments_id = $2
+       RETURNING entry_id, tournament_id, user_id, status`,
+      [ourStatus, paymentIdStr]
+    );
+
+    if (!updated.length) {
+      console.warn(`[Webhook] Payment ${paymentIdStr} not found in DB`);
+      // Still return 200 to stop NOWPayments retrying
+      return res.json({ success: true, note: 'Payment not found' });
+    }
+
+    // Activate entry if confirmed
+    if (ourStatus === 'confirmed') {
+      const { entry_id, tournament_id, user_id } = updated[0];
+      await activateEntry(entry_id, tournament_id, user_id);
+    }
+
+    // Handle expiry — clean up pending_payment entry so trader can retry
+    if (ourStatus === 'expired' || ourStatus === 'failed') {
+      const { entry_id } = updated[0];
+      if (entry_id) {
+        await db.query(
+          `UPDATE entries SET status = 'cancelled' WHERE id = $1 AND status = 'pending_payment'`,
+          [entry_id]
+        );
+        console.log(`[Webhook] Entry ${entry_id} cancelled due to ${ourStatus} payment`);
+      }
+    }
+
     res.json({ success: true });
   } catch (err) {
-    console.error('Webhook error:', err.message);
-    res.status(500).json({ error: 'Webhook failed' });
+    console.error('[Webhook] Error:', err.message);
+    // Always return 200 to NOWPayments or they'll keep retrying
+    res.json({ success: true, error: err.message });
   }
 });
+
+// ─── Helper: activate entry after confirmed payment ───────────────────────────
+async function activateEntry(entryId, tournamentId, userId) {
+  try {
+    // Activate the entry
+    const { rows } = await db.query(
+      `UPDATE entries SET status = 'active'
+       WHERE id = $1 AND status = 'pending_payment'
+       RETURNING id, tournament_id`,
+      [entryId]
+    );
+
+    if (!rows.length) {
+      console.log(`[Payment] Entry ${entryId} already active or not pending`);
+      return;
+    }
+
+    const tId = rows[0].tournament_id || tournamentId;
+
+    // Add entry fee to prize pool
+    await db.query(
+      `UPDATE tournaments
+       SET prize_pool = COALESCE(prize_pool, 0) + (SELECT entry_fee FROM tournaments WHERE id = $1)
+       WHERE id = $1`,
+      [tId]
+    );
+
+    console.log(`✅ [Payment] Entry ${entryId} activated, prize pool updated`);
+
+    // Connect MT5 account to MetaApi (async — don't block the response)
+    activateEntryMetaApi(entryId).catch(err => {
+      console.warn(`[Payment] MetaApi activation failed for ${entryId}:`, err.message);
+    });
+
+  } catch (err) {
+    console.error(`[Payment] activateEntry failed for ${entryId}:`, err.message);
+  }
+}
 
 module.exports = router;

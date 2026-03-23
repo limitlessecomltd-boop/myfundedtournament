@@ -29,7 +29,13 @@ app.use("/api/users",        userRoutes);
 app.use("/api/admin",        adminRoutes);
 app.use("/api/guild",         guildRoutes);
 
-app.get("/health", (req, res) => res.json({ status: "ok", ts: new Date() }));
+app.get("/health", (req, res) => res.json({
+  status: "ok",
+  ts: new Date(),
+  backendUrl: process.env.BACKEND_URL || process.env.RAILWAY_PUBLIC_DOMAIN
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+    : "https://myfundedtournament-production.up.railway.app",
+}));
 app.use(errorHandler);
 
 initWebSocket(httpServer);

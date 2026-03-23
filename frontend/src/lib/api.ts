@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const RAILWAY_URL = "https://myfundedtournament-production.up.railway.app";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || RAILWAY_URL,
   headers: { "Content-Type": "application/json" },
 });
 

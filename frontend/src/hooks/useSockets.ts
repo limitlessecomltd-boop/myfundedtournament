@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Entry } from "@/types";
 
-const WS = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
+const WS = process.env.NEXT_PUBLIC_WS_URL || "wss://myfundedtournament-production.up.railway.app";
 
 export function useLeaderboardSocket(tournamentId: string, onUpdate: (data: any[]) => void) {
   const ws = useRef<WebSocket | null>(null);

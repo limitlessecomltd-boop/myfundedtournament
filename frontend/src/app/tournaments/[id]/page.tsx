@@ -198,6 +198,29 @@ export default function TournamentDetailPage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", broker:"Exness" });
 
+  // Poll payment status every 8s as fallback (WebSocket may not work in production)
+  useEffect(() => {
+    if (!payment?.paymentId || payment?.confirmed) return;
+    const poll = async () => {
+      try {
+        const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+        const token = localStorage.getItem("fc_token") || "";
+        const r = await fetch(`${API}/api/payments/${payment.paymentId}/status`, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        const d = await r.json();
+        if (d.confirmed || d.status === "confirmed") {
+          setPayment((p: any) => ({ ...p, confirmed: true }));
+          // Refresh entries
+          if (user) entryApi.getMy(id).then(setMyEntries).catch(() => {});
+        }
+      } catch {}
+    };
+    poll(); // immediate check
+    const iv = setInterval(poll, 8000);
+    return () => clearInterval(iv);
+  }, [payment?.paymentId, payment?.confirmed]);
+
   usePaymentSocket(payment?.paymentId || null, () => {
     setPayment((p: any) => p ? {...p, confirmed:true} : p);
     loadMyEntries();
@@ -218,7 +241,31 @@ export default function TournamentDetailPage() {
     setError(""); setSubmitting(true);
     try {
       const result = await entryApi.create({ tournamentId:id, mt5Login:form.mt5Login, mt5Password:form.mt5Password, mt5Server:form.mt5Server, broker:form.broker.toLowerCase() });
-      setPayment(result.payment);
+      // entry.payment comes from entryService → createEntryPayment
+      // but also trigger /api/payments/create as backup to ensure it's in payments table
+      let paymentData = result.payment;
+      if (!paymentData?.address && result.entry?.id) {
+        try {
+          const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+          const token = localStorage.getItem("fc_token") || "";
+          const pr = await fetch(`${API}/api/payments/create`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+            body: JSON.stringify({ entry_id: result.entry.id, tournament_id: id }),
+          });
+          const pd = await pr.json();
+          if (pd.success) {
+            paymentData = {
+              paymentId: pd.payment_id,
+              address: pd.pay_address,
+              amount: pd.pay_amount,
+              currency: "USDTTRC20",
+              paymentUrl: pd.paymentUrl || `https://nowpayments.io/payment?iid=${pd.payment_id}`,
+            };
+          }
+        } catch {}
+      }
+      setPayment(paymentData);
       setShowJoinForm(false);
     } catch (err: any) {
       setError(err?.response?.data?.error || "Failed to create entry");
