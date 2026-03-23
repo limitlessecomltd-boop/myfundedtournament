@@ -126,6 +126,7 @@ export default function GuildBattlePage() {
               <Field label="Battle Name" hint="Min 3 characters · Your community will see this">
                 <input className="input" placeholder="e.g. Alpha Traders Showdown"
                   value={form.name} onChange={e => setForm(f=>({...f, name:e.target.value}))}
+                  onKeyDown={e => e.stopPropagation()}
                   maxLength={80} style={{ borderColor: form.name.length >= 3 ? "rgba(255,100,0,.4)" : undefined }}/>
               </Field>
 
