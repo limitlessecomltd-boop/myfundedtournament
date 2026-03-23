@@ -280,7 +280,7 @@ async function createGuildBattle(organiserId, { name, entryFee, maxEntries, winn
   const oPct    = 100 - wPct - platPct;     // organiser gets the rest
 
   if (fee < 1 || fee > 10000)   throw new Error("Entry fee must be between $1 and $10,000");
-  if (max < 5 || max > 200)     throw new Error("Players must be between 5 and 200");
+  if (max < 2 || max > 200)     throw new Error("Players must be between 2 and 200");
   if (wPct < 50 || wPct > 90)   throw new Error("Winner payout must be between 50% and 90%");
   if (oPct < 0)                  throw new Error("Percentages exceed 100%");
 

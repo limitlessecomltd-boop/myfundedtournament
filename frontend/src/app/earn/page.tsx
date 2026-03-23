@@ -96,7 +96,7 @@ export default function EarnPage() {
             {[
               { label:"Entry Fee per Trader", val:`$${fee} USDT`, min:1, max:500, step:1,
                 state:fee, set:setFee, hint:"Recommended: $10–$100" },
-              { label:"Number of Players", val:`${players} traders`, min:5, max:200, step:5,
+              { label:"Number of Players", val:`${players} traders`, min:2, max:200, step:1,
                 state:players, set:setPlayers, hint:"Min 5, Max 200" },
               { label:"Winner Payout %", val:`${wPct}% to winner`, min:50, max:90, step:5,
                 state:wPct, set:setWPct, hint:`You keep ${oPct}% · Platform 10%` },

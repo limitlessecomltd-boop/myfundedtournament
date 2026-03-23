@@ -32,7 +32,7 @@ export default function GuildBattlePage() {
 
   const isValid = form.name.trim().length >= 3
     && fee >= 1 && fee <= 10000
-    && max >= 5 && max <= 200
+    && max >= 2 && max <= 200
     && wPct >= 50 && wPct <= 90;
 
   async function handleCreate() {
@@ -135,7 +135,7 @@ export default function GuildBattlePage() {
                     value={form.entryFee} onChange={e => setForm(f=>({...f, entryFee:e.target.value}))}/>
                 </Field>
                 <Field label="Max Players" hint="5 – 200 traders">
-                  <input className="input" type="number" min="5" max="200" step="1"
+                  <input className="input" type="number" min="2" max="200" step="1"
                     value={form.maxEntries} onChange={e => setForm(f=>({...f, maxEntries:e.target.value}))}/>
                 </Field>
               </div>
