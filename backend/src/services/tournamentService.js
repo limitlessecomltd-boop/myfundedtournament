@@ -176,7 +176,7 @@ module.exports = {
 
 // ─── Guild Battle ─────────────────────────────────────────────────────────────
 
-async function createGuildBattle(organiserId, { name, entryFee, maxEntries, winnerPct }) {
+async function createGuildBattle(organiserId, { name, entryFee, maxEntries, winnerPct, slug }) {
   // Validate
   const fee     = parseFloat(entryFee);
   const max     = parseInt(maxEntries);
@@ -196,11 +196,11 @@ async function createGuildBattle(organiserId, { name, entryFee, maxEntries, winn
     INSERT INTO tournaments (
       name, tier, tier_type, entry_fee, max_entries,
       registration_open, start_time, end_time, status,
-      organiser_id, winner_pct, organiser_pct, platform_pct
-    ) VALUES ($1,'guild','guild',$2,$3,$4,$5,$6,'registration',$7,$8,$9,$10)
+      organiser_id, winner_pct, organiser_pct, platform_pct, slug
+    ) VALUES ($1,'guild','guild',$2,$3,$4,$5,$6,'registration',$7,$8,$9,$10,$11)
     RETURNING *
   `, [name, fee, max, now.toISOString(), farFuture, farFuture,
-      organiserId, wPct, oPct, platPct]);
+      organiserId, wPct, oPct, platPct, slug || null]);
 
   return rows[0];
 }

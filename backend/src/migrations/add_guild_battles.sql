@@ -12,3 +12,15 @@ ALTER TABLE tournaments
 
 CREATE INDEX IF NOT EXISTS idx_tournaments_organiser ON tournaments(organiser_id);
 CREATE INDEX IF NOT EXISTS idx_tournaments_tier_type ON tournaments(tier_type);
+
+-- Add slug for custom joining links (e.g. /battle/alpha-traders-showdown)
+ALTER TABLE tournaments
+  ADD COLUMN IF NOT EXISTS slug VARCHAR(120) UNIQUE;
+
+-- Add organiser profile fields to users table
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS display_name    VARCHAR(80),
+  ADD COLUMN IF NOT EXISTS bio             VARCHAR(300),
+  ADD COLUMN IF NOT EXISTS total_hosted    INTEGER DEFAULT 0;
+
+CREATE INDEX IF NOT EXISTS idx_tournaments_slug ON tournaments(slug);
