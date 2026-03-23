@@ -1,6 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { adminApi } from "@/lib/api";
+
+function MigrationRunner() {
+  const [running,  setRunning]  = React.useState(false);
+  const [result,   setResult]   = React.useState<any>(null);
+
+  async function runMigration() {
+    setRunning(true); setResult(null);
+    const T = localStorage.getItem("fc_token");
+    try {
+      const r = await fetch(
+        "https://myfundedtournament-production.up.railway.app/api/admin/run-migration",
+        { method:"POST", headers:{ Authorization:"Bearer "+T, "Content-Type":"application/json" } }
+      );
+      const d = await r.json();
+      setResult(d);
+    } catch(e: any) {
+      setResult({ success:false, error: e.message });
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={runMigration} disabled={running}
+        style={{ background: running ? "rgba(255,255,255,.06)" : "rgba(255,100,0,.15)",
+          border:"1px solid rgba(255,100,0,.4)", borderRadius:9, padding:"10px 22px",
+          cursor: running ? "not-allowed" : "pointer", fontSize:14, fontWeight:700,
+          color: running ? "rgba(255,255,255,.4)" : "#FF6400", marginBottom:14 }}>
+        {running ? "⏳ Running..." : "🔧 Run Migration Now"}
+      </button>
+      {result && (
+        <div style={{ background: result.success ? "rgba(34,197,94,.06)" : "rgba(239,68,68,.06)",
+          border:`1px solid ${result.success ? "rgba(34,197,94,.3)" : "rgba(239,68,68,.3)"}`,
+          borderRadius:10, padding:"12px 16px" }}>
+          <div style={{ fontSize:13, fontWeight:700,
+            color: result.success ? "#22C55E" : "#EF4444", marginBottom:8 }}>
+            {result.success ? `✅ Migration complete — ${result.ok} steps OK` : `⚠️ ${result.ok} OK, ${result.failed} failed`}
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:3, maxHeight:180, overflowY:"auto" }}>
+            {result.steps?.map((s: any, i: number) => (
+              <div key={i} style={{ fontSize:11, color: s.ok ? "rgba(255,255,255,.45)" : "#EF4444",
+                fontFamily:"monospace" }}>
+                {s.ok ? "✓" : "✗"} {s.label}{s.error ? ` — ${s.error}` : ""}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminSettings() {
   const [s,  setS]   = useState<any>(null);
@@ -141,38 +193,17 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        {/* DB status */}
+        {/* DB Migration Runner */}
         <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
           borderRadius:16, padding:"22px 24px" }}>
           <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.4)",
             textTransform:"uppercase", letterSpacing:".08em", marginBottom:16 }}>
-            Database Migration Status
+            Database Migration
           </div>
-          <div style={{ background:"rgba(255,100,0,.06)", border:"1px solid rgba(255,100,0,.2)",
-            borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
-            <div style={{ fontSize:13, fontWeight:700, color:"#FF6400", marginBottom:8 }}>
-              ⚠️ Guild Battle Migration Required
-            </div>
-            <div style={{ fontSize:12, color:"rgba(255,255,255,.5)", lineHeight:1.7 }}>
-              Run the following SQL in your Supabase SQL Editor to enable Guild Battles:
-            </div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.7, marginBottom:16 }}>
+            Adds Guild Battle columns, <code style={{ background:"rgba(255,255,255,.08)", padding:"1px 6px", borderRadius:4, fontSize:12 }}>is_banned</code>, <code style={{ background:"rgba(255,255,255,.08)", padding:"1px 6px", borderRadius:4, fontSize:12 }}>slug</code>, and fixes ugly tournament names. Safe to run multiple times.
           </div>
-          <pre style={{ background:"rgba(0,0,0,.4)", borderRadius:8, padding:"12px 14px",
-            fontSize:11, color:"#22C55E", overflowX:"auto", lineHeight:1.6,
-            border:"1px solid rgba(255,255,255,.06)" }}>{`ALTER TABLE tournaments
-  ADD COLUMN IF NOT EXISTS tier_type VARCHAR(20) DEFAULT 'standard',
-  ADD COLUMN IF NOT EXISTS organiser_id UUID REFERENCES users(id),
-  ADD COLUMN IF NOT EXISTS winner_pct NUMERIC(5,2) DEFAULT 90.00,
-  ADD COLUMN IF NOT EXISTS organiser_pct NUMERIC(5,2) DEFAULT 0.00,
-  ADD COLUMN IF NOT EXISTS platform_pct NUMERIC(5,2) DEFAULT 10.00,
-  ADD COLUMN IF NOT EXISTS organiser_paid BOOLEAN DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS organiser_payout_amount NUMERIC(12,2),
-  ADD COLUMN IF NOT EXISTS slug VARCHAR(120) UNIQUE;
-
-ALTER TABLE users
-  ADD COLUMN IF NOT EXISTS display_name VARCHAR(80),
-  ADD COLUMN IF NOT EXISTS bio VARCHAR(300),
-  ADD COLUMN IF NOT EXISTS total_hosted INTEGER DEFAULT 0;`}</pre>
+          <MigrationRunner/>
         </div>
 
         {/* System info */}

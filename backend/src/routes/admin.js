@@ -230,6 +230,42 @@ router.post('/test-email', authenticate, isAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/run-migration — run the full DB migration
+router.post('/run-migration', authenticate, isAdmin, async (req, res) => {
+  const steps = [];
+  const run = async (label, sql) => {
+    try {
+      await db.query(sql);
+      steps.push({ ok: true, label });
+    } catch(err) {
+      steps.push({ ok: false, label, error: err.message });
+    }
+  };
+
+  await run('Add tier_type to tournaments',            `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS tier_type VARCHAR(20) DEFAULT 'standard'`);
+  await run('Add organiser_id to tournaments',         `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS organiser_id UUID REFERENCES users(id)`);
+  await run('Add winner_pct to tournaments',           `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS winner_pct NUMERIC(5,2) DEFAULT 90.00`);
+  await run('Add organiser_pct to tournaments',        `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS organiser_pct NUMERIC(5,2) DEFAULT 0.00`);
+  await run('Add platform_pct to tournaments',         `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS platform_pct NUMERIC(5,2) DEFAULT 10.00`);
+  await run('Add is_public to tournaments',            `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE`);
+  await run('Add organiser_paid to tournaments',       `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS organiser_paid BOOLEAN DEFAULT FALSE`);
+  await run('Add organiser_payout_amount to tournaments', `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS organiser_payout_amount NUMERIC(12,2)`);
+  await run('Add slug to tournaments',                 `ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS slug VARCHAR(120) UNIQUE`);
+  await run('Add display_name to users',               `ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name VARCHAR(80)`);
+  await run('Add bio to users',                        `ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(300)`);
+  await run('Add total_hosted to users',               `ALTER TABLE users ADD COLUMN IF NOT EXISTS total_hosted INTEGER DEFAULT 0`);
+  await run('Add is_banned to users',                  `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT FALSE`);
+  await run('Create slug index',                       `CREATE INDEX IF NOT EXISTS idx_tournaments_slug ON tournaments(slug)`);
+  await run('Create tier_type index',                  `CREATE INDEX IF NOT EXISTS idx_tournaments_tier_type ON tournaments(tier_type)`);
+  await run('Create organiser index',                  `CREATE INDEX IF NOT EXISTS idx_tournaments_organiser ON tournaments(organiser_id)`);
+  await run('Fix ugly tournament names',               `UPDATE tournaments SET name = REGEXP_REPLACE(name, ' #\\d{10,}$', '') WHERE name ~ ' #\\d{10,}$'`);
+
+  const failed = steps.filter(s => !s.ok);
+  const ok     = steps.filter(s => s.ok);
+  console.log(`[Migration] ${ok.length} ok, ${failed.length} failed`);
+  res.json({ success: failed.length === 0, steps, ok: ok.length, failed: failed.length });
+});
+
 module.exports = router;
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
