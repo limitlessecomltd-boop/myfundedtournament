@@ -11,12 +11,12 @@ export default function AdminFundedAccounts() {
 
   const load = () => {
     setLoading(true);
-    adminApi.getFundedAccounts?.()
-      .catch(()=>fetch(
-        "https://myfundedtournament-production.up.railway.app/api/admin/funded-accounts",
-        {headers:{Authorization:"Bearer "+localStorage.getItem("fc_token")}}
-      ).then(r=>r.json()).then(d=>d.data||[]))
-      .then(setAccounts).finally(()=>setLoading(false));
+    fetch("https://myfundedtournament-production.up.railway.app/api/admin/funded-accounts",
+      {headers:{Authorization:"Bearer "+localStorage.getItem("fc_token")}})
+      .then(r=>r.json())
+      .then(d=>setAccounts(d.data||[]))
+      .catch(()=>{})
+      .finally(()=>setLoading(false));
   };
   useEffect(()=>load(),[]);
 

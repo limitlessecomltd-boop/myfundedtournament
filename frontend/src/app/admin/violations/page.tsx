@@ -12,12 +12,12 @@ export default function AdminViolations() {
 
   const load = (t=tab) => {
     setLoading(true);
-    adminApi.getViolations?.(t)
-      .catch(()=>fetch(
-        `https://myfundedtournament-production.up.railway.app/api/admin/violations?status=${t}`,
-        {headers:{Authorization:"Bearer "+localStorage.getItem("fc_token")}}
-      ).then(r=>r.json()).then(d=>d.data||[]))
-      .then(setViols).finally(()=>setLoading(false));
+    fetch(`https://myfundedtournament-production.up.railway.app/api/admin/violations?status=${t}`,
+      {headers:{Authorization:"Bearer "+localStorage.getItem("fc_token")}})
+      .then(r=>r.json())
+      .then(d=>setViols(d.data||[]))
+      .catch(()=>{})
+      .finally(()=>setLoading(false));
   };
   useEffect(()=>load(),[]);
 

@@ -22,13 +22,12 @@ export default function AdminPayouts() {
   const flash = (m:string)=>{setMsg(m);setTimeout(()=>setMsg(""),3000);};
 
   async function updatePayout(id:string,status:string) {
-    await adminApi.updatePayout?.(id,{status,txHash,notes})
-      .catch(()=>fetch(
-        `https://myfundedtournament-production.up.railway.app/api/admin/payouts/${id}`,
-        { method:"PATCH", headers:{Authorization:"Bearer "+localStorage.getItem("fc_token"),
-          "Content-Type":"application/json"},
-          body:JSON.stringify({status,txHash,notes}) }
-      ));
+    await fetch(
+      `https://myfundedtournament-production.up.railway.app/api/admin/payouts/${id}`,
+      { method:"PATCH", headers:{Authorization:"Bearer "+localStorage.getItem("fc_token"),
+        "Content-Type":"application/json"},
+        body:JSON.stringify({status,txHash,notes}) }
+    );
     flash(`✅ Payout marked as ${status}`);
     setSelected(null); setTxHash(""); setNotes("");
     load();
