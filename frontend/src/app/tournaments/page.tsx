@@ -288,6 +288,28 @@ export default function TournamentsPage() {
           </div>
         ) : (
           <>
+            {/* Empty state — no battles at all */}
+            {registration.length === 0 && active.length === 0 && ended.length === 0 && (
+              <div style={{ textAlign:"center", padding:"80px 20px",
+                border:"1px dashed rgba(255,255,255,.08)", borderRadius:20, marginBottom:48 }}>
+                <div style={{ fontSize:56, marginBottom:16 }}>⚔️</div>
+                <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
+                  fontSize:24, fontWeight:900, color:"#fff", marginBottom:10 }}>
+                  No Active Battles
+                </h3>
+                <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:420, margin:"0 auto 24px" }}>
+                  New battles start every hour. Register now and you'll be first in line when the next one opens.
+                </p>
+                <a href="mailto:limitlessecomltd@gmail.com?subject=Notify me when battles open"
+                  style={{ display:"inline-flex", alignItems:"center", gap:8,
+                    background:"rgba(255,215,0,.12)", border:"1px solid rgba(255,215,0,.3)",
+                    borderRadius:10, padding:"10px 22px", textDecoration:"none",
+                    fontSize:14, fontWeight:700, color:"#FFD700" }}>
+                  🔔 Notify Me When Battles Open
+                </a>
+              </div>
+            )}
+
             {/* ── OPEN FOR REGISTRATION ── */}
             {registration.length > 0 && (
               <div style={{ marginBottom:48 }}>

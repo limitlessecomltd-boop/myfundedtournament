@@ -31,7 +31,7 @@ router.get("/dashboard", async (req, res, next) => {
 });
 
 // ─── TOURNAMENTS ─────────────────────────────────────────────────────────────
-router.get("/tournaments", async (req, res, next) => {
+router.get("/tournaments", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { rows } = await db.query(`
       SELECT t.*,
@@ -173,7 +173,7 @@ router.patch("/violations/:id", async (req, res, next) => {
 });
 
 // ─── ENTRIES (admin view) ─────────────────────────────────────────────────────
-router.get("/entries", async (req, res, next) => {
+router.get("/entries", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { tournamentId, userId } = req.query;
     let where = "WHERE 1=1";
@@ -269,7 +269,7 @@ router.post('/run-migration', authenticate, isAdmin, async (req, res) => {
 module.exports = router;
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
-router.get("/users", async (req, res, next) => {
+router.get("/users", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { search, limit = 50, offset = 0 } = req.query;
     let where = "WHERE 1=1";
@@ -302,7 +302,7 @@ router.get("/users", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch("/users/:id", async (req, res, next) => {
+router.patch("/users/:id", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { is_admin, is_banned, username } = req.body;
     const sets = []; const vals = [req.params.id];
@@ -318,7 +318,7 @@ router.patch("/users/:id", async (req, res, next) => {
 });
 
 // ─── PAYMENTS (admin) ────────────────────────────────────────────────────────
-router.get("/payments", async (req, res, next) => {
+router.get("/payments", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { status, limit = 100 } = req.query;
     let where = status ? "WHERE p.status=$1" : "WHERE 1=1";
@@ -340,7 +340,7 @@ router.get("/payments", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.patch("/payments/:id/confirm", async (req, res, next) => {
+router.patch("/payments/:id/confirm", authenticate, isAdmin, async (req, res, next) => {
   try {
     // Manually confirm a payment
     await db.query(
@@ -362,7 +362,7 @@ router.patch("/payments/:id/confirm", async (req, res, next) => {
 });
 
 // ─── FINANCE ────────────────────────────────────────────────────────────────
-router.get("/finance", async (req, res, next) => {
+router.get("/finance", authenticate, isAdmin, async (req, res, next) => {
   try {
     const [revenue, daily, byTier, topTraders, recentWinners] = await Promise.all([
       // Total revenue breakdown
@@ -438,17 +438,17 @@ let platformSettings = {
   maxEntryFee: 10000,
 };
 
-router.get("/settings", async (req, res) => {
+router.get("/settings", authenticate, isAdmin, async (req, res) => {
   res.json({ success: true, data: platformSettings });
 });
 
-router.patch("/settings", async (req, res) => {
+router.patch("/settings", authenticate, isAdmin, async (req, res) => {
   platformSettings = { ...platformSettings, ...req.body };
   res.json({ success: true, data: platformSettings });
 });
 
 // ─── GUILD BATTLES (admin view) ───────────────────────────────────────────────
-router.get("/guild", async (req, res, next) => {
+router.get("/guild", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { rows } = await db.query(`
       SELECT t.*,
@@ -470,7 +470,7 @@ router.get("/guild", async (req, res, next) => {
 });
 
 // ─── ACTIVITY FEED ────────────────────────────────────────────────────────────
-router.get("/activity", async (req, res, next) => {
+router.get("/activity", authenticate, isAdmin, async (req, res, next) => {
   try {
     const { rows } = await db.query(`
       (SELECT 'entry' AS type, e.created_at AS ts,
