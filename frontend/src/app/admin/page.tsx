@@ -111,6 +111,32 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* MetaApi expiry warning */}
+      {(() => {
+        const expiry = new Date('2026-06-13');
+        const now    = new Date();
+        const days   = Math.floor((expiry.getTime() - now.getTime()) / (1000*60*60*24));
+        if (days > 30) return null;
+        return (
+          <div style={{ background:"rgba(239,68,68,.08)", border:"1px solid rgba(239,68,68,.3)",
+            borderRadius:12, padding:"12px 18px", marginBottom:20,
+            display:"flex", alignItems:"center", gap:12 }}>
+            <span style={{ fontSize:20, flexShrink:0 }}>⚠️</span>
+            <div style={{ flex:1 }}>
+              <strong style={{ color:"#EF4444", fontSize:14 }}>MetaApi Token Expires in {days} days</strong>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,.45)", marginTop:2 }}>
+                Renew at metaapi.cloud before June 13, 2026 or MT5 tracking stops completely.
+              </div>
+            </div>
+            <a href="https://metaapi.cloud" target="_blank" rel="noreferrer"
+              style={{ fontSize:12, color:"#EF4444", border:"1px solid rgba(239,68,68,.3)",
+                borderRadius:7, padding:"5px 12px", textDecoration:"none", flexShrink:0 }}>
+              Renew →
+            </a>
+          </div>
+        );
+      })()}
+
       {/* Stats grid */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:14, marginBottom:32 }}>
         <StatCard label="Total Revenue" value={`$${revenue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`} sub={pending_rev > 0 ? `$${pending_rev.toFixed(2)} pending` : "Confirmed USDT"} icon="💰" color="#22C55E"/>

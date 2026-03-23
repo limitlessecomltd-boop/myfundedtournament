@@ -376,25 +376,41 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-                    {tournaments.filter(t=>t.is_winner).map((t:any)=>(
-                      <div key={t.id} style={{ background:"rgba(255,215,0,.05)", border:"1px solid rgba(255,215,0,.2)", borderRadius:14, padding:"20px 24px" }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:14 }}>
-                          <div>
-                            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                              <span style={{ fontSize:20 }}>🏆</span>
-                              <span style={{ fontSize:15, fontWeight:700, color:"#fff" }}>{t.name}</span>
+                    {tournaments.filter(t=>t.is_winner).map((t:any)=>{
+                      const pool = Number(t.prize_pool||0);
+                      const funded = pool * 0.9;
+                      const cashout = pool * 0.75;
+                      return (
+                        <div key={t.id} style={{ background:"rgba(255,215,0,.05)", border:"1px solid rgba(255,215,0,.25)", borderRadius:14, padding:"20px 24px" }}>
+                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:14 }}>
+                            <div style={{ flex:1 }}>
+                              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                                <span style={{ fontSize:20 }}>🏆</span>
+                                <span style={{ fontSize:15, fontWeight:700, color:"#FFD700" }}>{t.name}</span>
+                              </div>
+                              <div style={{ display:"flex", gap:16, flexWrap:"wrap", marginTop:8 }}>
+                                <div style={{ background:"rgba(34,197,94,.08)", border:"1px solid rgba(34,197,94,.2)", borderRadius:9, padding:"8px 14px", textAlign:"center" }}>
+                                  <div style={{ fontSize:10, color:"rgba(255,255,255,.35)", marginBottom:3 }}>FUNDED ACCOUNT</div>
+                                  <div style={{ fontSize:18, fontWeight:900, color:"#22C55E" }}>${funded.toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+                                </div>
+                                <div style={{ background:"rgba(255,215,0,.06)", border:"1px solid rgba(255,215,0,.15)", borderRadius:9, padding:"8px 14px", textAlign:"center" }}>
+                                  <div style={{ fontSize:10, color:"rgba(255,255,255,.35)", marginBottom:3 }}>OR CASHOUT</div>
+                                  <div style={{ fontSize:18, fontWeight:900, color:"#FFD700" }}>${cashout.toFixed(2)}</div>
+                                </div>
+                              </div>
                             </div>
-                            <div style={{ fontSize:13, color:"rgba(255,255,255,.42)" }}>
-                              Won · ${Number(t.prize_pool||0).toLocaleString()} prize pool · Funded account (90%)
+                            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                              <Link href={`/claim/${t.id}`} className="btn btn-primary btn-sm" style={{ display:"inline-flex", justifyContent:"center" }}>
+                                🏆 Claim Prize →
+                              </Link>
+                              <Link href={`/certificates?t=${t.id}`} className="btn btn-ghost btn-sm" style={{ display:"inline-flex", justifyContent:"center" }}>
+                                View Certificate
+                              </Link>
                             </div>
-                          </div>
-                          <div style={{ display:"flex", gap:10 }}>
-                            <Link href={`/certificates?t=${t.id}`} className="btn btn-ghost btn-sm">View Certificate</Link>
-                            <button className="btn btn-primary btn-sm">Request Payout</button>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
