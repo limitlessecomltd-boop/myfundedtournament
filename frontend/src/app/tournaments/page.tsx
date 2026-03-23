@@ -272,10 +272,7 @@ export default function TournamentsPage() {
               Live Battles & Results
             </h1>
           </div>
-          <Link href="/earn" className="btn" style={{ background:"rgba(255,100,0,.12)",
-            border:"1px solid rgba(255,100,0,.35)", color:"#FF6400", fontWeight:700 }}>
-            🔥 Run Your Own Battle →
-          </Link>
+
         </div>
 
         {loading ? (
@@ -317,6 +314,81 @@ export default function TournamentsPage() {
                 </div>
               </div>
             )}
+
+            {/* ── RUN YOUR OWN BATTLE — Promo Section ── */}
+            <div style={{ marginBottom:48, background:"linear-gradient(135deg,rgba(255,100,0,.07) 0%,rgba(255,215,0,.04) 100%)",
+              border:"1px solid rgba(255,100,0,.25)", borderRadius:20, padding:"32px 36px",
+              display:"flex", gap:32, alignItems:"center", flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
+              {/* Background glow */}
+              <div style={{ position:"absolute", right:-40, top:-40, width:220, height:220,
+                background:"radial-gradient(circle,rgba(255,100,0,.15) 0%,transparent 70%)", pointerEvents:"none" }}/>
+
+              {/* Left — text */}
+              <div style={{ flex:1, minWidth:240, position:"relative", zIndex:1 }}>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+                  background:"rgba(255,100,0,.12)", border:"1px solid rgba(255,100,0,.3)",
+                  borderRadius:20, padding:"3px 12px", fontSize:11, fontWeight:700,
+                  color:"#FF6400", marginBottom:12 }}>
+                  🔥 Guild Battle Program
+                </div>
+                <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
+                  fontSize:22, fontWeight:900, color:"#fff", marginBottom:8, letterSpacing:"-0.5px" }}>
+                  Run Your Own Battle — Earn as Organiser
+                </h3>
+                <p style={{ fontSize:14, color:"rgba(255,255,255,.5)", lineHeight:1.7, marginBottom:18, maxWidth:440 }}>
+                  Have a trading community? Set your own entry fee, player count and winner %.
+                  You collect your organiser share automatically when the battle ends.
+                  <strong style={{ color:"rgba(255,255,255,.75)" }}> No upfront cost.</strong>
+                </p>
+                <div style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
+                  {[
+                    { icon:"⚙️", text:"Custom rules" },
+                    { icon:"🔗", text:"Your own link" },
+                    { icon:"💰", text:"Earn automatically" },
+                    { icon:"🏛", text:"Flat 10% platform fee" },
+                  ].map(f => (
+                    <div key={f.text} style={{ display:"flex", alignItems:"center", gap:6,
+                      fontSize:13, color:"rgba(255,255,255,.5)" }}>
+                      <span>{f.icon}</span>{f.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right — example + CTA */}
+              <div style={{ display:"flex", flexDirection:"column", gap:12, alignItems:"flex-end",
+                flexShrink:0, position:"relative", zIndex:1 }}>
+                {/* Quick example */}
+                <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,100,0,.2)",
+                  borderRadius:14, padding:"14px 18px", minWidth:200 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,100,0,.6)",
+                    letterSpacing:".08em", textTransform:"uppercase", marginBottom:10 }}>Example</div>
+                  {[
+                    { l:"50 traders × $20", v:"$1,000 pool", c:"rgba(255,255,255,.6)" },
+                    { l:"🥇 Winner (80%)", v:"$800", c:"#FFD700" },
+                    { l:"🏆 You (10%)", v:"$100", c:"#FF6400" },
+                    { l:"🏛 Platform", v:"$100", c:"rgba(255,255,255,.3)" },
+                  ].map(r => (
+                    <div key={r.l} style={{ display:"flex", justifyContent:"space-between",
+                      gap:16, padding:"5px 0", borderBottom:"1px solid rgba(255,255,255,.05)",
+                      fontSize:12 }}>
+                      <span style={{ color:"rgba(255,255,255,.45)" }}>{r.l}</span>
+                      <span style={{ fontWeight:800, color:r.c }}>{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display:"flex", gap:10 }}>
+                  <Link href="/guild" className="btn" style={{ background:"#FF6400", color:"#fff",
+                    fontWeight:800, fontSize:14, padding:"11px 22px", border:"none" }}>
+                    🔥 Create Guild Battle
+                  </Link>
+                  <Link href="/earn" className="btn btn-ghost" style={{ fontSize:13, padding:"11px 18px",
+                    borderColor:"rgba(255,100,0,.3)", color:"rgba(255,100,0,.8)" }}>
+                    Learn More →
+                  </Link>
+                </div>
+              </div>
+            </div>
 
             {/* ── GUILD BATTLES ── */}
             {guilds.length > 0 && (
