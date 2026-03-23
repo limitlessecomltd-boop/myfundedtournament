@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { BulletTrain } from "@/components/ui/BulletTrain";
 import { tournamentApi } from "@/lib/api";
@@ -211,13 +210,83 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Photo */}
+        {/* Hero Visual — clean SVG, no competitor branding */}
         <div className="hero-photo" style={{ position:"relative", zIndex:1 }}>
           <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"radial-gradient(circle at 50% 60%, rgba(255,215,0,.13) 0%, rgba(34,197,94,.07) 45%, transparent 70%)", transform:"scale(1.05)" }}/>
           <div style={{ position:"absolute", inset:"-4%", borderRadius:"50%", border:"1px solid rgba(255,215,0,.14)" }}/>
           <div style={{ position:"absolute", inset:"-10%", borderRadius:"50%", border:"1px solid rgba(255,215,0,.07)" }}/>
           <div style={{ position:"relative" }}>
-            <Image src="/ai-character.png" alt="MFT Champion Trader" width={480} height={480} priority style={{ width:"100%", height:"auto", display:"block", filter:"hue-rotate(218deg) saturate(1.25) brightness(1.04)", borderRadius:8 }}/>
+            <svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", height:"auto", display:"block" }}>
+              {/* Dark background circle */}
+              <circle cx="240" cy="240" r="220" fill="#0a0f1e" opacity="0.8"/>
+              <circle cx="240" cy="240" r="200" fill="none" stroke="rgba(255,215,0,0.08)" strokeWidth="1"/>
+
+              {/* Chart candlestick visualization */}
+              {/* Bullish candles - green */}
+              <rect x="80" y="280" width="18" height="80" rx="3" fill="rgba(34,197,94,0.15)" stroke="#22C55E" strokeWidth="1.5"/>
+              <rect x="88" y="260" width="2" height="22" fill="#22C55E"/>
+              <rect x="88" y="358" width="2" height="20" fill="#22C55E"/>
+
+              <rect x="110" y="240" width="18" height="100" rx="3" fill="rgba(34,197,94,0.2)" stroke="#22C55E" strokeWidth="1.5"/>
+              <rect x="118" y="220" width="2" height="22" fill="#22C55E"/>
+              <rect x="118" y="338" width="2" height="22" fill="#22C55E"/>
+
+              <rect x="140" y="200" width="18" height="110" rx="3" fill="rgba(34,197,94,0.25)" stroke="#22C55E" strokeWidth="1.5"/>
+              <rect x="148" y="180" width="2" height="22" fill="#22C55E"/>
+              <rect x="148" y="308" width="2" height="22" fill="#22C55E"/>
+
+              {/* Bearish candle - red */}
+              <rect x="170" y="220" width="18" height="70" rx="3" fill="rgba(239,68,68,0.15)" stroke="#EF4444" strokeWidth="1.5"/>
+              <rect x="178" y="200" width="2" height="22" fill="#EF4444"/>
+              <rect x="178" y="288" width="2" height="22" fill="#EF4444"/>
+
+              {/* Strong bullish run */}
+              <rect x="200" y="170" width="18" height="120" rx="3" fill="rgba(34,197,94,0.3)" stroke="#22C55E" strokeWidth="1.5"/>
+              <rect x="208" y="148" width="2" height="24" fill="#22C55E"/>
+              <rect x="208" y="288" width="2" height="20" fill="#22C55E"/>
+
+              <rect x="230" y="130" width="18" height="130" rx="3" fill="rgba(34,197,94,0.35)" stroke="#22C55E" strokeWidth="1.5"/>
+              <rect x="238" y="108" width="2" height="24" fill="#22C55E"/>
+              <rect x="238" y="258" width="2" height="22" fill="#22C55E"/>
+
+              <rect x="260" y="100" width="18" height="140" rx="3" fill="rgba(34,197,94,0.4)" stroke="#22C55E" strokeWidth="1.5"/>
+              <rect x="268" y="78" width="2" height="24" fill="#22C55E"/>
+              <rect x="268" y="238" width="2" height="22" fill="#22C55E"/>
+
+              {/* Small dip */}
+              <rect x="290" y="130" width="18" height="80" rx="3" fill="rgba(239,68,68,0.15)" stroke="#EF4444" strokeWidth="1.5"/>
+              <rect x="298" y="110" width="2" height="22" fill="#EF4444"/>
+              <rect x="298" y="208" width="2" height="22" fill="#EF4444"/>
+
+              {/* Final big bull candle */}
+              <rect x="320" y="80" width="18" height="160" rx="3" fill="rgba(34,197,94,0.5)" stroke="#22C55E" strokeWidth="2"/>
+              <rect x="328" y="58" width="2" height="24" fill="#22C55E"/>
+              <rect x="328" y="238" width="2" height="24" fill="#22C55E"/>
+
+              <rect x="350" y="60" width="18" height="170" rx="3" fill="rgba(34,197,94,0.6)" stroke="#22C55E" strokeWidth="2"/>
+              <rect x="358" y="38" width="2" height="24" fill="#22C55E"/>
+              <rect x="358" y="228" width="2" height="24" fill="#22C55E"/>
+
+              {/* Trend line */}
+              <polyline points="89,360 119,320 149,290 179,270 209,230 239,195 269,160 299,180 329,140 359,110"
+                fill="none" stroke="rgba(255,215,0,0.6)" strokeWidth="2" strokeDasharray="none" strokeLinecap="round"/>
+
+              {/* +% gain badge at top */}
+              <rect x="300" y="30" width="130" height="44" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.5)" strokeWidth="1.5"/>
+              <text x="365" y="48" textAnchor="middle" fill="#22C55E" fontSize="13" fontWeight="800" fontFamily="'Space Grotesk',system-ui,sans-serif">+47.3% gain</text>
+              <text x="365" y="64" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontFamily="system-ui,sans-serif">XAUUSD · 90 min</text>
+
+              {/* Bottom axis line */}
+              <line x1="70" y1="380" x2="410" y2="380" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
+
+              {/* MFT Badge */}
+              <rect x="155" y="405" width="170" height="48" rx="10" fill="rgba(5,8,16,0.9)" stroke="rgba(255,215,0,0.5)" strokeWidth="1.5"/>
+              <text x="240" y="425" textAnchor="middle" fill="#FFD700" fontSize="14" fontWeight="900" fontFamily="'Space Grotesk',system-ui,sans-serif" letterSpacing="3">MFT</text>
+              <text x="240" y="443" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="system-ui,sans-serif" letterSpacing="1">MyFundedTournament</text>
+
+              {/* Glow effect behind chart */}
+              <ellipse cx="240" cy="240" rx="150" ry="120" fill="rgba(34,197,94,0.04)"/>
+            </svg>
             <div style={{ position:"absolute", bottom:"30%", left:"50%", transform:"translateX(-50%)", background:"rgba(5,8,16,.82)", border:"1.5px solid rgba(255,215,0,.55)", borderRadius:10, padding:"6px 18px", backdropFilter:"blur(10px)", textAlign:"center", whiteSpace:"nowrap" }}>
               <div style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontWeight:900, fontSize:15, color:"#FFD700", letterSpacing:"2px" }}>MFT</div>
               <div style={{ fontSize:9.5, color:"rgba(255,255,255,.6)", letterSpacing:"0.6px", marginTop:1 }}>MyFundedTournament</div>

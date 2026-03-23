@@ -54,23 +54,32 @@ async function ensureRegistrationSlots() {
   const proOpen     = counts.find(r => r.tier === "pro")?.cnt || 0;
 
   const now = new Date();
-  // Far future placeholder times — will be recalculated when battle fills
-  const farFuture = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30 days
+  const farFuture = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   if (parseInt(starterOpen) < 1) {
+    // Get next sequential number for Starter Bullet
+    const { rows: numRow } = await db.query(
+      "SELECT COUNT(*) as total FROM tournaments WHERE tier='starter'"
+    );
+    const num = parseInt(numRow[0].total) + 1;
     await db.query(`
       INSERT INTO tournaments (name, tier, entry_fee, max_entries, registration_open, start_time, end_time, status)
       VALUES ($1,'starter',25,25,$2,$3,$4,'registration')
-    `, [`Starter Bullet #${Date.now()}`, now.toISOString(), farFuture, farFuture]);
-    console.log("[AutoSlot] Created new Starter Bullet registration slot");
+    `, [`Starter Bullet #${num}`, now.toISOString(), farFuture, farFuture]);
+    console.log(`[AutoSlot] Created Starter Bullet #${num}`);
   }
 
   if (parseInt(proOpen) < 1) {
+    // Get next sequential number for Pro Bullet
+    const { rows: numRow } = await db.query(
+      "SELECT COUNT(*) as total FROM tournaments WHERE tier='pro'"
+    );
+    const num = parseInt(numRow[0].total) + 1;
     await db.query(`
       INSERT INTO tournaments (name, tier, entry_fee, max_entries, registration_open, start_time, end_time, status)
       VALUES ($1,'pro',50,25,$2,$3,$4,'registration')
-    `, [`Pro Bullet #${Date.now()}`, now.toISOString(), farFuture, farFuture]);
-    console.log("[AutoSlot] Created new Pro Bullet registration slot");
+    `, [`Pro Bullet #${num}`, now.toISOString(), farFuture, farFuture]);
+    console.log(`[AutoSlot] Created Pro Bullet #${num}`);
   }
 }
 
