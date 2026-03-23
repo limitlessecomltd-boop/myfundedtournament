@@ -268,6 +268,41 @@ router.post('/run-migration', async (req, res) => {
   res.json({ success: failed.length === 0, steps, ok: ok.length, failed: failed.length });
 });
 
+// POST /api/admin/entries/:id/connect-metaapi — manually trigger MetaApi connection
+router.post('/entries/:id/connect-metaapi', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { mt5Login, mt5Password, mt5Server, broker } = req.body;
+
+    // Update entry credentials if provided
+    if (mt5Login || mt5Password || mt5Server || broker) {
+      const sets = [];
+      const vals = [id];
+      if (mt5Login)    { vals.push(mt5Login);    sets.push(`mt5_login=$${vals.length}`); }
+      if (mt5Password) { vals.push(mt5Password);  sets.push(`mt5_password=$${vals.length}`); }
+      if (mt5Server)   { vals.push(mt5Server);    sets.push(`mt5_server=$${vals.length}`); }
+      if (broker)      { vals.push(broker);       sets.push(`broker=$${vals.length}`); }
+      if (sets.length) {
+        await db.query(`UPDATE entries SET ${sets.join(',')} WHERE id=$1`, vals);
+      }
+    }
+
+    // Trigger MetaApi activation async
+    const { activateEntryMetaApi } = require('../services/entryService');
+    res.json({ success: true, message: 'MetaApi connection triggered — check back in 30s' });
+
+    // Run async after response
+    activateEntryMetaApi(id).then(() => {
+      console.log(`[Admin] MetaApi manually connected for entry ${id}`);
+    }).catch(err => {
+      console.error(`[Admin] MetaApi manual connect failed for entry ${id}:`, err.message);
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
