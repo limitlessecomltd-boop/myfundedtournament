@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { tournamentApi } from "@/lib/api";
+import { tournamentApi, guildApi } from "@/lib/api";
 import { Tournament } from "@/types";
 import { BulletTrain } from "@/components/ui/BulletTrain";
 
@@ -259,15 +259,19 @@ export default function TournamentsPage() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any>(null);
 
+  const [guilds, setGuilds] = useState<any[]>([]);
+
   const load = () => {
     tournamentApi.getAll("all")
       .then(data => { setAll(data); setLoading(false); })
       .catch(() => setLoading(false));
+    guildApi.getAll()
+      .then(data => setGuilds(data))
+      .catch(() => {});
   };
 
   useEffect(() => {
     load();
-    // Auto-refresh every 30 seconds
     const iv = setInterval(load, 30000);
     return () => clearInterval(iv);
   }, []);
@@ -351,6 +355,85 @@ export default function TournamentsPage() {
                 </div>
                 <div style={{ fontSize:14, color:"rgba(255,255,255,.3)" }}>
                   New registration opens automatically. Check back in a moment!
+                </div>
+              </div>
+            )}
+
+            {/* ── GUILD BATTLES ── */}
+            {guilds.length > 0 && (
+              <div style={{ marginBottom:48 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:20, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:18, fontWeight:800, color:"#FF6400",
+                    fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>
+                    🔥 Guild Battles
+                  </span>
+                  <span style={{ fontSize:13, background:"rgba(255,100,0,.1)",
+                    border:"1px solid rgba(255,100,0,.25)", borderRadius:20,
+                    padding:"2px 10px", color:"#FF6400" }}>
+                    Community organised
+                  </span>
+                  <a href="/guild" style={{ marginLeft:"auto", fontSize:13, color:"#FF6400",
+                    textDecoration:"none", fontWeight:700, padding:"5px 14px",
+                    border:"1px solid rgba(255,100,0,.3)", borderRadius:8,
+                    background:"rgba(255,100,0,.06)" }}>
+                    + Create Guild Battle
+                  </a>
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,320px),1fr))", gap:16 }}>
+                  {guilds.map(g => {
+                    const filled = parseInt(String(g.active_entries || 0));
+                    const pct = Math.min(100, Math.round((filled / g.max_entries) * 100));
+                    const pool = Number(g.prize_pool || 0);
+                    return (
+                      <div key={g.id} style={{ background:"rgba(13,18,29,.95)",
+                        border:"1px solid rgba(255,100,0,.3)", borderRadius:18, padding:22,
+                        position:"relative", overflow:"hidden" }}>
+                        <div style={{ position:"absolute", top:0, left:0, right:0, height:3,
+                          background:"linear-gradient(90deg,#FF6400,#FFD700)" }}/>
+                        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+                          <span style={{ fontSize:11, fontWeight:700, padding:"2px 10px", borderRadius:20,
+                            background:"rgba(255,100,0,.12)", border:"1px solid rgba(255,100,0,.3)",
+                            color:"#FF6400" }}>🔥 Guild Battle</span>
+                          <span style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>
+                            by {g.organiser_username || "Anonymous"}
+                          </span>
+                        </div>
+                        <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:4 }}>{g.name}</div>
+                        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
+                          {[
+                            ["Entry", `$${g.entry_fee}`],
+                            ["Players", String(g.max_entries)],
+                            ["Winner", `${g.winner_pct || 90}%`],
+                          ].map(([l,v]) => (
+                            <div key={l} style={{ background:"rgba(255,255,255,.03)", borderRadius:8,
+                              padding:"7px 10px", border:"1px solid rgba(255,255,255,.05)" }}>
+                              <div style={{ fontSize:9, color:"rgba(255,255,255,.35)", marginBottom:2 }}>{l}</div>
+                              <div style={{ fontSize:13, fontWeight:700, color:"#FF6400" }}>{v}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginBottom:5 }}>
+                          <div style={{ display:"flex", justifyContent:"space-between", fontSize:11,
+                            color:"rgba(255,255,255,.4)", marginBottom:4 }}>
+                            <span>{filled} / {g.max_entries} spots</span>
+                            <span style={{ color:"#FF6400" }}>{g.max_entries - filled} left</span>
+                          </div>
+                          <div style={{ height:6, background:"rgba(255,255,255,.07)", borderRadius:3, overflow:"hidden" }}>
+                            <div style={{ height:"100%", borderRadius:3, background:"linear-gradient(90deg,#FF6400,#FFD700)",
+                              width:`${pct}%`, transition:"width .5s" }}/>
+                          </div>
+                        </div>
+                        <div style={{ marginTop:14 }}>
+                          <a href={`/tournaments/${g.id}`} style={{ display:"flex", justifyContent:"center",
+                            width:"100%", padding:"12px", background:"#FF6400", color:"#fff",
+                            fontWeight:800, fontSize:14, borderRadius:9, textDecoration:"none",
+                            border:"none", cursor:"pointer" }}>
+                            Grab Your Spot →
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

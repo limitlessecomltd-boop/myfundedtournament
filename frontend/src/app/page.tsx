@@ -85,6 +85,9 @@ const FAQS = [
   { q:"How is the winner decided?", a:"The trader with the highest percentage gain on their starting $1,000 demo balance wins. Purely performance-based — best trader in 90 minutes wins, period." },
   { q:"How do I pay the entry fee?", a:"Entry fees are paid in USDT (TRC-20) via NOWPayments. Pay directly from Binance, any crypto exchange, or your wallet — no personal wallet setup required." },
   { q:"What does the winner receive?", a:"The winner gets their choice: either 90% of the prize pool as a real funded trading account (live broker, real capital, daily withdrawals), OR 75% of the prize pool as an instant USDT cashout. Only the 1st place winner is rewarded. For a $25 entry with 25 traders: pool is $625, so winner gets $562 funded account or $468 instant USDT." },
+  { q:"What is a Guild Battle?", a:"Guild Battle is our custom battle program for community organisers. You set the entry fee, player count (5–200), and winner payout percentage (50–90%). You earn an organiser share automatically when the battle ends. Platform always takes a flat 10%. Perfect for trading communities, Discord servers, or group challenges." },
+  { q:"How much do I earn as a Guild Battle organiser?", a:"You keep whatever is left after the winner's share and the 10% platform fee. Example: if you set winner at 80%, you get 10% (platform gets 10%). On a $1,000 prize pool that means $800 to winner, $100 to you, $100 to platform. You can set winner % between 50% and 90% — giving you between 0% and 40% as organiser." },
+  { q:"Who can create a Guild Battle?", a:"Any registered MFT user can create a Guild Battle. Simply go to the Guild Battle section, set your parameters, and share the link with your community. The battle auto-starts when all spots are filled, just like standard battles." },
 ];
 
 

@@ -298,6 +298,77 @@ export default function HowItWorksPage() {
         </div>
       </div>
 
+      {/* ─── Guild Battle Section ─── */}
+      <div style={{ background:"rgba(255,100,0,.03)", borderTop:"1px solid rgba(255,100,0,.15)", borderBottom:"1px solid rgba(255,100,0,.15)" }}>
+        <div style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+          <div style={{ display:"flex", gap:40, alignItems:"center", flexWrap:"wrap" }}>
+            <div style={{ flex:1, minWidth:280 }}>
+              <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase",
+                color:"rgba(255,100,0,.7)", marginBottom:12 }}>🔥 For Community Leaders</div>
+              <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
+                fontSize:30, fontWeight:900, color:"#fff", letterSpacing:"-1px", marginBottom:14 }}>
+                Run a Guild Battle — Earn as Organiser
+              </h2>
+              <p style={{ fontSize:15, color:"rgba(255,255,255,.45)", lineHeight:1.75, marginBottom:24 }}>
+                Have a trading community or Discord server? Create a custom battle for your members.
+                You set the entry fee, player count, and winner payout %. You earn your organiser
+                share automatically when the battle ends — no manual work required.
+              </p>
+              <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:28 }}>
+                {[
+                  ["⚙️", "Set your own rules", "Custom entry fee ($1–$10,000), players (5–200), winner %"],
+                  ["💰", "Earn automatically", "Your organiser % paid out when battle finalises"],
+                  ["🏛", "Flat 10% platform fee", "Always 10% to MFT — winner + organiser split the rest"],
+                  ["🔗", "Share your link", "Battle auto-starts when all spots fill — just share and wait"],
+                ].map(([icon, title, desc]) => (
+                  <div key={String(title)} style={{ display:"flex", gap:14, alignItems:"flex-start" }}>
+                    <span style={{ fontSize:20, flexShrink:0 }}>{icon}</span>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#fff", marginBottom:2 }}>{title}</div>
+                      <div style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <a href="/guild" style={{ display:"inline-flex", alignItems:"center", gap:8,
+                background:"#FF6400", color:"#fff", fontWeight:800, fontSize:15,
+                padding:"13px 28px", borderRadius:11, textDecoration:"none" }}>
+                🔥 Create Guild Battle →
+              </a>
+            </div>
+
+            {/* Example card */}
+            <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,100,0,.3)",
+              borderRadius:18, padding:28, minWidth:260 }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,100,0,.7)",
+                letterSpacing:".08em", textTransform:"uppercase", marginBottom:16 }}>
+                Example Payout
+              </div>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,.5)", marginBottom:4 }}>50 traders × $20 USDT</div>
+              <div style={{ fontSize:26, fontWeight:900, color:"#FF6400",
+                fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", marginBottom:20 }}>
+                $1,000 Pool
+              </div>
+              {[
+                { label:"🥇 Winner (80%)", val:"$800", color:"#FFD700" },
+                { label:"🏆 Organiser (10%)", val:"$100", color:"#FF6400" },
+                { label:"🏛 Platform (10%)", val:"$100", color:"rgba(255,255,255,.35)" },
+              ].map(r => (
+                <div key={r.label} style={{ display:"flex", justifyContent:"space-between",
+                  alignItems:"center", padding:"10px 0",
+                  borderBottom:"1px solid rgba(255,255,255,.06)" }}>
+                  <span style={{ fontSize:13, color:"rgba(255,255,255,.5)" }}>{r.label}</span>
+                  <span style={{ fontSize:15, fontWeight:800, color:r.color }}>{r.val}</span>
+                </div>
+              ))}
+              <div style={{ marginTop:14, fontSize:12, color:"rgba(255,255,255,.3)", lineHeight:1.6 }}>
+                You set winner % from 50–90%. Your cut = 100% − winner% − 10% platform.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ─── CTA ─── */}
       <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.6)" }}>
         <div style={{ maxWidth:700, margin:"0 auto", padding:"72px 40px", textAlign:"center" }}>
