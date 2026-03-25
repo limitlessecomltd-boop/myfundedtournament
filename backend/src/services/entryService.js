@@ -92,7 +92,6 @@ async function activateEntryMetaApi(entryId) {
 
   if (bridgeUrl && bridgeSecret) {
     try {
-      const fetch = require('node-fetch');
       const r = await fetch(`${bridgeUrl}/api/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Bridge-Secret': bridgeSecret },

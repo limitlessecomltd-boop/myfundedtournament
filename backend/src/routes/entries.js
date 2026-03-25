@@ -68,7 +68,6 @@ router.post('/verify-mt5', authenticate, async (req, res) => {
       return res.status(503).json({ error: 'Verification service unavailable' });
     }
 
-    const fetch = require('node-fetch');
     const r = await fetch(`${bridgeUrl}/api/verify`, {
       method: 'POST',
       headers: {
