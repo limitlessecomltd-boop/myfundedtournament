@@ -24,7 +24,7 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
   // Count trader's existing entries
   const { rows: existing } = await db.query(`
     SELECT
-      COUNT(*) AS total,
+      COUNT(*) FILTER (WHERE status != 'pending_payment') AS total,
       COUNT(*) FILTER (WHERE status = 'active') AS active_count
     FROM entries
     WHERE tournament_id=$1 AND user_id=$2
@@ -38,12 +38,13 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
   }
 
   // Re-entry only unlocks after first entry is breached/completed
+  // pending_payment entries don't count (they haven't paid yet)
   if (total >= 1) {
     const { rows: firstEntry } = await db.query(`
       SELECT COUNT(*) AS still_alive
       FROM entries
       WHERE tournament_id=$1 AND user_id=$2
-        AND status NOT IN ('breached','disqualified','completed')
+        AND status NOT IN ('breached','disqualified','completed','pending_payment')
     `, [tournamentId, userId]);
 
     if (parseInt(firstEntry[0].still_alive) > 0) {
