@@ -86,15 +86,56 @@ async function activateEntryMetaApi(entryId) {
   if (!rows.length) return;
   const entry = rows[0];
 
+  // ── Try Bridge first (self-hosted, free) ─────────────────────────────────
+  const bridgeUrl    = process.env.BRIDGE_URL;
+  const bridgeSecret = process.env.BRIDGE_SECRET;
+
+  if (bridgeUrl && bridgeSecret) {
+    try {
+      const fetch = require('node-fetch');
+      const r = await fetch(`${bridgeUrl}/api/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Bridge-Secret': bridgeSecret },
+        body: JSON.stringify({
+          mt5_login:     entry.mt5_login,
+          mt5_password:  entry.mt5_password,
+          mt5_server:    entry.mt5_server,
+          broker:        entry.broker,
+          entry_id:      entryId,
+          tournament_id: entry.tournament_id
+        }),
+        timeout: 10000
+      });
+      const data = await r.json();
+      if (data.ok) {
+        // Mark entry as bridge-connected (use entry_id as bridge_account_id)
+        await db.query(`
+          UPDATE entries SET
+            metaapi_account_id = $1,
+            starting_balance   = $2,
+            current_balance    = $2,
+            current_equity     = $2,
+            locked_at          = NOW()
+          WHERE id = $3
+        `, [`bridge:${entry.mt5_login}`, entry.starting_balance || 1000, entryId]);
+        console.log(`[Bridge] Entry ${entryId} connected via bridge — Login: ${entry.mt5_login}`);
+        return;
+      }
+    } catch (err) {
+      console.error(`[Bridge] Connection failed for ${entryId}:`, err.message);
+      console.log(`[Bridge] Falling back to MetaApi...`);
+    }
+  }
+
+  // ── Fallback: MetaApi ────────────────────────────────────────────────────
   try {
+    const { connectAccount } = require('./metaApiService');
     const metaapiId = await connectAccount(
       entry.mt5_login,
       entry.mt5_password,
       entry.mt5_server,
       entry.broker
     );
-
-    // Get initial balance via MetaApi
     const { getMetaApi } = require("../config/metaapi");
     const api = getMetaApi();
     const account = await api.metatraderAccountApi.getAccount(metaapiId);
@@ -103,19 +144,18 @@ async function activateEntryMetaApi(entryId) {
     await conn.waitSynchronized();
     const info = await conn.getAccountInformation();
     await conn.close();
-
     await db.query(`
       UPDATE entries SET
         metaapi_account_id = $1,
         starting_balance   = $2,
         current_balance    = $2,
-        current_equity     = $2
+        current_equity     = $2,
+        locked_at          = NOW()
       WHERE id = $3
     `, [metaapiId, info.balance, entryId]);
-
-    console.log(`[Entry] Activated entry ${entryId}, starting balance: $${info.balance}`);
+    console.log(`[MetaApi] Entry ${entryId} activated, balance: $${info.balance}`);
   } catch (err) {
-    console.error(`[Entry] MetaApi activation failed for ${entryId}:`, err.message);
+    console.error(`[Entry] Activation failed for ${entryId}:`, err.message);
   }
 }
 
