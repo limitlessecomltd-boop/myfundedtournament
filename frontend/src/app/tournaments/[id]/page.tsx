@@ -202,6 +202,9 @@ export default function TournamentDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", broker:"Exness" });
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<any>(null);
 
   // Poll payment status every 8s as fallback (WebSocket may not work in production)
   useEffect(() => {
@@ -241,6 +244,30 @@ export default function TournamentDetailPage() {
   async function loadMyEntries() {
     entryApi.getMy(id).then(setMyEntries).catch(() => {});
   }
+  async function verifyMT5() {
+    setVerifying(true);
+    setVerifyResult(null);
+    setVerified(false);
+    setError("");
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+      const token = localStorage.getItem("fc_token") || "";
+      const r = await fetch(`${API}/api/entries/verify-mt5`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify({ mt5Login: form.mt5Login, mt5Password: form.mt5Password, mt5Server: form.mt5Server })
+      });
+      const data = await r.json();
+      setVerifyResult(data);
+      setVerified(data.ok === true);
+      if (!data.ok && data.error) setError(data.error);
+    } catch(e: any) {
+      setError("Verification failed — " + e.message);
+    } finally {
+      setVerifying(false);
+    }
+  }
+
   async function handleJoin(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setSubmitting(true);

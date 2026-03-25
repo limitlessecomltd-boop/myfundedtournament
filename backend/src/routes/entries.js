@@ -52,4 +52,44 @@ router.get("/:id", authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+
+// POST /api/entries/verify-mt5 — verify MT5 credentials before payment
+router.post('/verify-mt5', authenticate, async (req, res) => {
+  try {
+    const { mt5Login, mt5Password, mt5Server } = req.body;
+    if (!mt5Login || !mt5Password || !mt5Server) {
+      return res.status(400).json({ error: 'All MT5 fields required' });
+    }
+
+    const bridgeUrl    = process.env.BRIDGE_URL;
+    const bridgeSecret = process.env.BRIDGE_SECRET;
+
+    if (!bridgeUrl || !bridgeSecret) {
+      return res.status(503).json({ error: 'Verification service unavailable' });
+    }
+
+    const fetch = require('node-fetch');
+    const r = await fetch(`${bridgeUrl}/api/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Bridge-Secret': bridgeSecret
+      },
+      body: JSON.stringify({
+        mt5_login:    mt5Login,
+        mt5_password: mt5Password,
+        mt5_server:   mt5Server
+      }),
+      timeout: 15000
+    });
+
+    const data = await r.json();
+    return res.json(data);
+
+  } catch (err) {
+    console.error('[Verify MT5]', err.message);
+    return res.status(500).json({ error: 'Verification failed: ' + err.message });
+  }
+});
+
 module.exports = router;
