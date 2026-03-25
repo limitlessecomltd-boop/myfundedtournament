@@ -545,9 +545,48 @@ export default function TournamentDetailPage() {
                   <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", background:"rgba(255,255,255,.03)", borderRadius:8, padding:"10px 12px" }}>
                     🔒 Investor password only — we have read-only access, zero ability to trade or withdraw.
                   </div>
-                  <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width:"100%" }}>
-                    {submitting ? "Processing..." : `Pay $${tournament.entry_fee} USDT`}
-                  </button>
+                  {/* Verify button — shown before payment */}
+                  {!verified && (
+                    <button type="button" onClick={verifyMT5}
+                      disabled={verifying || !form.mt5Login || !form.mt5Password || !form.mt5Server}
+                      className="btn btn-primary" style={{ width:"100%", marginBottom:10 }}>
+                      {verifying ? "⏳ Verifying account..." : "🔍 Verify MT5 Account"}
+                    </button>
+                  )}
+
+                  {/* Verification results */}
+                  {verifyResult && (
+                    <div style={{ background:"rgba(255,255,255,.04)",
+                      border:`1px solid ${verifyResult.ok ? "rgba(34,197,94,.3)" : "rgba(239,68,68,.3)"}`,
+                      borderRadius:10, padding:"14px 16px", marginBottom:10 }}>
+                      <div style={{ fontSize:12, fontWeight:700, marginBottom:8,
+                        color: verifyResult.ok ? "var(--green)" : "var(--red)" }}>
+                        {verifyResult.ok ? "✅ Account verified — ready to join!" : "❌ Account check failed"}
+                      </div>
+                      {Object.entries(verifyResult.checks || {}).map(([key, check]: [string, any]) => (
+                        <div key={key} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:5 }}>
+                          <span style={{ fontSize:13 }}>{check.pass ? "✅" : "❌"}</span>
+                          <span style={{ fontSize:12, color: check.pass ? "rgba(255,255,255,.7)" : "var(--red)", lineHeight:1.4 }}>
+                            {check.message}
+                          </span>
+                        </div>
+                      ))}
+                      {!verifyResult.ok && (
+                        <button type="button" onClick={()=>{setVerifyResult(null);setVerified(false);}}
+                          style={{ marginTop:6, fontSize:11, color:"rgba(255,255,255,.4)", background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                          ↺ Try again
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Pay button — only after verification passes */}
+                  {verified && (
+                    <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width:"100%", marginBottom:10 }}>
+                      {submitting ? "Processing..." : `🔒 Pay $${tournament.entry_fee} USDT`}
+                    </button>
+                  )}
+
                   <button type="button" onClick={() => setShowJoinForm(false)} className="btn btn-ghost" style={{ width:"100%" }}>Cancel</button>
                 </form>
               )}
