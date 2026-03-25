@@ -57,18 +57,35 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
     throw new Error("You already have an active entry. Re-entry unlocks after it is breached.");
   }
 
-  const entryNumber = total + 1;
+  // Check if there's already a pending_payment entry we can reuse
+  const { rows: pendingRows } = await db.query(`
+    SELECT * FROM entries
+    WHERE tournament_id=$1 AND user_id=$2 AND status='pending_payment'
+    ORDER BY created_at DESC LIMIT 1
+  `, [tournamentId, userId]);
 
-  // Create entry record (pending payment)
-  const { rows } = await db.query(`
-    INSERT INTO entries (
-      tournament_id, user_id, entry_number,
-      mt5_login, mt5_password, mt5_server, broker, status
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,'pending_payment')
-    RETURNING *
-  `, [tournamentId, userId, entryNumber, mt5Login, mt5Password, mt5Server, broker]);
-
-  const entry = rows[0];
+  let entry;
+  if (pendingRows.length > 0) {
+    // Reuse existing pending entry — update credentials and reset payment
+    const { rows: updated } = await db.query(`
+      UPDATE entries SET
+        mt5_login=$1, mt5_password=$2, mt5_server=$3, broker=$4,
+        payment_id=NULL, updated_at=NOW()
+      WHERE id=$5 RETURNING *
+    `, [mt5Login, mt5Password, mt5Server, broker, pendingRows[0].id]);
+    entry = updated[0];
+  } else {
+    const entryNumber = total + 1;
+    // Create new entry record (pending payment)
+    const { rows } = await db.query(`
+      INSERT INTO entries (
+        tournament_id, user_id, entry_number,
+        mt5_login, mt5_password, mt5_server, broker, status
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,'pending_payment')
+      RETURNING *
+    `, [tournamentId, userId, entryNumber, mt5Login, mt5Password, mt5Server, broker]);
+    entry = rows[0];
+  }
 
   // Create NOWPayments invoice
   const paymentInfo = await createEntryPayment(
