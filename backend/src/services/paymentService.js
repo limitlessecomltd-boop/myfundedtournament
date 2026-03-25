@@ -5,7 +5,7 @@ const NOWPAYMENTS_API = 'https://api.nowpayments.io/v1';
 const API_KEY = process.env.NOWPAYMENTS_API_KEY;
 const IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET;
 
-// NOWPayments handles the wallet Ã¢ÂÂ funds go to your NOWPayments account
+// NOWPayments handles the wallet ÃÂ¢ÃÂÃÂ funds go to your NOWPayments account
 // You withdraw from your NOWPayments dashboard whenever you want
 // No static wallet address needed here
 
@@ -15,7 +15,7 @@ async function createPayment({ orderId, amount, description, callbackUrl }) {
     {
       price_amount: amount,
       price_currency: 'usd',
-      pay_currency: 'usdtbep20',
+      pay_currency: 'usdttrc20',
       order_id: orderId,
       order_description: description,
       ipn_callback_url: callbackUrl,
@@ -65,7 +65,7 @@ async function getMinimumPaymentAmount(currency = 'usdttrc20') {
 }
 
 /**
- * createEntryPayment Ã¢ÂÂ convenience wrapper used by entryService.
+ * createEntryPayment ÃÂ¢ÃÂÃÂ convenience wrapper used by entryService.
  * Creates a NOWPayments invoice for a tournament entry fee.
  * Returns { paymentId, address, amount, currency, paymentUrl }
  */
@@ -75,7 +75,7 @@ async function createEntryPayment(userId, tournamentId, entryId, entryFee) {
   const data = await createPayment({
     orderId:     `entry_${entryId}`,
     amount:      parseFloat(entryFee),
-    description: `MFT Tournament Entry Ã¢ÂÂ ${entryId}`,
+    description: `MFT Tournament Entry ÃÂ¢ÃÂÃÂ ${entryId}`,
     callbackUrl: `${BACKEND_URL}/api/payments/webhook`,
   });
 
@@ -83,7 +83,7 @@ async function createEntryPayment(userId, tournamentId, entryId, entryFee) {
   const db = require('../config/db');
   await db.query(`
     INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, currency, status)
-    VALUES ($1,$2,$3,$4,$5,$6,'usdtbep20','waiting')
+    VALUES ($1,$2,$3,$4,$5,$6,'usdttrc20','waiting')
     ON CONFLICT (nowpayments_id) DO NOTHING
   `, [entryId, userId, tournamentId, data.payment_id, data.pay_address, parseFloat(entryFee)]);
 
