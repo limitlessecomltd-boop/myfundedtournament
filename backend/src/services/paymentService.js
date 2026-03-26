@@ -73,7 +73,7 @@ async function createEntryPayment(userId, tournamentId, entryId, entryFee) {
   const BACKEND_URL = process.env.BACKEND_URL || 'https://myfundedtournament-production.up.railway.app';
 
   const data = await createPayment({
-    orderId:     `entry_${entryId}`,
+    orderId:     `entry_${entryId}_${Date.now()}`,
     amount:      parseFloat(entryFee),
     description: `MFT Tournament Entry — ${entryId}`,
     callbackUrl: `${BACKEND_URL}/api/payments/webhook`,
