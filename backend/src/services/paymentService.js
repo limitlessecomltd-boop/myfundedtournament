@@ -5,7 +5,7 @@ const NOWPAYMENTS_API = 'https://api.nowpayments.io/v1';
 const API_KEY = process.env.NOWPAYMENTS_API_KEY;
 const IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET;
 
-// NOWPayments handles the wallet — funds go to your NOWPayments account
+// NOWPayments handles the wallet â funds go to your NOWPayments account
 // You withdraw from your NOWPayments dashboard whenever you want
 // No static wallet address needed here
 
@@ -65,7 +65,7 @@ async function getMinimumPaymentAmount(currency = 'usdttrc20') {
 }
 
 /**
- * createEntryPayment — convenience wrapper used by entryService.
+ * createEntryPayment â convenience wrapper used by entryService.
  * Creates a NOWPayments invoice for a tournament entry fee.
  * Returns { paymentId, address, amount, currency, paymentUrl }
  */
@@ -75,7 +75,7 @@ async function createEntryPayment(userId, tournamentId, entryId, entryFee) {
   const data = await createPayment({
     orderId:     `entry_${entryId}_${Date.now()}`,
     amount:      parseFloat(entryFee),
-    description: `MFT Tournament Entry — ${entryId}`,
+    description: `MFT Tournament Entry â ${entryId}`,
     callbackUrl: `${BACKEND_URL}/api/payments/webhook`,
   });
 
