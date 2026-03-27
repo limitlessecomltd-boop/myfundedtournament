@@ -58,9 +58,8 @@ class MT5AccountManager:
         if not info:
             self._set_status(login, "error_login_failed")
             return
-        balance = float(info.get("balance", 0))
         self._init_db(login, server, broker, entry_id, tournament_id)
-        log.info("[MT5] Connected " + login + " balance=" + str(balance))
+        log.info("[MT5] Connected " + login)
         while not stop_event.is_set():
             try: self._sync(login, entry_id)
             except Exception as e: log.error("[MT5] Sync error " + login + ": " + str(e))
@@ -93,31 +92,26 @@ class MT5AccountManager:
             if not info: return
             balance = float(info.get("balance", 0))
             equity = float(info.get("equity", 0))
-            # Always calculate profit from balance vs fixed starting balance of 1000
             profit_abs = round(balance - STARTING_BALANCE, 2)
             profit_pct = round(profit_abs / STARTING_BALANCE * 100, 2)
-            db.execute("UPDATE accounts SET balance=?, equity=?, profit_abs=?, profit_pct=?, status='connected', last_sync=datetime('now') WHERE mt5_login=?",
-                       [balance, equity, profit_abs, profit_pct, login])
+            db.execute("UPDATE accounts SET balance=?, equity=?, profit_abs=?, profit_pct=?, starting_balance=?, status='connected', last_sync=datetime('now') WHERE mt5_login=?",
+                       [balance, equity, profit_abs, profit_pct, STARTING_BALANCE, login])
             db.commit()
-            # Sync open trades
             positions = _get("/trades/open", {"login": login})
             if positions:
                 for p in positions:
                     db.execute("INSERT OR REPLACE INTO trades (mt5_login,ticket,symbol,side,volume,open_price,open_time,profit,swap,commission,status,excluded,synced) VALUES (?,?,?,?,?,?,?,?,0,0,'open',0,0)",
                                [login, str(p.get("ticket","")), p.get("symbol",""), p.get("type","").lower()[:4], p.get("lots",0), p.get("open_price",0), p.get("open_time",""), p.get("profit",0)])
-            # Sync trade history
             history = _get("/trades/history", {"login": login, "days": 30})
             if history:
                 for h in history:
                     db.execute("INSERT OR REPLACE INTO trades (mt5_login,ticket,symbol,side,volume,open_price,close_price,open_time,close_time,profit,swap,commission,status,excluded,synced) VALUES (?,?,?,?,?,?,?,?,?,?,0,0,'closed',0,0)",
                                [login, str(h.get("ticket","")), h.get("symbol",""), h.get("type","").lower()[:4], h.get("lots",0), h.get("open_price",0), h.get("close_price",0), h.get("open_time",""), h.get("close_time",""), h.get("profit",0)])
             db.commit()
-            # Update trade stats
             total = db.execute("SELECT COUNT(*) FROM trades WHERE mt5_login=? AND excluded=0", [login]).fetchone()[0]
             wins = db.execute("SELECT COUNT(*) FROM trades WHERE mt5_login=? AND excluded=0 AND profit>0", [login]).fetchone()[0]
             db.execute("UPDATE accounts SET total_trades=?, winning_trades=? WHERE mt5_login=?", [total, wins, login])
             db.commit()
-            # Rules + sync
             acc = db.execute("SELECT * FROM accounts WHERE mt5_login=?", [login]).fetchone()
             if acc: self.check_rules(db, login, dict(acc))
             try:
