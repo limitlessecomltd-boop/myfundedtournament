@@ -111,7 +111,7 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
     // For profit withdrawal from active account: trader gets their split
     let traderAmount, platformAmount;
     if (type === 'cashout') {
-      // account_size is the 90% of pool — 75% cashout = account_size * (75/90)
+      // account_size is the 90% of pool â 75% cashout = account_size * (75/90)
       const poolEquivalent = parseFloat(account.account_size) / 0.9;
       traderAmount   = poolEquivalent * 0.75;
       platformAmount = poolEquivalent * 0.15; // platform keeps difference
@@ -138,6 +138,37 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
 
     res.status(201).json({ success: true, data: rows[0] });
   } catch (err) { next(err); }
+});
+
+
+
+// PATCH /api/users/profile - update nickname and phone
+router.patch('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { nickname, phone } = req.body;
+    const userId = req.user.id;
+    if (!nickname && phone === undefined) return res.status(400).json({ error: 'Provide nickname or phone' });
+    const updates = {};
+    if (nickname !== undefined) updates.nickname = nickname.trim();
+    if (phone !== undefined) updates.phone = phone.trim();
+    const { data, error } = await supabase.from('users').update(updates).eq('id', userId).select('id,username,email,nickname,phone,wallet_address').single();
+    if (error) throw error;
+    res.json({ success: true, user: data });
+  } catch (err) {
+    console.error('Profile update error:', err);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// GET /api/users/me - full profile with nickname/phone
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('users').select('id,username,email,nickname,phone,wallet_address,is_admin,created_at').eq('id', req.user.id).single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
 });
 
 module.exports = router;
