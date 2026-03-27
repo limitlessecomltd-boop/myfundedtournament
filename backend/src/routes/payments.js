@@ -1,7 +1,3 @@
-const axios = require('axios');
-    // Auto-create MT5 demo account for trader
-    if (paymentRecord && paymentRecord.entry_id) { createDemoAccountForEntry(supabase, paymentRecord.entry_id).catch(console.error); }
-
 const express = require('express');
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
@@ -10,8 +6,8 @@ const email = require('../services/emailService');
 const db = require('../config/db');
 const { authenticate } = require('../middleware/auth');
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ POST /api/payments/create Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Called by frontend after entry is created Ã¢ÂÂ generates a NOWPayments invoice
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ POST /api/payments/create ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// Called by frontend after entry is created ÃÂ¢ÃÂÃÂ generates a NOWPayments invoice
 router.post('/create', authenticate, async (req, res) => {
   try {
     const { entry_id, tournament_id } = req.body;
@@ -61,7 +57,7 @@ router.post('/create', authenticate, async (req, res) => {
     const payment = await createPayment({
       orderId: `entry_${entry_id}_${Date.now()}`,
       amount: parseFloat(entry.entry_fee),
-      description: `MFT Entry Ã¢ÂÂ ${entry.tournament_name}`,
+      description: `MFT Entry ÃÂ¢ÃÂÃÂ ${entry.tournament_name}`,
       callbackUrl,
     });
 
@@ -96,7 +92,7 @@ router.post('/create', authenticate, async (req, res) => {
   }
 });
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ GET /api/payments/:paymentId/status Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ GET /api/payments/:paymentId/status ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 // Frontend polls this to check payment status
 router.get('/:paymentId/status', authenticate, async (req, res) => {
   try {
@@ -157,7 +153,7 @@ router.get('/:paymentId/status', authenticate, async (req, res) => {
         payment: rows[0],
       });
     } catch {
-      // NOWPayments API down Ã¢ÂÂ return local status
+      // NOWPayments API down ÃÂ¢ÃÂÃÂ return local status
       res.json({
         success: true,
         status: rows[0].status,
@@ -171,8 +167,8 @@ router.get('/:paymentId/status', authenticate, async (req, res) => {
   }
 });
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ POST /api/payments/webhook Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// NOWPayments IPN callback Ã¢ÂÂ called when payment status changes
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ POST /api/payments/webhook ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// NOWPayments IPN callback ÃÂ¢ÃÂÃÂ called when payment status changes
 // IMPORTANT: Must be registered BEFORE express.json() globally parses the body,
 // OR we just use the already-parsed body (since express.json is global in server.js)
 router.post('/webhook', async (req, res) => {
@@ -192,19 +188,19 @@ router.post('/webhook', async (req, res) => {
       return res.status(400).json({ error: 'Invalid webhook body' });
     }
 
-    // Verify IPN signature Ã¢ÂÂ log but don't block if invalid (prevents missed payments)
+    // Verify IPN signature ÃÂ¢ÃÂÃÂ log but don't block if invalid (prevents missed payments)
     if (signature && process.env.NOWPAYMENTS_IPN_SECRET) {
       const valid = await verifyIpnSignature(body, signature);
       if (!valid) {
-        console.warn('[Webhook] Signature mismatch for payment', body.payment_id, 'Ã¢ÂÂ processing anyway');
-        // Don't return 401 Ã¢ÂÂ still process the payment to avoid missing confirmations
+        console.warn('[Webhook] Signature mismatch for payment', body.payment_id, 'ÃÂ¢ÃÂÃÂ processing anyway');
+        // Don't return 401 ÃÂ¢ÃÂÃÂ still process the payment to avoid missing confirmations
       }
     }
 
     const { payment_id, payment_status, order_id } = body;
     const paymentIdStr = payment_id.toString();
 
-    console.log(`[Webhook] Payment ${paymentIdStr} Ã¢ÂÂ ${payment_status}`);
+    console.log(`[Webhook] Payment ${paymentIdStr} ÃÂ¢ÃÂÃÂ ${payment_status}`);
 
     const statusMap = {
       waiting: 'waiting', confirming: 'confirming',
@@ -234,7 +230,7 @@ router.post('/webhook', async (req, res) => {
       await activateEntry(entry_id, tournament_id, user_id);
     }
 
-    // Handle expiry Ã¢ÂÂ clean up pending_payment entry so trader can retry
+    // Handle expiry ÃÂ¢ÃÂÃÂ clean up pending_payment entry so trader can retry
     if (ourStatus === 'expired' || ourStatus === 'failed') {
       const { entry_id } = updated[0];
       if (entry_id) {
@@ -254,7 +250,7 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ Helper: activate entry after confirmed payment Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Helper: activate entry after confirmed payment ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 async function activateEntry(entryId, tournamentId, userId) {
   try {
     // Activate the entry
@@ -280,7 +276,7 @@ async function activateEntry(entryId, tournamentId, userId) {
       [tId]
     );
 
-    console.log(`Ã¢ÂÂ [Payment] Entry ${entryId} activated, prize pool updated`);
+    console.log(`ÃÂ¢ÃÂÃÂ [Payment] Entry ${entryId} activated, prize pool updated`);
 
     // Send confirmation email
     try {
@@ -304,7 +300,7 @@ async function activateEntry(entryId, tournamentId, userId) {
       console.warn('[Email] Payment confirmed email failed:', emailErr.message);
     }
 
-    // Connect MT5 account to MetaApi (async Ã¢ÂÂ don't block the response)
+    // Connect MT5 account to MetaApi (async ÃÂ¢ÃÂÃÂ don't block the response)
     activateEntryMetaApi(entryId).catch(err => {
       console.warn(`[Payment] MetaApi activation failed for ${entryId}:`, err.message);
     });
@@ -314,34 +310,5 @@ async function activateEntry(entryId, tournamentId, userId) {
   }
 }
 
-
-async function createDemoAccountForEntry(supabase, entryId) {
-  try {
-    const { data: entry } = await supabase.from('entries').select('id,user_id,tournament_id').eq('id', entryId).single();
-    if (!entry) return console.error('[Demo] Entry not found:', entryId);
-    const { data: user } = await supabase.from('users').select('id,email,username,nickname,phone').eq('id', entry.user_id).single();
-    if (!user) return console.error('[Demo] User not found for entry:', entryId);
-    const name = (user.nickname || user.username || 'MFT Trader').substring(0,32);
-    const email = user.email;
-    const phone = user.phone || '0000000000';
-    const BRIDGE_URL = process.env.BRIDGE_URL || 'http://38.60.196.145:5099';
-    const BRIDGE_SECRET = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
-    console.log('[Demo] Creating MT5 demo for', email, 'name=', name);
-    const resp = await axios.post(BRIDGE_URL + '/create-demo-account', { name, email, phone, secret: BRIDGE_SECRET }, { timeout: 30000 });
-    const { login, password, investor_password, server } = resp.data;
-    await supabase.from('entries').update({ mt5_login: login.toString(), mt5_password: password, mt5_server: server, status: 'pending' }).eq('id', entryId);
-    const { Resend } = require('resend');
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    await resend.emails.send({
-      from: 'MFT <noreply@myfundedtournament.com>',
-      to: email,
-      subject: 'Your MT5 Demo Account is Ready — MyFundedTournament',
-      html: '<div style="font-family:Inter,sans-serif;background:#0a0e1a;color:#fff;padding:32px;border-radius:12px;max-width:600px;margin:0 auto"><h1 style="color:#FFD700">MyFundedTournament</h1><p style="color:#22C55E">Your demo trading account has been created!</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:12px;background:#111827;color:#9CA3AF;border-radius:8px 8px 0 0">Login</td><td style="padding:12px;background:#111827;font-weight:700;font-size:18px">'+login+'</td></tr><tr><td style="padding:12px;background:#1F2937;color:#9CA3AF">Password</td><td style="padding:12px;background:#1F2937;font-weight:700">'+password+'</td></tr><tr><td style="padding:12px;background:#111827;color:#9CA3AF">Server</td><td style="padding:12px;background:#111827;font-weight:700">'+server+'</td></tr></table><div style="padding:16px;background:#1F2937;border-radius:8px;border-left:4px solid #FFD700;margin:16px 0"><p style="color:#FFD700;font-weight:700;margin:0">Starting Balance: $1,000.00</p><p style="color:#9CA3AF;font-size:14px;margin:8px 0 0">Open MetaTrader 5 and connect using the credentials above. Good luck!</p></div><p style="color:#6B7280;font-size:12px">MyFundedTournament · Compete Demo. Win Real Funding.</p></div>'
-    });
-    console.log('[Demo] Account created and email sent login=', login);
-  } catch (err) {
-    console.error('[Demo] createDemoAccountForEntry error:', err.message);
-  }
-}
 
 module.exports = router;
