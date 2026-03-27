@@ -31,30 +31,6 @@ function StatCard({ label, value, sub, color="#fff", accent="#FFD700" }:any) {
         background:`linear-gradient(90deg,${accent},${accent}88)` }}/>
       <div style={{ fontSize:11, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase",
         color:"rgba(255,255,255,.35)", marginBottom:10 }}>{label}</div>
-              {/* Nickname field */}
-              <div>
-                <label style={{display:'block',fontSize:'12px',color:'#9CA3AF',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Trading Nickname <span style={{color:'#EF4444'}}>*</span></label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={e => setNickname(e.target.value)}
-                  placeholder="Your trading name (shown on leaderboard)"
-                  maxLength={32}
-                  style={{width:'100%',background:'#1F2937',border:'1px solid '+(nickname?'#22C55E':'#374151'),borderRadius:'8px',padding:'10px 14px',color:'#fff',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
-                />
-              </div>
-              {/* Phone field */}
-              <div>
-                <label style={{display:'block',fontSize:'12px',color:'#9CA3AF',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Phone Number <span style={{color:'#EF4444'}}>*</span></label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  placeholder="+1234567890"
-                  style={{width:'100%',background:'#1F2937',border:'1px solid '+(phone?'#22C55E':'#374151'),borderRadius:'8px',padding:'10px 14px',color:'#fff',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
-                />
-                <p style={{margin:'4px 0 0',fontSize:'11px',color:'#6B7280'}}>Required for MetaTrader demo account creation</p>
-              </div>
       <div style={{ fontSize:28, fontWeight:900, color, letterSpacing:"-1px", lineHeight:1,
         fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", marginBottom:4 }}>{value}</div>
       {sub && <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>{sub}</div>}
@@ -70,7 +46,6 @@ export default function ProfilePage() {
   const [tLoading, setTLoading] = useState(true);
   const [nickname, setNickname] = useState('');
   const [phone, setPhone] = useState('');
-  const [profileComplete, setProfileComplete] = useState(true);
   const [username, setUsername] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [saving, setSaving] = useState(false);
@@ -82,27 +57,19 @@ export default function ProfilePage() {
     if (user) {
       setUsername(user.username || "");
       setWalletAddress(user.wallet_address || "");
+      setNickname(user.nickname || '');
+      setPhone(user.phone || '');
       setTLoading(true);
       userApi.getMyTournaments().then(setTournaments).catch(()=>{}).finally(()=>setTLoading(false));
     }
   }, [user]);
 
   async function saveSettings() {
-    // Also update profile (nickname + phone)
-    if (nickname || phone) {
-      await fetch('/api/users/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-        body: JSON.stringify({ nickname: nickname.trim(), phone: phone.trim() })
-      }).catch(console.error);
-      setProfileComplete(!!(nickname && phone));
-    }
-    // original saveSettings below {
     setSaving(true);
     try {
       await userApi.update({ username, wallet_address: walletAddress,
-          nickname: nickname.trim(),
-          phone: phone.trim() });
+            nickname: nickname.trim(),
+            phone: phone.trim() });
       await refresh();
       setSaved(true);
       setTimeout(()=>setSaved(false), 2500);
@@ -517,7 +484,17 @@ export default function ProfilePage() {
                         <input className="input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter username" maxLength={30}/>
                       </div>
                       <div>
-                        <label className="input-label">Email</label>
+                        <div style={{marginBottom:'16px'}}>
+                        <label className="input-label">Nickname <span style={{color:'#EF4444',fontSize:'12px'}}>*</span></label>
+                        <input className="input" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="Your trading name (shown on leaderboard)" maxLength={32}/>
+                        <p style={{margin:'4px 0 0',fontSize:'11px',color:'#6B7280'}}>Used as your MetaTrader 5 account name</p>
+                      </div>
+                      <div style={{marginBottom:'16px'}}>
+                        <label className="input-label">Phone Number <span style={{color:'#EF4444',fontSize:'12px'}}>*</span></label>
+                        <input className="input" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+1234567890" type="tel"/>
+                        <p style={{margin:'4px 0 0',fontSize:'11px',color:'#6B7280'}}>Required for MetaTrader demo account creation</p>
+                      </div>
+                      <label className="input-label">Email</label>
                         <input className="input" value={user.email||""} disabled style={{ opacity:.5, cursor:"not-allowed" }}/>
                       </div>
                     </div>
@@ -566,13 +543,4 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}{!profileComplete && (
-          <div style={{display:'flex',alignItems:'center',gap:'12px',background:'#1c1a0a',border:'1px solid #FFD700',borderRadius:'8px',padding:'12px 16px',marginBottom:'16px'}}>
-            <span style={{fontSize:'20px'}}>⚠️</span>
-            <div>
-              <p style={{margin:0,color:'#FFD700',fontWeight:700,fontSize:'14px'}}>Complete your profile to join tournaments</p>
-              <p style={{margin:'4px 0 0',color:'#9CA3AF',fontSize:'12px'}}>MetaTrader requires your trading nickname and phone number to create your demo account.</p>
-            </div>
-          </div>
-        )}
-        
+}
