@@ -31,6 +31,30 @@ function StatCard({ label, value, sub, color="#fff", accent="#FFD700" }:any) {
         background:`linear-gradient(90deg,${accent},${accent}88)` }}/>
       <div style={{ fontSize:11, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase",
         color:"rgba(255,255,255,.35)", marginBottom:10 }}>{label}</div>
+              {/* Nickname field */}
+              <div>
+                <label style={{display:'block',fontSize:'12px',color:'#9CA3AF',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Trading Nickname <span style={{color:'#EF4444'}}>*</span></label>
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={e => setNickname(e.target.value)}
+                  placeholder="Your trading name (shown on leaderboard)"
+                  maxLength={32}
+                  style={{width:'100%',background:'#1F2937',border:'1px solid '+(nickname?'#22C55E':'#374151'),borderRadius:'8px',padding:'10px 14px',color:'#fff',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
+                />
+              </div>
+              {/* Phone field */}
+              <div>
+                <label style={{display:'block',fontSize:'12px',color:'#9CA3AF',marginBottom:'6px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Phone Number <span style={{color:'#EF4444'}}>*</span></label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="+1234567890"
+                  style={{width:'100%',background:'#1F2937',border:'1px solid '+(phone?'#22C55E':'#374151'),borderRadius:'8px',padding:'10px 14px',color:'#fff',fontSize:'14px',outline:'none',boxSizing:'border-box'}}
+                />
+                <p style={{margin:'4px 0 0',fontSize:'11px',color:'#6B7280'}}>Required for MetaTrader demo account creation</p>
+              </div>
       <div style={{ fontSize:28, fontWeight:900, color, letterSpacing:"-1px", lineHeight:1,
         fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", marginBottom:4 }}>{value}</div>
       {sub && <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>{sub}</div>}
@@ -44,6 +68,9 @@ export default function ProfilePage() {
   const [tab, setTab] = useState("overview");
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [tLoading, setTLoading] = useState(true);
+  const [nickname, setNickname] = useState('');
+  const [phone, setPhone] = useState('');
+  const [profileComplete, setProfileComplete] = useState(true);
   const [username, setUsername] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [saving, setSaving] = useState(false);
@@ -61,9 +88,21 @@ export default function ProfilePage() {
   }, [user]);
 
   async function saveSettings() {
+    // Also update profile (nickname + phone)
+    if (nickname || phone) {
+      await fetch('/api/users/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+        body: JSON.stringify({ nickname: nickname.trim(), phone: phone.trim() })
+      }).catch(console.error);
+      setProfileComplete(!!(nickname && phone));
+    }
+    // original saveSettings below {
     setSaving(true);
     try {
-      await userApi.update({ username, wallet_address: walletAddress });
+      await userApi.update({ username, wallet_address: walletAddress,
+          nickname: nickname.trim(),
+          phone: phone.trim() });
       await refresh();
       setSaved(true);
       setTimeout(()=>setSaved(false), 2500);
@@ -90,7 +129,7 @@ export default function ProfilePage() {
     <div style={{ background:"#050810", minHeight:"100vh" }}>
       <div style={{ maxWidth:1280, margin:"0 auto", padding:"36px 40px" }}>
 
-        {/* ── TOP HEADER ── */}
+        {/* ââ TOP HEADER ââ */}
         <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:36,
           background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
           borderRadius:18, padding:"24px 28px" }}>
@@ -114,7 +153,7 @@ export default function ProfilePage() {
                 {tournaments.length} Tournament{tournaments.length!==1?"s":""} Entered
               </span>
               {wins>0 && <span style={{ background:"rgba(255,215,0,.1)", border:"1px solid rgba(255,215,0,.3)", borderRadius:20, padding:"2px 12px", fontSize:11, fontWeight:700, color:"#FFD700" }}>
-                🏆 {wins} Win{wins!==1?"s":""}
+                ð {wins} Win{wins!==1?"s":""}
               </span>}
             </div>
           </div>
@@ -124,7 +163,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── LAYOUT: sidebar + content ── */}
+        {/* ââ LAYOUT: sidebar + content ââ */}
         <div style={{ display:"grid", gridTemplateColumns:"220px 1fr", gap:24 }}>
 
           {/* Sidebar */}
@@ -155,7 +194,7 @@ export default function ProfilePage() {
                 { l:"Active Entries",  v: active.length,                color:"#22C55E" },
                 { l:"Tournaments",     v: tournaments.length,            color:"#fff" },
                 { l:"Total Wins",      v: wins,                          color:"#FFD700" },
-                { l:"Avg Gain",        v: tournaments.length ? (totalPnl/tournaments.length).toFixed(1)+"%" : "—", color: totalPnl>=0?"#22C55E":"#EF4444" },
+                { l:"Avg Gain",        v: tournaments.length ? (totalPnl/tournaments.length).toFixed(1)+"%" : "â", color: totalPnl>=0?"#22C55E":"#EF4444" },
               ].map(s=>(
                 <div key={s.l} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(255,255,255,.04)" }}>
                   <span style={{ fontSize:12, color:"rgba(255,255,255,.38)" }}>{s.l}</span>
@@ -168,7 +207,7 @@ export default function ProfilePage() {
           {/* Main content */}
           <div>
 
-            {/* ── OVERVIEW ── */}
+            {/* ââ OVERVIEW ââ */}
             {tab === "overview" && (
               <div>
                 {/* Stat cards */}
@@ -179,7 +218,7 @@ export default function ProfilePage() {
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:28 }}>
                   <StatCard label="Best Gain"
-                    value={tournaments.length ? Math.max(...tournaments.map(t=>Number(t.best_profit_pct||0))).toFixed(2)+"%" : "—"}
+                    value={tournaments.length ? Math.max(...tournaments.map(t=>Number(t.best_profit_pct||0))).toFixed(2)+"%" : "â"}
                     sub="Single tournament" color="#22C55E" accent="#22C55E"/>
                   <StatCard label="Total Entries" value={user.total_entries||tournaments.reduce((s,t)=>s+(t.entry_count||1),0)} sub="Including re-entries" accent="#60a5fa"/>
                   <StatCard label="Prize Pool Joined" value={"$"+(tournaments.reduce((s,t)=>s+Number(t.prize_pool||0),0)).toLocaleString()} sub="Cumulative" color="#FFD700" accent="#FFD700"/>
@@ -197,7 +236,7 @@ export default function ProfilePage() {
                           <div>
                             <div style={{ fontSize:15, fontWeight:700, color:"#fff", marginBottom:5 }}>{t.name}</div>
                             <div style={{ fontSize:13, color:"rgba(255,255,255,.42)" }}>
-                              ${t.entry_fee} entry · ${Number(t.prize_pool).toLocaleString()} pool · {t.entry_count} {t.entry_count===1?"entry":"entries"}
+                              ${t.entry_fee} entry Â· ${Number(t.prize_pool).toLocaleString()} pool Â· {t.entry_count} {t.entry_count===1?"entry":"entries"}
                             </div>
                           </div>
                           <div style={{ display:"flex", alignItems:"center", gap:16 }}>
@@ -209,7 +248,7 @@ export default function ProfilePage() {
                             </div>
                             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                               <Link href={`/leaderboard?t=${t.id}`} className="btn btn-ghost btn-sm">Leaderboard</Link>
-                              <Link href={`/tournaments/${t.id}`} className="btn btn-primary btn-sm">View →</Link>
+                              <Link href={`/tournaments/${t.id}`} className="btn btn-primary btn-sm">View â</Link>
                             </div>
                           </div>
                         </div>
@@ -222,23 +261,23 @@ export default function ProfilePage() {
                 <div>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
                     <div style={{ fontSize:15, fontWeight:700, color:"#fff" }}>Recent History</div>
-                    {ended.length>3 && <button onClick={()=>setTab("history")} style={{ fontSize:12, color:"#FFD700", background:"none", border:"none", cursor:"pointer", fontWeight:600 }}>View all →</button>}
+                    {ended.length>3 && <button onClick={()=>setTab("history")} style={{ fontSize:12, color:"#FFD700", background:"none", border:"none", cursor:"pointer", fontWeight:600 }}>View all â</button>}
                   </div>
                   {ended.length===0 ? (
                     <div style={{ textAlign:"center", padding:"40px 0", color:"rgba(255,255,255,.3)", fontSize:14 }}>
                       No completed tournaments yet.{" "}
-                      <Link href="/tournaments" style={{ color:"#FFD700", textDecoration:"none", fontWeight:600 }}>Browse tournaments →</Link>
+                      <Link href="/tournaments" style={{ color:"#FFD700", textDecoration:"none", fontWeight:600 }}>Browse tournaments â</Link>
                     </div>
                   ) : (
                     <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                       {ended.slice(0,3).map((t:any)=>(
                         <div key={t.id} style={{ background:"rgba(13,18,29,.8)", border:`1px solid ${t.is_winner?"rgba(255,215,0,.3)":"rgba(255,255,255,.06)"}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                            <div style={{ fontSize:22 }}>{t.is_winner?"🏆":"📊"}</div>
+                            <div style={{ fontSize:22 }}>{t.is_winner?"ð":"ð"}</div>
                             <div>
                               <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,.85)" }}>{t.name}</div>
                               <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
-                                {t.entry_count} {t.entry_count===1?"entry":"entries"} · ${t.entry_fee} each
+                                {t.entry_count} {t.entry_count===1?"entry":"entries"} Â· ${t.entry_fee} each
                               </div>
                             </div>
                           </div>
@@ -256,13 +295,13 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ── ACTIVE TOURNAMENTS ── */}
+            {/* ââ ACTIVE TOURNAMENTS ââ */}
             {tab === "active" && (
               <div>
                 <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:22, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>Active Tournaments</div>
                 {active.length===0 ? (
                   <div style={{ textAlign:"center", padding:"60px 0" }}>
-                    <div style={{ fontSize:40, marginBottom:14 }}>📊</div>
+                    <div style={{ fontSize:40, marginBottom:14 }}>ð</div>
                     <div style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No active tournaments</div>
                     <div style={{ fontSize:14, color:"rgba(255,255,255,.3)", marginBottom:24 }}>Join a tournament to start competing!</div>
                     <Link href="/tournaments" className="btn btn-primary">Browse Tournaments</Link>
@@ -280,7 +319,7 @@ export default function ProfilePage() {
                               </span>
                             </div>
                             <div style={{ fontSize:13, color:"rgba(255,255,255,.42)" }}>
-                              ${t.entry_fee} entry · ${Number(t.prize_pool).toLocaleString()} prize pool · {t.entry_count} {t.entry_count===1?"entry":"entries"}
+                              ${t.entry_fee} entry Â· ${Number(t.prize_pool).toLocaleString()} prize pool Â· {t.entry_count} {t.entry_count===1?"entry":"entries"}
                             </div>
                           </div>
                           <div style={{ textAlign:"right" }}>
@@ -292,7 +331,7 @@ export default function ProfilePage() {
                         </div>
                         <div style={{ display:"flex", gap:10 }}>
                           <Link href={`/leaderboard?t=${t.id}`} className="btn btn-ghost btn-sm">View Leaderboard</Link>
-                          <Link href={`/tournaments/${t.id}`} className="btn btn-primary btn-sm">Manage Entry →</Link>
+                          <Link href={`/tournaments/${t.id}`} className="btn btn-primary btn-sm">Manage Entry â</Link>
                         </div>
                       </div>
                     ))}
@@ -301,7 +340,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ── HISTORY ── */}
+            {/* ââ HISTORY ââ */}
             {tab === "history" && (
               <div>
                 <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:22, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>Tournament History</div>
@@ -309,7 +348,7 @@ export default function ProfilePage() {
                   <div style={{ display:"flex", justifyContent:"center", padding:"60px 0" }}><div className="spinner"/></div>
                 ) : tournaments.length===0 ? (
                   <div style={{ textAlign:"center", padding:"60px 0" }}>
-                    <div style={{ fontSize:40, marginBottom:14 }}>📋</div>
+                    <div style={{ fontSize:40, marginBottom:14 }}>ð</div>
                     <div style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,.6)", marginBottom:24 }}>No tournaments yet</div>
                     <Link href="/tournaments" className="btn btn-primary">Browse Tournaments</Link>
                   </div>
@@ -319,15 +358,15 @@ export default function ProfilePage() {
                       <div key={t.id} style={{ background:"rgba(13,18,29,.9)", border:`1px solid ${t.is_winner?"rgba(255,215,0,.3)":"rgba(255,255,255,.06)"}`, borderRadius:14, padding:"18px 22px" }}>
                         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:14 }}>
                           <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                            <div style={{ fontSize:28 }}>{t.is_winner?"🏆":t.status==="active"?"⚡":"📊"}</div>
+                            <div style={{ fontSize:28 }}>{t.is_winner?"ð":t.status==="active"?"â¡":"ð"}</div>
                             <div>
                               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}>
                                 <Link href={`/tournaments/${t.id}`} style={{ fontSize:15, fontWeight:700, color:"#fff", textDecoration:"none" }}>{t.name}</Link>
                                 <span style={{ fontSize:11, fontWeight:700, padding:"2px 9px", borderRadius:20, background:`${statusColor(t.status)}18`, border:`1px solid ${statusColor(t.status)}44`, color:statusColor(t.status), textTransform:"capitalize" }}>{t.status}</span>
-                                {t.is_winner && <span style={{ fontSize:11, fontWeight:700, padding:"2px 9px", borderRadius:20, background:"rgba(255,215,0,.1)", border:"1px solid rgba(255,215,0,.3)", color:"#FFD700" }}>Winner 🏆</span>}
+                                {t.is_winner && <span style={{ fontSize:11, fontWeight:700, padding:"2px 9px", borderRadius:20, background:"rgba(255,215,0,.1)", border:"1px solid rgba(255,215,0,.3)", color:"#FFD700" }}>Winner ð</span>}
                               </div>
                               <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>
-                                {t.entry_count} {t.entry_count===1?"entry":"entries"} · ${t.entry_fee} each · ${Number(t.prize_pool).toLocaleString()} pool
+                                {t.entry_count} {t.entry_count===1?"entry":"entries"} Â· ${t.entry_fee} each Â· ${Number(t.prize_pool).toLocaleString()} pool
                               </div>
                             </div>
                           </div>
@@ -348,7 +387,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ── PAYOUTS ── */}
+            {/* ââ PAYOUTS ââ */}
             {tab === "payouts" && (
               <div>
                 <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:8, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>Payouts</div>
@@ -357,7 +396,7 @@ export default function ProfilePage() {
                 {/* Wallet setup notice */}
                 {!user.wallet_address && (
                   <div style={{ background:"rgba(255,215,0,.06)", border:"1px solid rgba(255,215,0,.2)", borderRadius:13, padding:"16px 20px", marginBottom:22, display:"flex", alignItems:"center", gap:14 }}>
-                    <div style={{ fontSize:22 }}>⚠️</div>
+                    <div style={{ fontSize:22 }}>â ï¸</div>
                     <div>
                       <div style={{ fontSize:14, fontWeight:700, color:"#FFD700", marginBottom:4 }}>Add your USDT wallet address</div>
                       <div style={{ fontSize:13, color:"rgba(255,255,255,.45)" }}>Set your payout wallet in Settings to receive winnings.</div>
@@ -369,7 +408,7 @@ export default function ProfilePage() {
                 {/* Won tournaments */}
                 {tournaments.filter(t=>t.is_winner).length===0 ? (
                   <div style={{ textAlign:"center", padding:"60px 0" }}>
-                    <div style={{ fontSize:40, marginBottom:14 }}>💰</div>
+                    <div style={{ fontSize:40, marginBottom:14 }}>ð°</div>
                     <div style={{ fontSize:16, fontWeight:600, color:"rgba(255,255,255,.5)", marginBottom:8 }}>No payouts yet</div>
                     <div style={{ fontSize:14, color:"rgba(255,255,255,.3)", marginBottom:24 }}>Win a tournament to receive your funded account or USDT payout.</div>
                     <Link href="/tournaments" className="btn btn-primary">Join a Tournament</Link>
@@ -385,7 +424,7 @@ export default function ProfilePage() {
                           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:14 }}>
                             <div style={{ flex:1 }}>
                               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                                <span style={{ fontSize:20 }}>🏆</span>
+                                <span style={{ fontSize:20 }}>ð</span>
                                 <span style={{ fontSize:15, fontWeight:700, color:"#FFD700" }}>{t.name}</span>
                               </div>
                               <div style={{ display:"flex", gap:16, flexWrap:"wrap", marginTop:8 }}>
@@ -401,7 +440,7 @@ export default function ProfilePage() {
                             </div>
                             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                               <Link href={`/claim/${t.id}`} className="btn btn-primary btn-sm" style={{ display:"inline-flex", justifyContent:"center" }}>
-                                🏆 Claim Prize →
+                                ð Claim Prize â
                               </Link>
                               <Link href={`/certificates?t=${t.id}`} className="btn btn-ghost btn-sm" style={{ display:"inline-flex", justifyContent:"center" }}>
                                 View Certificate
@@ -416,7 +455,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ── CERTIFICATES ── */}
+            {/* ââ CERTIFICATES ââ */}
             {tab === "certificates" && (
               <div>
                 <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:8, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>My Certificates</div>
@@ -424,7 +463,7 @@ export default function ProfilePage() {
 
                 {tournaments.filter(t=>t.is_winner).length === 0 ? (
                   <div style={{ textAlign:"center", padding:"60px 0" }}>
-                    <div style={{ fontSize:56, marginBottom:16 }}>🏆</div>
+                    <div style={{ fontSize:56, marginBottom:16 }}>ð</div>
                     <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No certificates yet</div>
                     <div style={{ fontSize:14, color:"rgba(255,255,255,.3)", marginBottom:28, maxWidth:360, margin:"0 auto 28px" }}>
                       Win a tournament to earn your Gold Certificate. Only the 1st place winner receives a certificate.
@@ -434,7 +473,7 @@ export default function ProfilePage() {
                 ) : (
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:20 }}>
                     {tournaments.filter(t=>t.is_winner).map((t:any, i:number)=>{
-                      const medal = "🥇";
+                      const medal = "ð¥";
                       const certColor = i===0?"#FFD700":i===1?"#b4c0d8":"#CD7F32";
                       const certName = "Gold Certificate";
                       const borderColor = i===0?"rgba(255,215,0,.4)":i===1?"rgba(180,192,216,.3)":"rgba(205,127,50,.3)";
@@ -463,7 +502,7 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* ── SETTINGS ── */}
+            {/* ââ SETTINGS ââ */}
             {tab === "settings" && (
               <div>
                 <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:22, fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif" }}>Account Settings</div>
@@ -491,7 +530,7 @@ export default function ProfilePage() {
                     <label className="input-label">USDT TRC-20 Address</label>
                     <input className="input" value={walletAddress} onChange={e=>setWalletAddress(e.target.value)}
                       placeholder="T... (TRC-20 address)" style={{ marginBottom:8, fontFamily:"'JetBrains Mono','Fira Code',monospace", fontSize:13 }}/>
-                    <div style={{ fontSize:12, color:"rgba(255,255,255,.28)" }}>⚠️ Only enter a TRC-20 address. Sending to wrong network = permanent loss.</div>
+                    <div style={{ fontSize:12, color:"rgba(255,255,255,.28)" }}>â ï¸ Only enter a TRC-20 address. Sending to wrong network = permanent loss.</div>
                   </div>
 
                   {/* Account info */}
@@ -499,7 +538,7 @@ export default function ProfilePage() {
                     <div style={{ fontSize:13, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase", color:"rgba(255,255,255,.35)", marginBottom:18 }}>Account Info</div>
                     <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                       {[
-                        { l:"Member since",   v: user.created_at ? new Date(user.created_at).toLocaleDateString("en-US",{month:"long",year:"numeric"}) : "—" },
+                        { l:"Member since",   v: user.created_at ? new Date(user.created_at).toLocaleDateString("en-US",{month:"long",year:"numeric"}) : "â" },
                         { l:"Account status", v: "Active", color:"#22C55E" },
                         { l:"Account type",   v: user.is_admin ? "Admin" : "Trader", color: user.is_admin ? "#FFD700" : "rgba(255,255,255,.7)" },
                       ].map(r=>(
@@ -516,7 +555,7 @@ export default function ProfilePage() {
                     <button onClick={saveSettings} disabled={saving} className="btn btn-primary btn-lg">
                       {saving ? "Saving..." : "Save Changes"}
                     </button>
-                    {saved && <span style={{ fontSize:13, color:"#22C55E", fontWeight:600 }}>✓ Saved successfully!</span>}
+                    {saved && <span style={{ fontSize:13, color:"#22C55E", fontWeight:600 }}>â Saved successfully!</span>}
                   </div>
                 </div>
               </div>
@@ -527,4 +566,13 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-}
+}{!profileComplete && (
+          <div style={{display:'flex',alignItems:'center',gap:'12px',background:'#1c1a0a',border:'1px solid #FFD700',borderRadius:'8px',padding:'12px 16px',marginBottom:'16px'}}>
+            <span style={{fontSize:'20px'}}>⚠️</span>
+            <div>
+              <p style={{margin:0,color:'#FFD700',fontWeight:700,fontSize:'14px'}}>Complete your profile to join tournaments</p>
+              <p style={{margin:'4px 0 0',color:'#9CA3AF',fontSize:'12px'}}>MetaTrader requires your trading nickname and phone number to create your demo account.</p>
+            </div>
+          </div>
+        )}
+        
