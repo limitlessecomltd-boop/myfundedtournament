@@ -1,15 +1,4 @@
 const express = require('express');
-      // Call C# bridge to start monitoring this MT5 account via mt5api
-      if (entry && entry.mt5_login && entry.mt5_password) {
-        const MT5_BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
-        const BRIDGE_SECRET = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
-        fetch(MT5_BRIDGE + '/connect-account', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login: entry.mt5_login, password: entry.mt5_password, secret: BRIDGE_SECRET })
-        }).then(r => r.json()).then(d => console.log('[Bridge] connect:', d.msg || d.message))
-          .catch(e => console.error('[Bridge] connect error:', e.message));
-      }
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
 const { activateEntryMetaApi } = require('../services/entryService');
