@@ -54,14 +54,7 @@ class MT5AccountManager:
 
     def _poll(self, login, server, broker, entry_id, tournament_id, stop_event):
         log.info("[MT5] Connecting " + login + " via C# bridge")
-        # Try to get account info, retry up to 5 times
-        info = None
-        for attempt in range(5):
-            info = _get("/account", {"login": login})
-            if info:
-                break
-            import time
-            time.sleep(3)
+        info = _get("/account", {"login": login})
         if not info:
             self._set_status(login, "error_login_failed")
             return
