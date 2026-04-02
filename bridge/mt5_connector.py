@@ -134,7 +134,7 @@ def _reconnect(db_factory):
     if not manager: return
     db = db_factory()
     try:
-        rows = db.execute("SELECT mt5_login,mt5_server,broker,entry_id,tournament_id FROM accounts WHERE status IN ('connected','pending') AND entry_id IS NOT NULL").fetchall()
+        rows = db.execute("SELECT mt5_login,mt5_server,broker,entry_id,tournament_id FROM accounts WHERE status IN ('connected','pending')").fetchall()
     finally: db.close()
     for r in rows:
         log.info("[MT5] Reconnecting " + str(r["mt5_login"]))
