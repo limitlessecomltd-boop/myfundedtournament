@@ -323,21 +323,4 @@ async function activateEntry(entryId, tournamentId, userId) {
 
 module.exports = router;
 
-    // Also insert into SQLite DB so admin portal shows this account
-    if (paymentRecord && paymentRecord.mt5_login) {
-      const PY_BRIDGE = process.env.PY_BRIDGE_URL || 'http://38.60.196.145:8080';
-      fetch(PY_BRIDGE + '/api/add-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mt5_login: String(paymentRecord.mt5_login),
-          mt5_password: paymentRecord.mt5_password || '',
-          mt5_server: paymentRecord.mt5_server || 'Exness-MT5Trial15',
-          broker: paymentRecord.broker || 'exness',
-          entry_id: entryId,
-          tournament_id: tournamentId
-        })
-      }).then(r => r.json()).then(d => {
-        console.log('[SQLite] add-account:', d);
-      }).catch(e => console.error('[SQLite] add-account error:', e.message));
-    }
+
