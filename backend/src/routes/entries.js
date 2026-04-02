@@ -53,7 +53,26 @@ router.get("/:id", authenticate, async (req, res, next) => {
 });
 
 
-// POST /api/entries/verify-mt5 — verify MT5 credentials before payment
+router.post('/verify-mt5', async (req, res) => {
+  try {
+    const { mt5_login, mt5_password, mt5_server } = req.body;
+    if (!mt5_login || !mt5_password) return res.status(400).json({ valid: false, error: 'Login and password required' });
+    const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+    const SECRET = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
+    const r = await fetch(BRIDGE + '/verify-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login: String(mt5_login), password: mt5_password, server: mt5_server || '', secret: SECRET })
+    });
+    const d = await r.json();
+    return res.json(d);
+  } catch (e) {
+    console.error('[verify-mt5]', e.message);
+    return res.status(500).json({ valid: false, error: 'Bridge connection failed: ' + e.message });
+  }
+});
+
+
 router.post('/verify-mt5', authenticate, async (req, res) => {
   try {
     const { mt5Login, mt5Password, mt5Server } = req.body;
