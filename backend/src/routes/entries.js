@@ -138,4 +138,79 @@ router.post('/resolve-server', (req, res) => {
   });
 });
 
+
+// Get live MT5 data for an entry from C# bridge
+router.get('/:id/mt5', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Get entry to find mt5_login
+    const { data: entry, error } = await supabase
+      .from('entries')
+      .select('mt5_login, mt5_password, starting_balance, status')
+      .eq('id', id)
+      .single();
+    if (error || !entry) return res.status(404).json({ error: 'Entry not found' });
+    if (!entry.mt5_login) return res.status(404).json({ error: 'No MT5 account linked' });
+
+    const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+    const login = String(entry.mt5_login);
+    const startBal = entry.starting_balance || 1000;
+
+    // Fetch account + trades in parallel
+    const [accRes, tradesRes, histRes] = await Promise.all([
+      fetch(BRIDGE + '/account?login=' + login).then(r => r.json()).catch(() => null),
+      fetch(BRIDGE + '/trades/open?login=' + login).then(r => r.json()).catch(() => []),
+      fetch(BRIDGE + '/trades/history?login=' + login + '&days=90').then(r => r.json()).catch(() => [])
+    ]);
+
+    if (!accRes || accRes.error) return res.status(503).json({ error: 'Account not connected to bridge' });
+
+    const balance = accRes.balance || startBal;
+    const equity = accRes.equity || balance;
+    const profit = accRes.profit || 0;
+    const profitAbs = Math.round((balance - startBal) * 100) / 100;
+    const profitPct = Math.round((profitAbs / startBal) * 10000) / 100;
+
+    // Calculate win rate from history
+    const closed = Array.isArray(histRes) ? histRes : [];
+    const wins = closed.filter(t => t.profit > 0).length;
+    const losses = closed.filter(t => t.profit < 0).length;
+    const winRate = closed.length > 0 ? Math.round(wins / closed.length * 100) : 0;
+
+    // Max drawdown
+    let maxDD = 0;
+    let peak = startBal;
+    const sorted = [...closed].sort((a,b) => new Date(a.close_time) - new Date(b.close_time));
+    let running = startBal;
+    for(const t of sorted) {
+      running += t.profit;
+      if(running > peak) peak = running;
+      const dd = Math.round((peak - running) / peak * 10000) / 100;
+      if(dd > maxDD) maxDD = dd;
+    }
+
+    res.json({
+      login: accRes.login,
+      balance,
+      equity,
+      profit,
+      profit_abs: profitAbs,
+      profit_pct: profitPct,
+      starting_balance: startBal,
+      open_trades: Array.isArray(tradesRes) ? tradesRes : [],
+      trade_history: closed,
+      total_trades: closed.length + (Array.isArray(tradesRes) ? tradesRes.length : 0),
+      wins,
+      losses,
+      win_rate: winRate,
+      max_drawdown: maxDD,
+      currency: accRes.currency || 'USD',
+      source: 'csharp_bridge'
+    });
+  } catch (e) {
+    console.error('[mt5 route]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
