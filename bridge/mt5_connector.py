@@ -63,6 +63,7 @@ class MT5AccountManager:
         while not stop_event.is_set():
             try: self._sync(login, entry_id)
             except Exception as e: log.error("[MT5] Sync error " + login + ": " + str(e))
+            _sync_from_bridge(db_factory)
             stop_event.wait(timeout=30)
 
     def _init_db(self, login, server, broker, entry_id, tournament_id):
@@ -129,7 +130,7 @@ def init_manager(db_factory, rules_engine, sync_callback):
     manager = MT5AccountManager(db_factory, rules_engine, sync_callback)
     log.info("[MT5] Manager initialized")
     _reconnect(db_factory)
-        _sync_from_bridge(db_factory)
+    _sync_from_bridge(db_factory)
 
 
 def _sync_from_bridge(db_factory):
@@ -179,6 +180,7 @@ def _sync_from_bridge(db_factory):
         log.error("[Sync] sync_from_bridge error: " + str(e))
 
 def _reconnect(db_factory):
+    _sync_from_bridge(db_factory)
     if not manager: return
     db = db_factory()
     try:
