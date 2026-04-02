@@ -603,7 +603,19 @@ export default function TournamentDetailPage() {
                   )}
 
                   {/* Pay button — only after verification passes */}
-                  {verified && (
+                  
+                {verified && verifyResult && (
+                  <div style={{background:"rgba(74,222,128,.08)",border:"1px solid rgba(74,222,128,.3)",borderRadius:12,padding:"12px 16px",marginBottom:8}}>
+                    <div style={{color:"#4ade80",fontWeight:700,fontSize:13,marginBottom:6}}>✅ MT5 Account Verified</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,fontSize:12,color:"rgba(255,255,255,.7)"}}>
+                      <div>Login: <span style={{color:"#fff",fontWeight:600}}>{verifyResult.login}</span></div>
+                      <div>Balance: <span style={{color:"#4ade80",fontWeight:600}}>{verifyResult.balance{"}"}</span></div>
+                      <div>Open Trades: <span style={{color:"#fff",fontWeight:600}}>{verifyResult.open_trades}</span></div>
+                      <div>Status: <span style={{color:"#4ade80",fontWeight:600}}>Ready ✓</span></div>
+                    </div>
+                  </div>
+                )}
+                {verified && (
                     <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width:"100%", marginBottom:10 }}>
                       {submitting ? "Processing..." : `🔒 Pay $${tournament.entry_fee} USDT`}
                     </button>
