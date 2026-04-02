@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
 const { activateEntryMetaApi } = require('../services/entryService');
@@ -6,8 +6,8 @@ const email = require('../services/emailService');
 const db = require('../config/db');
 const { authenticate } = require('../middleware/auth');
 
-// âââ POST /api/payments/create ââââââââââââââââââââââââââââââââââââââââââââââââ
-// Called by frontend after entry is created â generates a NOWPayments invoice
+// Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€ POST /api/payments/create Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
+// Called by frontend after entry is created Ã¢Â€Â” generates a NOWPayments invoice
 router.post('/create', authenticate, async (req, res) => {
   try {
     const { entry_id, tournament_id } = req.body;
@@ -57,7 +57,7 @@ router.post('/create', authenticate, async (req, res) => {
     const payment = await createPayment({
       orderId: `entry_${entry_id}_${Date.now()}`,
       amount: parseFloat(entry.entry_fee),
-      description: `MFT Entry â ${entry.tournament_name}`,
+      description: `MFT Entry Ã¢Â€Â” ${entry.tournament_name}`,
       callbackUrl,
     });
 
@@ -92,7 +92,7 @@ router.post('/create', authenticate, async (req, res) => {
   }
 });
 
-// âââ GET /api/payments/:paymentId/status âââââââââââââââââââââââââââââââââââââ
+// Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€ GET /api/payments/:paymentId/status Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 // Frontend polls this to check payment status
 router.get('/:paymentId/status', authenticate, async (req, res) => {
   try {
@@ -153,7 +153,7 @@ router.get('/:paymentId/status', authenticate, async (req, res) => {
         payment: rows[0],
       });
     } catch {
-      // NOWPayments API down â return local status
+      // NOWPayments API down Ã¢Â€Â” return local status
       res.json({
         success: true,
         status: rows[0].status,
@@ -167,8 +167,8 @@ router.get('/:paymentId/status', authenticate, async (req, res) => {
   }
 });
 
-// âââ POST /api/payments/webhook âââââââââââââââââââââââââââââââââââââââââââââââ
-// NOWPayments IPN callback â called when payment status changes
+// Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€ POST /api/payments/webhook Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
+// NOWPayments IPN callback Ã¢Â€Â” called when payment status changes
 // IMPORTANT: Must be registered BEFORE express.json() globally parses the body,
 // OR we just use the already-parsed body (since express.json is global in server.js)
 router.post('/webhook', async (req, res) => {
@@ -188,19 +188,19 @@ router.post('/webhook', async (req, res) => {
       return res.status(400).json({ error: 'Invalid webhook body' });
     }
 
-    // Verify IPN signature â log but don't block if invalid (prevents missed payments)
+    // Verify IPN signature Ã¢Â€Â” log but don't block if invalid (prevents missed payments)
     if (signature && process.env.NOWPAYMENTS_IPN_SECRET) {
       const valid = await verifyIpnSignature(body, signature);
       if (!valid) {
-        console.warn('[Webhook] Signature mismatch for payment', body.payment_id, 'â processing anyway');
-        // Don't return 401 â still process the payment to avoid missing confirmations
+        console.warn('[Webhook] Signature mismatch for payment', body.payment_id, 'Ã¢Â€Â” processing anyway');
+        // Don't return 401 Ã¢Â€Â” still process the payment to avoid missing confirmations
       }
     }
 
     const { payment_id, payment_status, order_id } = body;
     const paymentIdStr = payment_id.toString();
 
-    console.log(`[Webhook] Payment ${paymentIdStr} â ${payment_status}`);
+    console.log(`[Webhook] Payment ${paymentIdStr} Ã¢Â†Â’ ${payment_status}`);
 
     const statusMap = {
       waiting: 'waiting', confirming: 'confirming',
@@ -230,7 +230,7 @@ router.post('/webhook', async (req, res) => {
       await activateEntry(entry_id, tournament_id, user_id);
     }
 
-    // Handle expiry â clean up pending_payment entry so trader can retry
+    // Handle expiry Ã¢Â€Â” clean up pending_payment entry so trader can retry
     if (ourStatus === 'expired' || ourStatus === 'failed') {
       const { entry_id } = updated[0];
       if (entry_id) {
@@ -250,7 +250,7 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-// âââ Helper: activate entry after confirmed payment âââââââââââââââââââââââââââ
+// Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€ Helper: activate entry after confirmed payment Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€Ã¢Â”Â€
 async function activateEntry(entryId, tournamentId, userId) {
   try {
     // Activate the entry
@@ -266,6 +266,17 @@ async function activateEntry(entryId, tournamentId, userId) {
       return;
     }
 
+    // Call C# bridge to start monitoring this MT5 account
+    if (paymentRecord && paymentRecord.mt5_login && paymentRecord.mt5_password) {
+      const C5 = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+      const SEC = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
+      fetch(C5 + '/connect-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: paymentRecord.mt5_login, password: paymentRecord.mt5_password, secret: SEC })
+      }).then(r => r.json()).then(d => console.log('[Bridge]', d.msg)).catch(e => console.error('[Bridge]', e.message));
+    }
+
     const tId = rows[0].tournament_id || tournamentId;
 
     // Add entry fee to prize pool
@@ -276,7 +287,7 @@ async function activateEntry(entryId, tournamentId, userId) {
       [tId]
     );
 
-    console.log(`â [Payment] Entry ${entryId} activated, prize pool updated`);
+    console.log(`Ã¢ÂœÂ… [Payment] Entry ${entryId} activated, prize pool updated`);
 
     // Send confirmation email
     try {
@@ -300,7 +311,7 @@ async function activateEntry(entryId, tournamentId, userId) {
       console.warn('[Email] Payment confirmed email failed:', emailErr.message);
     }
 
-    // Connect MT5 account to MetaApi (async â don't block the response)
+    // Connect MT5 account to MetaApi (async Ã¢Â€Â” don't block the response)
     activateEntryMetaApi(entryId).catch(err => {
       console.warn(`[Payment] MetaApi activation failed for ${entryId}:`, err.message);
     });
