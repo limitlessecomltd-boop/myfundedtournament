@@ -55,8 +55,10 @@ router.get("/:id", authenticate, async (req, res, next) => {
 
 router.post('/verify-mt5', async (req, res) => {
   try {
-    const { mt5_login, mt5_password, mt5_server } = req.body;
-    if (!mt5_login || !mt5_password) return res.status(400).json({ valid: false, error: 'Login and password required' });
+    const mt5_login = req.body.mt5_login || req.body.mt5Login;
+    const mt5_password = req.body.mt5_password || req.body.mt5Password;
+    const mt5_server = req.body.mt5_server || req.body.mt5Server || '';
+    if (!mt5_login || !mt5_password) return res.status(400).json({ valid: false, error: 'Login and password required', received: Object.keys(req.body) });
     const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
     const SECRET = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
     const r = await fetch(BRIDGE + '/verify-account', {
