@@ -1,17 +1,4 @@
 const express = require('express');
-
-    // Auto-connect MT5 account to C# bridge for monitoring
-    if (paymentRecord && paymentRecord.mt5_login && paymentRecord.mt5_password) {
-      const C5_BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
-      const BRIDGE_SECRET = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
-      fetch(C5_BRIDGE + '/connect-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login: paymentRecord.mt5_login, password: paymentRecord.mt5_password, secret: BRIDGE_SECRET })
-      }).then(r => r.json()).then(d => {
-        console.log('[Bridge] connect-account:', d.msg || d);
-      }).catch(e => console.error('[Bridge] connect-account error:', e.message));
-    }
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
 const { activateEntryMetaApi } = require('../services/entryService');
