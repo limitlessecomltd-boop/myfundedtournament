@@ -259,8 +259,8 @@ export default function TournamentDetailPage() {
       });
       const data = await r.json();
       setVerifyResult(data);
-      setVerified(data.ok === true);
-      if (!data.ok && data.error) setError(data.error);
+      setVerified(data.valid === true || data.ok === true);
+      if (!data.valid && !data.ok && data.error) setError(data.error);
     } catch(e: any) {
       setError("Verification failed — " + e.message);
     } finally {
