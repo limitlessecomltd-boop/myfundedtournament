@@ -527,7 +527,7 @@ export default function TournamentDetailPage() {
                   {[
                     ["MT5 Account Number",         "e.g. 123456789",         "mt5Login",    "text"],
                     ["Master Password","Your master password","mt5Password", "password"],
-                    ["MT5 Server",                 "e.g. Exness-MT5Trial8",  "mt5Server",   "text"],
+                    ["MT5 Server",                 "e.g. Exness-MT5Trial15", "mt5Server",   "text"],
                   ].map(([label,ph,field,type]) => (
                     <div key={field}>
                       <label className="input-label">{label}</label>
@@ -536,6 +536,28 @@ export default function TournamentDetailPage() {
                         onChange={e => setForm(f => ({...f,[field]:e.target.value}))} required/>
                     </div>
                   ))}
+                  <div>
+                    <label className="input-label">Server IP <span style={{fontSize:10,color:"rgba(255,255,255,.3)"}}>(auto-resolved)</span></label>
+                    <div style={{display:"flex",gap:8}}>
+                      <input className="input" type="text" placeholder="Click Resolve to auto-fill"
+                        value={form.mt5ServerIp||""}
+                        onChange={e => setForm(f => ({...f,mt5ServerIp:e.target.value}))}
+                        style={{flex:1,color:form.mt5ServerIp&&!form.mt5ServerIp.includes("...")?"#4ade80":"inherit"}}
+                        readOnly={false}/>
+                      <button type="button"
+                        style={{padding:"0 14px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,.2)",borderRadius:8,color:"#fff",cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}
+                        onClick={async()=>{
+                          if(!form.mt5Server){alert("Enter server name first");return;}
+                          setForm(f=>({...f,mt5ServerIp:"resolving..."}));
+                          try{
+                            const API=process.env.NEXT_PUBLIC_API_URL||"https://myfundedtournament-production.up.railway.app";
+                            const r=await fetch(API+"/api/entries/resolve-server",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({server:form.mt5Server})});
+                            const d=await r.json();
+                            setForm(f=>({...f,mt5ServerIp:d.ip||"unknown"}));
+                          }catch(e){setForm(f=>({...f,mt5ServerIp:"resolve failed"}));}
+                        }}>🔍 Resolve</button>
+                    </div>
+                  </div>
                   <div>
                     <label className="input-label">Broker</label>
                     <select className="input" value={form.broker} onChange={e => setForm(f => ({...f,broker:e.target.value}))}>
