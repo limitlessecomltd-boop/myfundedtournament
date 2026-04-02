@@ -129,11 +129,11 @@ router.post('/resolve-server', (req, res) => {
     'Exness-MT5Real': '196.191.218.1',
   };
   for (const [key, ip] of Object.entries(map)) {
-    if (server.toLowerCase().startsWith(key.toLowerCase())) return res.json({ ip, server });
+    if (server.toLowerCase().startsWith(key.toLowerCase())) return res.json({ ip: ip.split(':')[0], server });
   }
   // Try DNS resolve as fallback
   require('dns').lookup(server, (err, address) => {
-    if (!err && address) return res.json({ ip: address, server });
+    if (!err && address) return res.json({ ip: address.split(':')[0], server });
     res.json({ ip: null, error: 'Unknown server - check spelling', server });
   });
 });
