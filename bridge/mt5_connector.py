@@ -129,6 +129,54 @@ def init_manager(db_factory, rules_engine, sync_callback):
     manager = MT5AccountManager(db_factory, rules_engine, sync_callback)
     log.info("[MT5] Manager initialized")
     _reconnect(db_factory)
+        _sync_from_bridge(db_factory)
+
+
+def _sync_from_bridge(db_factory):
+    """Auto-sync all C# bridge accounts into SQLite DB."""
+    try:
+        data = _get("/health")
+        if not data or "accounts" not in data:
+            return
+        db = db_factory()
+        try:
+            for acc in data["accounts"]:
+                login = str(acc.get("login", ""))
+                balance = float(acc.get("balance") or 0)
+                if not login:
+                    continue
+                existing = db.execute(
+                    "SELECT id, balance FROM accounts WHERE mt5_login=?", [login]
+                ).fetchone()
+                if not existing:
+                    # New account - insert it
+                    db.execute("""
+                        INSERT INTO accounts (mt5_login, mt5_server, broker, status, balance, equity,
+                            profit_abs, profit_pct, starting_balance, last_sync)
+                        VALUES (?, 'Exness-MT5Trial15', 'exness', 'connected', ?, ?, ?, ?, 1000.0, datetime('now'))
+                    """, [
+                        login, balance, balance,
+                        round(balance - 1000.0, 2),
+                        round((balance - 1000.0) / 1000.0 * 100, 2)
+                    ])
+                    log.info("[Sync] Added new account from bridge: " + login)
+                else:
+                    # Existing - update balance
+                    db.execute("""
+                        UPDATE accounts SET balance=?, equity=?, profit_abs=?, profit_pct=?,
+                            status='connected', last_sync=datetime('now')
+                        WHERE mt5_login=?
+                    """, [
+                        balance, balance,
+                        round(balance - 1000.0, 2),
+                        round((balance - 1000.0) / 1000.0 * 100, 2),
+                        login
+                    ])
+            db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        log.error("[Sync] sync_from_bridge error: " + str(e))
 
 def _reconnect(db_factory):
     if not manager: return
