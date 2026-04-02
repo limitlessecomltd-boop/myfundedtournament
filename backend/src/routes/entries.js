@@ -91,4 +91,30 @@ router.post('/verify-mt5', authenticate, async (req, res) => {
   }
 });
 
+
+// Resolve broker server name to IP
+router.post('/resolve-server', (req, res) => {
+  const { server } = req.body;
+  if (!server) return res.status(400).json({ error: 'server required' });
+  const map = {
+    'Exness-MT5Trial': '47.91.105.29',
+    'Exness-MT5Real8': '196.191.218.8',
+    'Exness-MT5Real7': '196.191.218.7',
+    'Exness-MT5Real6': '196.191.218.6',
+    'Exness-MT5Real5': '196.191.218.5',
+    'Exness-MT5Real4': '196.191.218.4',
+    'Exness-MT5Real3': '196.191.218.3',
+    'Exness-MT5Real2': '196.191.218.2',
+    'Exness-MT5Real': '196.191.218.1',
+  };
+  for (const [key, ip] of Object.entries(map)) {
+    if (server.toLowerCase().startsWith(key.toLowerCase())) return res.json({ ip, server });
+  }
+  // Try DNS resolve as fallback
+  require('dns').lookup(server, (err, address) => {
+    if (!err && address) return res.json({ ip: address, server });
+    res.json({ ip: null, error: 'Unknown server - check spelling', server });
+  });
+});
+
 module.exports = router;
