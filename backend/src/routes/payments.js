@@ -1,14 +1,3 @@
-
-    // Call C# bridge to start monitoring this MT5 account
-    if (paymentRecord && paymentRecord.mt5_login && paymentRecord.mt5_password) {
-      const C5 = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
-      const SEC = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
-      fetch(C5 + '/connect-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login: paymentRecord.mt5_login, password: paymentRecord.mt5_password, secret: SEC })
-      }).then(r => r.json()).then(d => console.log('[Bridge]', d.msg)).catch(e => console.error('[Bridge]', e.message));
-    }
 const express = require('express');
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
