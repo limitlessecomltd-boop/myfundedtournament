@@ -1,4 +1,4 @@
-﻿using mtapi.mt5;
+using mtapi.mt5;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,14 +9,12 @@ using System.Threading;
 
 namespace MftBridge {
     class Program {
-        static readonly ulong LOGIN1 = 260325865;
-        static readonly string PASS1 = "uoqcyW3|Eh";
-        static readonly ulong LOGIN2 = 260552450;
-        static readonly string PASS2 = "h/8f3P4vpT";
+        const string DB_PATH = @"C:\mft-bridge\db\mft_bridge.db";
         const int MPORT = 443;
         const int HPORT = 5099;
         const string SECRET = "mft_bridge_secret_2024";
         static readonly Dictionary<ulong, MT5API> Accounts = new Dictionary<ulong, MT5API>();
+        static readonly Dictionary<ulong, string> Passwords = new Dictionary<ulong, string>();
         static readonly object Lock = new object();
 
         static string ServerToIP(string server) {
@@ -39,13 +37,76 @@ namespace MftBridge {
         }
 
         static void Main(string[] a) {
-            Console.WriteLine("[MFT] Starting port " + HPORT);
-            ConnectAccount(LOGIN1, PASS1, "47.91.105.29", "Admin1");
-            ConnectAccount(LOGIN2, PASS2, "47.91.105.29", "Admin2");
+            Console.WriteLine("[MFT] Starting C# bridge on port " + HPORT);
+            LoadAndConnectAllAccounts();
             var srv = new TcpListener(IPAddress.Any, HPORT);
             srv.Start();
             Console.WriteLine("[MFT] Listening...");
+            // Background thread to reconnect accounts every 5 minutes
+            ThreadPool.QueueUserWorkItem(_ => {
+                while (true) {
+                    Thread.Sleep(300000); // 5 minutes
+                    LoadAndConnectAllAccounts();
+                }
+            });
             while (true) { var c = srv.AcceptTcpClient(); ThreadPool.QueueUserWorkItem(_ => Handle(c)); }
+        }
+
+        static void LoadAndConnectAllAccounts() {
+            Console.WriteLine("[MFT] Loading accounts from SQLite DB...");
+            try {
+                // Read accounts directly from SQLite file using raw bytes
+                var lines = ReadAccountsFromDB();
+                Console.WriteLine("[MFT] Found " + lines.Count + " accounts in DB");
+                foreach (var acc in lines) {
+                    ulong login = acc.Key;
+                    string pw = acc.Value.Item1;
+                    string server = acc.Value.Item2;
+                    string ip = ServerToIP(server);
+                    if (!string.IsNullOrEmpty(pw) && GetApi(login) == null) {
+                        lock (Lock) { Passwords[login] = pw; }
+                        ConnectAccount(login, pw, ip, "DB-" + login);
+                    }
+                }
+            } catch (Exception e) {
+                Console.WriteLine("[MFT] LoadAccounts error: " + e.Message);
+            }
+        }
+
+        static Dictionary<ulong, Tuple<string, string>> ReadAccountsFromDB() {
+            var result = new Dictionary<ulong, Tuple<string, string>>();
+            try {
+                // Use SQLite via process since we don't have the DLL
+                // Read the DB using a simple approach - call python to dump it
+                var psi = new System.Diagnostics.ProcessStartInfo {
+                    FileName = "python",
+                    Arguments = "-c \"import sqlite3,json; conn=sqlite3.connect('" + DB_PATH.Replace("\\", "/") + "'); rows=conn.execute('SELECT mt5_login,mt5_password,mt5_server FROM accounts WHERE mt5_password IS NOT NULL AND mt5_password != \'\' ').fetchall(); print(json.dumps([[str(r[0]),str(r[1] or \'\'),str(r[2] or \'Exness-MT5Trial15\')] for r in rows])); conn.close()\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                var proc = System.Diagnostics.Process.Start(psi);
+                string output = proc.StandardOutput.ReadToEnd().Trim();
+                proc.WaitForExit();
+                if (!string.IsNullOrEmpty(output) && output.StartsWith("[")) {
+                    // Parse simple JSON array
+                    output = output.Trim('[', ']');
+                    foreach (var item in output.Split(new string[]{"],[", "], [","],[","[ "},StringSplitOptions.RemoveEmptyEntries)) {
+                        var parts = item.Trim('[', ']').Split(',');
+                        if (parts.Length >= 2) {
+                            string loginStr = parts[0].Trim().Trim('"');
+                            string pw = parts[1].Trim().Trim('"');
+                            string sv = parts.Length > 2 ? parts[2].Trim().Trim('"') : "Exness-MT5Trial15";
+                            if (ulong.TryParse(loginStr, out ulong lg) && !string.IsNullOrEmpty(pw))
+                                result[lg] = new Tuple<string, string>(pw, sv);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Console.WriteLine("[DB Read] Error: " + e.Message);
+            }
+            return result;
         }
 
         static void ConnectAccount(ulong login, string pass, string ip, string label) {
@@ -53,7 +114,7 @@ namespace MftBridge {
                 var api = new MT5API(login, pass, ip, MPORT);
                 api.Connect();
                 lock (Lock) { Accounts[login] = api; }
-                Console.WriteLine("[" + label + "] OK bal=" + api.Account.Balance);
+                Console.WriteLine("[" + label + "] Connected bal=" + api.Account.Balance);
             } catch (Exception e) { Console.WriteLine("[" + label + "] FAIL: " + e.Message); }
         }
 
@@ -120,6 +181,7 @@ namespace MftBridge {
                         else { string ls = GetJV(body, "login") ?? ""; string pw = GetJV(body, "password") ?? ""; string sv = GetJV(body, "server") ?? "";
                             if (string.IsNullOrEmpty(ls) || string.IsNullOrEmpty(pw)) { code = 400; resp = "{\"error\":\"login and password required\"}"; }
                             else { ulong lg = ulong.Parse(ls); string ip = ServerToIP(sv);
+                                lock (Lock) { Passwords[lg] = pw; }
                                 if (GetApi(lg) != null) { resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"already connected\"}"; }
                                 else { ThreadPool.QueueUserWorkItem(_ => ConnectAccount(lg, pw, ip, "User-" + lg)); resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"connecting\"}"; } } }
                     } else if (path == "/verify-account" && mth == "POST") {
