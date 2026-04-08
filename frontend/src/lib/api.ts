@@ -64,7 +64,7 @@ export const userApi = {
     localStorage.removeItem("fc_user");
   },
   getMe: () => api.get("/api/users/me").then(r => r.data.data),
-  update: (data: any) => api.patch("/api/users/me", data).then(r => r.data.data),
+  update: (data: any) => api.patch("/api/users/me", data).then(r => r.data.data || r.data),
   getMyTournaments: () => api.get("/api/users/me/tournaments").then(r => r.data.data),
   submitPayout: (data: any) => api.post("/api/users/payout-request", data).then(r => r.data.data),
 };
@@ -84,6 +84,7 @@ export const adminApi = {
   settings:     () => api.get("/api/admin/settings").then(r => r.data.data),
   updateSettings:(data: any) => api.patch("/api/admin/settings", data).then(r => r.data.data),
   // users
+  users:        (params?: any) => api.get('/api/admin/users', { params }).then(r => r.data),
   getUsers:     (search?: string, limit=50, offset=0) => api.get(`/api/admin/users?${search?`search=${search}&`:''}limit=${limit}&offset=${offset}`).then(r => r.data),
   updateUser:   (id: string, data: any) => api.patch(`/api/admin/users/${id}`, data).then(r => r.data.data),
   // payments
