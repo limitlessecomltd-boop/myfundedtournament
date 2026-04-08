@@ -62,13 +62,14 @@ router.get("/me", authenticate, async (req, res, next) => {
 // Update profile
 router.patch("/me", authenticate, async (req, res, next) => {
   try {
-    const { username, walletAddress } = req.body;
+    const { username, walletAddress, wallet_address } = req.body;
+    const finalWalletAddress = walletAddress || wallet_address;
     const { rows } = await db.query(`
       UPDATE users SET
         username       = COALESCE($1, username),
         wallet_address = COALESCE($2, wallet_address)
       WHERE id=$3 RETURNING id, email, username, wallet_address
-    `, [username, walletAddress, req.user.id]);
+    `, [username, finalWalletAddress, req.user.id]);
     res.json({ success: true, data: rows[0] });
   } catch (err) { next(err); }
 });

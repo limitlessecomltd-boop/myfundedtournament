@@ -141,3 +141,45 @@ conn.commit()
 conn.close()
 print("[Startup] Reset", n, "error accounts to pending")
 print("[Startup] Done")
+
+# Step 8: Install and start MftSyncDaemon if not already running
+print("[Startup] Setting up sync daemon...")
+try:
+    import subprocess, os
+
+    PYTHON = "C:\\Program Files\\Python313\\python.exe"
+    NSSM   = "C:\\mft-bridge\\nssm.exe"
+    DAEMON = "C:\\mft-bridge\\sync_daemon.py"
+
+    # Download latest sync_daemon.py
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/limitlessecomltd-boop/myfundedtournament/main/bridge/sync_daemon.py",
+        DAEMON
+    )
+    print("[Startup] sync_daemon.py downloaded")
+
+    # Check if service exists
+    check = subprocess.run([NSSM, "status", "MftSyncDaemon"],
+                           capture_output=True, text=True, timeout=10)
+
+    if "No such service" in check.stdout or "No such service" in check.stderr or check.returncode != 0:
+        # Install service
+        subprocess.run([NSSM, "install", "MftSyncDaemon", PYTHON, DAEMON],
+                       capture_output=True, timeout=15)
+        subprocess.run([NSSM, "set", "MftSyncDaemon", "AppStdout",
+                        "C:\\mft-bridge\\sync-stdout.log"],
+                       capture_output=True, timeout=10)
+        subprocess.run([NSSM, "set", "MftSyncDaemon", "AppStderr",
+                        "C:\\mft-bridge\\sync-stderr.log"],
+                       capture_output=True, timeout=10)
+        subprocess.run([NSSM, "start", "MftSyncDaemon"],
+                       capture_output=True, timeout=15)
+        print("[Startup] MftSyncDaemon installed and started")
+    else:
+        # Already exists — restart to pick up new code
+        subprocess.run([NSSM, "restart", "MftSyncDaemon"],
+                       capture_output=True, timeout=20)
+        print("[Startup] MftSyncDaemon restarted")
+
+except Exception as e:
+    print("[Startup] Sync daemon setup error:", str(e))
