@@ -76,7 +76,6 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
     webhookUrl:    BACKEND_URL + '/api/payments/webhook',
   });
   // Save payment to DB
-  const db = require('../config/db');
   await db.query(
     `INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, amount_crypto, currency, status, reference_no)
      VALUES ($1,$2,$3,$4,$5,$6,$7,'USDT_TRC20','waiting',$8)
