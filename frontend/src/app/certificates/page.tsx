@@ -25,20 +25,19 @@ interface Certificate {
 
 const PLACE_CONFIG = {
   1: { medal:"🥇", label:"Tournament Champion", headline:"Tournament Champion", typeLabel:"Certificate of Achievement",  color:"#FFD700", border:"rgba(255,215,0,.5)",  bg:"#0c0c0c", stripe:"rgba(255,215,0,.08)",  corner:"rgba(255,215,0,.5)"  },
-  2: { medal:"🥈", label:"Runner Up",           headline:"Runner Up",            typeLabel:"Certificate of Excellence", color:"#b4c0d8", border:"rgba(180,192,230,.4)",bg:"#08090e", stripe:"rgba(170,185,230,.06)",corner:"rgba(170,185,230,.4)" },
-  3: { medal:"🥉", label:"Top Finisher",        headline:"Top Finisher",         typeLabel:"Certificate of Performance",color:"#CD7F32", border:"rgba(205,127,50,.45)",bg:"#090a0c", stripe:"rgba(205,127,50,.07)", corner:"rgba(205,127,50,.45)" },
+
 };
 
 // v2 — real data from API
 function CertificateCard({ cert }: { cert: Certificate }) {
-  const cfg = PLACE_CONFIG[cert.place];
+  const cfg = PLACE_CONFIG[1];
   return (
     <div style={{ marginBottom: 40 }}>
       {/* Label */}
       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
         <div style={{ width:28, height:28, borderRadius:"50%", background:`${cfg.color}22`, border:`1px solid ${cfg.color}44`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>{cfg.medal}</div>
         <div style={{ fontFamily:"var(--font-head)", fontSize:12, fontWeight:700, letterSpacing:".16em", textTransform:"uppercase", color:`${cfg.color}cc` }}>
-          {cert.place === 1 ? "1st" : cert.place === 2 ? "2nd" : "3rd"} Place Certificate
+          1st Place Certificate
         </div>
       </div>
 
@@ -81,8 +80,8 @@ function CertificateCard({ cert }: { cert: Certificate }) {
             <div style={{ textAlign:"right" }}>
               <div style={{ fontSize:8, fontWeight:600, letterSpacing:".14em", textTransform:"uppercase", color:"rgba(255,255,255,.35)" }}>{cfg.label}</div>
               <div style={{ fontFamily:"var(--font-head)", fontSize:22, fontWeight:900, color:cfg.color, lineHeight:1.1 }}>
-                {cert.place === 1 ? "1" : cert.place === 2 ? "2" : "3"}
-                <span style={{ fontSize:13 }}>{cert.place === 1 ? "ST" : cert.place === 2 ? "ND" : "RD"}</span>
+                1
+                <span style={{ fontSize:13 }}>ST</span>
               </div>
             </div>
           </div>
@@ -206,13 +205,13 @@ export default function CertificatesPage() {
           <div style={{ fontSize:16, fontWeight:700, color:"#FFD700", marginBottom:6 }}>{tournament.name}</div>
         )}
         <p style={{ fontSize:14, color:"rgba(255,255,255,.4)", maxWidth:500, margin:"0 auto" }}>
-          Official certificates of achievement for top-3 finishers.
+          Official certificate of achievement for the tournament champion.
         </p>
       </div>
 
       {/* Filter tabs */}
       <div style={{ display:"flex", gap:8, marginBottom:36, justifyContent:"center" }}>
-        {([["All","all"],["1st Place","1"],["2nd Place","2"],["3rd Place","3"]] as [string,string][]).map(([l,v])=>(
+        {([["All","all"],["1st Place","1"]] as [string,string][]).map(([l,v])=>(
           <button key={v} onClick={() => setFilter(v as any)}
             className={`btn btn-sm ${filter===v?"btn-primary":"btn-ghost"}`}>{l}</button>
         ))}
@@ -269,8 +268,7 @@ export default function CertificatesPage() {
           <div style={{ fontFamily:"var(--font-head)", fontSize:15, fontWeight:700, marginBottom:12 }}>About MFT Certificates</div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
             {[["🥇 1st Place","Funded trading account worth 90% of the prize pool. Your trading career starts here.","var(--gold)"],
-              ["🥈 2nd Place","3× your entry fee returned in USDT. Proof you're among the elite.","var(--silver)"],
-              ["🥉 3rd Place","2× your entry fee returned in USDT. Top finisher recognition.","var(--bronze)"]].map(([t,d,c])=>(
+].map(([t,d,c])=>(
               <div key={t as string}>
                 <div style={{ fontSize:13, fontWeight:700, color:c as string, marginBottom:6 }}>{t}</div>
                 <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", lineHeight:1.6 }}>{d}</div>

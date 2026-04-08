@@ -82,7 +82,7 @@ const STEPS = [
     dim: "rgba(34,197,94,.08)",
     border: "rgba(34,197,94,.22)",
     tagline: "Real capital. Real withdrawals. No evaluation.",
-    desc: "The trader with the highest % gain wins! Choose your reward: take 90% of the prize pool as a real funded trading account with daily withdrawals, or take 75% as an instant USDT cashout. Only the 1st place winner is rewarded — no 2nd or 3rd place.",
+    desc: "The trader with the highest % gain wins! Choose your reward: take 90% of the prize pool as a real funded trading account with daily withdrawals, or take 75% as an instant USDT cashout. Only the 1st place winner is rewarded.",
     substeps: [
       { icon:"🥇", text:"Option A: Funded live account (90% of prize pool) — real capital, daily withdrawals" },
       { icon:"💵", text:"Option B: Instant USDT cashout (75% of prize pool) — paid within 24 hours" },

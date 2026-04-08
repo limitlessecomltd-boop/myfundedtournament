@@ -60,7 +60,7 @@ router.get('/:id/certificates', async (req, res, next) => {
       WHERE e.tournament_id = $1
         AND e.status IN ('completed', 'active', 'breached', 'disqualified')
       ORDER BY e.profit_pct DESC
-      LIMIT 3
+      LIMIT 1
     `, [id]);
 
     const pool    = parseFloat(t.prize_pool || 0);
@@ -69,13 +69,9 @@ router.get('/:id/certificates', async (req, res, next) => {
 
     const prizes = [
       pool > 0 ? pool * (wPct / 100) : 0,                    // 1st: % of prize pool
-      entryFee > 0 ? entryFee * 3 : 0,                        // 2nd: 3x entry fee
-      entryFee > 0 ? entryFee * 2 : 0,                        // 3rd: 2x entry fee
     ];
     const prizeDescs = [
       pool > 0 ? `Funded Account · ${wPct}% of $${pool.toFixed(0)} prize pool` : 'Funded Account',
-      entryFee > 0 ? `3× entry fee · $${entryFee} × 3 = $${(entryFee*3).toFixed(0)} USDT` : 'Runner Up',
-      entryFee > 0 ? `2× entry fee · $${entryFee} × 2 = $${(entryFee*2).toFixed(0)} USDT` : 'Top Finisher',
     ];
 
     const issueDate = t.end_time
@@ -84,7 +80,7 @@ router.get('/:id/certificates', async (req, res, next) => {
 
     const certificates = top3.map((e, i) => {
       const pos = parseInt(e.position);
-      const suffix = pos === 1 ? '1ST' : pos === 2 ? '2ND' : '3RD';
+      const suffix = '1ST';
       // Short cert ID from tournament + entry
       const certId = `MFT-${issueDate.replace(/ /g,'-').toUpperCase()}-${suffix}-${e.id.slice(0,6).toUpperCase()}`;
       return {
