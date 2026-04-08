@@ -23,7 +23,7 @@ async function getTournamentById(id) {
   const { rows } = await db.query(`
     SELECT t.*,
       COUNT(DISTINCT e.id) FILTER (WHERE e.status IN ('active','completed')) AS active_entries,
-      COUNT(DISTINCT e.user_id) FILTER (WHERE e.status NOT IN ('pending_payment','cancelled')) AS unique_traders,
+      COUNT(DISTINCT e.user_id) FILTER (WHERE e.status IN ('active','completed','breached','disqualified')) AS unique_traders,
       -- Winner info
       wu.username AS winner_username,
       we.profit_pct AS winner_profit_pct
