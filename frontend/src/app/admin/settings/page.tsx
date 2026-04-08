@@ -217,7 +217,7 @@ export default function AdminSettings() {
             ["Frontend", "Vercel (myfundedtournament.vercel.app)"],
             ["Backend", "Railway (myfundedtournament-production.up.railway.app)"],
             ["Database", "Supabase PostgreSQL"],
-            ["Payments", "NOWPayments (USDT TRC-20)"],
+            ["Payments", "ForumPay (Crypto — 8 currencies)"],
             ["MT5 API", "MetaApi (expires Jun 13, 2026)"],
             ["Model", "Claude Sonnet 4.6"],
           ].map(([k,v])=>(

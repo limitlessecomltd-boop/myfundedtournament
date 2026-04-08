@@ -393,6 +393,8 @@ router.patch("/payments/:id/confirm", async (req, res, next) => {
         `UPDATE entries SET status='active' WHERE id=$1 AND status='pending_payment'`,
         [rows[0].entry_id]
       );
+      // Full activation: connect bridge, stamp starting_balance
+      activateEntryMetaApi(rows[0].entry_id).catch(e => console.warn('[Admin confirm]', e.message));
     }
     res.json({ success: true });
   } catch (err) { next(err); }

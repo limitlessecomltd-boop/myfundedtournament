@@ -23,7 +23,7 @@ export default function Footer() {
           ))}
         </div>
         <div style={{ fontSize: 12, color: "rgba(255,255,255,.22)" }}>
-          Powered by MetaApi · NOWPayments · MT5
+          Powered by MetaApi · ForumPay · MT5
         </div>
       </div>
     </footer>

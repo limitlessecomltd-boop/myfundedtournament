@@ -42,7 +42,7 @@ export default function AdminPayments() {
           <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
             fontSize:28, fontWeight:900, color:"#fff", letterSpacing:"-1px" }}>Payments</h1>
           <div style={{ fontSize:13, color:"rgba(255,255,255,.4)", marginTop:4 }}>
-            NOWPayments transaction monitor
+            ForumPay transaction monitor
           </div>
         </div>
         <button onClick={()=>load()} style={{ background:"rgba(255,255,255,.06)",
@@ -150,11 +150,11 @@ export default function AdminPayments() {
                 </button>
               )}
               {p.nowpayments_id && (
-                <a href={`https://nowpayments.io/payment?iid=${p.nowpayments_id}`}
+                <a href={`https://sandbox.dashboard.forumpay.com/pay/userPaymentGateway.transactions`}
                   target="_blank" rel="noreferrer"
                   style={{ fontSize:11, color:"rgba(255,255,255,.35)", textDecoration:"none",
                     marginLeft:8 }}>
-                  View ↗
+                  {p.nowpayments_id.slice(0,12)}… ↗
                 </a>
               )}
             </div>
