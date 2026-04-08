@@ -28,12 +28,10 @@ function tradeDuration(t: any): number {
 
 /* ── Countdown formatter ── */
 function fmtCountdown(ms: number): string {
-  if (ms <= 0) return "00:00:00";
-  const h = Math.floor(ms / 3600000);
-  const m = Math.floor((ms % 3600000) / 60000);
+  if (ms <= 0) return "00:00";
+  const totalMin = Math.floor(ms / 60000);
   const s = Math.floor((ms % 60000) / 1000);
-  if (h > 0) return `${h}h ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
-  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  return `${String(totalMin).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 }
 
 /* ── Gauge ── */
@@ -420,16 +418,31 @@ export default function TradePage() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* ── Tournament Timer ── */}
-            {isActive && countdown && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: `${timerColor}10`, border: `1px solid ${timerColor}30`, borderRadius: 10, padding: "6px 14px" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={timerColor} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <div>
-                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: `${timerColor}99` }}>{msLeft <= 3 * 60 * 1000 ? "⚠ CLOSING SOON" : "Time Left"}</div>
-                  <div style={{ fontSize: 16, fontWeight: 900, color: timerColor, fontFamily: "'Space Grotesk',sans-serif", letterSpacing: "-1px", lineHeight: 1 }}>{countdown}</div>
+            {/* ── Tournament Timer ── big segmented display ── */}
+            {isActive && countdown && (() => {
+              const [mm, ss] = countdown.split(":");
+              const urgent   = msLeft > 0 && msLeft <= 3 * 60 * 1000;
+              const warning  = msLeft > 0 && msLeft <= 15 * 60 * 1000 && !urgent;
+              const tc       = urgent ? "#EF4444" : warning ? "#FFD700" : "#22C55E";
+              const pulse    = urgent ? "0 0 12px #EF444488" : warning ? "0 0 8px #FFD70066" : "none";
+              const DigitBlock = ({ v }: { v: string }) => (
+                <div style={{ background: `${tc}12`, border: `1px solid ${tc}30`, borderRadius: 6, minWidth: 32, height: 40, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Space Grotesk',monospace", fontSize: 22, fontWeight: 900, color: tc, letterSpacing: "-1px", boxShadow: pulse, transition: "box-shadow .3s" }}>{v}</div>
+              );
+              return (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                  <div style={{ fontSize: 8, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: `${tc}80` }}>
+                    {urgent ? "⚡ CLOSING SOON" : warning ? "⚠ HURRY UP" : "TIME LEFT"}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                    <DigitBlock v={mm[0]} />
+                    <DigitBlock v={mm[1]} />
+                    <span style={{ fontSize: 20, fontWeight: 900, color: tc, opacity: urgent ? 1 : 0.6, lineHeight: 1, paddingBottom: 2, animation: urgent ? "pulse-colon 1s step-start infinite" : "none" }}>:</span>
+                    <DigitBlock v={ss[0]} />
+                    <DigitBlock v={ss[1]} />
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Close all button */}
             {openTrades.filter(isRealTrade).length > 0 && (
@@ -448,7 +461,7 @@ export default function TradePage() {
           <div style={{ background: "rgba(239,68,68,.12)", borderBottom: "1px solid rgba(239,68,68,.3)", padding: "10px 28px", display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 16 }}>🚨</span>
             <div style={{ flex: 1 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#EF4444" }}>Tournament ending in {countdown} — </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#EF4444" }}>Tournament ending in {countdown} min — </span>
               <span style={{ fontSize: 13, color: "rgba(255,255,255,.6)" }}>Auto-closing all open trades now to protect your score.</span>
             </div>
           </div>
