@@ -127,8 +127,9 @@ async function finalizeDueTournaments() {
     console.log(`[Finalizing] ${t.name}`);
 
     // Enforce 3-minute rule: exclude trades still open in final 3 minutes
+    // Exclude any still-open trades (3-min rule) — use valid violation type 'none'
     await db.query(`
-      UPDATE trades SET excluded = TRUE, violation = 'late_close'
+      UPDATE trades SET excluded = TRUE
       WHERE entry_id IN (
         SELECT id FROM entries WHERE tournament_id = $1 AND status = 'active'
       )
