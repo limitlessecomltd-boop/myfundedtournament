@@ -230,25 +230,35 @@ namespace MftBridge {
     }
 }        static void LoadAllAccounts() {
             try {
-                if (!File.Exists(PASS_FILE)) { Console.WriteLine("[MFT] No file: " + PASS_FILE); return; }
-                var psi = new System.Diagnostics.ProcessStartInfo("python",
-                    "-c "import json; d=json.load(open('" + PASS_FILE.Replace("\\", "/") + "')); [print(a['login']+'|'+a['password']+'|'+a.get('server','Exness-MT5Trial15')) for a in d if a.get('login') and a.get('password')]"");
+                string scriptPath = @"C:\mft-bridge\bridge\read_accounts.py";
+                if (!File.Exists(PASS_FILE)) { Console.WriteLine("[MFT] No accounts file: " + PASS_FILE); return; }
+                if (!File.Exists(scriptPath)) { Console.WriteLine("[MFT] No script: " + scriptPath); return; }
+                var psi = new System.Diagnostics.ProcessStartInfo("python", scriptPath);
                 psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
                 psi.UseShellExecute = false;
                 psi.CreateNoWindow = true;
                 var proc = System.Diagnostics.Process.Start(psi);
                 string output = proc.StandardOutput.ReadToEnd();
+                string err = proc.StandardError.ReadToEnd();
                 proc.WaitForExit();
-                Console.WriteLine("[MFT] Loaded: " + output.Trim().Replace("\n", " | "));
+                if (!string.IsNullOrEmpty(err)) Console.WriteLine("[MFT] Script err: " + err.Trim());
+                Console.WriteLine("[MFT] Accounts from file: [" + output.Trim().Replace("\n"," | ") + "]");
+                int count = 0;
                 foreach (string line in output.Split(new char[]{'\n','\r'}, StringSplitOptions.RemoveEmptyEntries)) {
                     var p = line.Trim().Split('|');
                     if (p.Length < 2) continue;
                     if (!ulong.TryParse(p[0], out ulong lg)) continue;
-                    string pw = p[1]; string sv = p.Length > 2 ? p[2] : "Exness-MT5Trial15";
-                    if (GetApi(lg) == null) ConnectAccount(lg, pw, ServerToIP(sv), "Auto-" + lg);
+                    string pw = p[1];
+                    string sv = p.Length > 2 ? p[2] : "Exness-MT5Trial15";
+                    if (GetApi(lg) == null) {
+                        Console.WriteLine("[MFT] Connecting: " + lg + " on " + sv);
+                        ConnectAccount(lg, pw, ServerToIP(sv), "Auto-" + lg);
+                        count++;
+                    }
                 }
-            } catch (Exception e) { Console.WriteLine("[Load] " + e.Message); }
+                Console.WriteLine("[MFT] Connected " + count + " new accounts");
+            } catch (Exception e) { Console.WriteLine("[Load] Error: " + e.Message + " " + e.StackTrace); }
         }
 
 
