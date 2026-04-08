@@ -23,7 +23,7 @@ const CURRENCIES = [
 async function fpGet(endpoint, params) {
   const clean = {};
   for (const [k, v] of Object.entries(params || {})) { if (v != null) clean[k] = v; }
-  const url = FORUMPAY_BASE + '/' + endpoint + '?' + new URLSearchParams(clean).toString();
+  const url = FORUMPAY_BASE + '/' + endpoint + '/?' + new URLSearchParams(clean).toString();
   console.log('[ForumPay] GET /' + endpoint, Object.keys(clean).join(','));
   const res = await fetch(url, { headers: { Authorization: AUTH_HEADER, Accept: 'application/json' }, signal: AbortSignal.timeout(20000) });
   const txt = await res.text();
@@ -35,7 +35,7 @@ async function fpGet(endpoint, params) {
 async function fpPost(endpoint, params) {
   const clean = {};
   for (const [k, v] of Object.entries(params || {})) { if (v != null) clean[k] = v; }
-  const url = FORUMPAY_BASE + '/' + endpoint;
+  const url = FORUMPAY_BASE + '/' + endpoint + '/';
   console.log('[ForumPay] POST /' + endpoint, Object.keys(clean).join(','));
   const res = await fetch(url, { method:'POST', headers:{ Authorization:AUTH_HEADER, 'Content-Type':'application/x-www-form-urlencoded', Accept:'application/json' }, body: new URLSearchParams(clean).toString(), signal: AbortSignal.timeout(20000) });
   const txt = await res.text();
