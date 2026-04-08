@@ -21,6 +21,11 @@ def run_deploy():
                 "C:\\mft-bridge\\startup.py"
             )
             LOG.append("[Deploy] startup.py downloaded")
+            LOG.append("[Deploy] Stopping MftMt5Bridge so .exe is not locked...")
+            subprocess.run(["C:\\mft-bridge\\nssm.exe", "stop", "MftMt5Bridge"],
+                           capture_output=True, timeout=30)
+            time.sleep(3)
+            LOG.append("[Deploy] Bridge stopped, running startup.py...")
             r = subprocess.run([PYTHON, "C:\\mft-bridge\\startup.py"],
                                capture_output=True, text=True, timeout=300)
             for line in (r.stdout + r.stderr).splitlines():
