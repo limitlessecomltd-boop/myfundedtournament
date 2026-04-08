@@ -22,21 +22,27 @@ router.get('/currencies', (req, res) => {
 // Diagnostic: try all endpoint name variations to find correct ForumPay paths
 router.get('/probe-forumpay', async (req, res) => {
   const { FORUMPAY_API, AUTH, FORUMPAY_POS_ID } = require('../services/forumPayService');
-  const paths = [
-    '/GetRate', '/getRate', '/get_rate', '/rate',
-    '/StartPayment', '/startPayment', '/start_payment',
-    '/CheckPayment', '/checkPayment', '/check_payment',
-    '/ping', '/Ping',
-    '/GetCryptoCurrencyList', '/getCryptoCurrencyList',
+  // Test multiple base URLs
+  const bases = [
+    'https://sandbox.api.forumpay.com/pay/v2',
+    'https://sandbox.api.forumpay.com/pay/v1',
+    'https://sandbox.api.forumpay.com/pay',
+    'https://api.forumpay.com/pay/v2',
   ];
+  const testPaths = ['/GetRate', '/getRate', '/ping'];
   const results = {};
-  for (const p of paths) {
-    try {
-      const url = `${FORUMPAY_API}${p}?pos_id=${FORUMPAY_POS_ID}&invoice_currency=USD&invoice_amount=25&currency=USDT_TRC20`;
-      const r = await fetch(url, { headers: { Authorization: AUTH }, signal: AbortSignal.timeout(5000) });
-      const d = await r.json();
-      results[p] = d.err_code === 'unknownEndpoint' ? 'NOT_FOUND' : (d.err ? d.err : 'OK:' + JSON.stringify(d).slice(0,80));
-    } catch(e) { results[p] = 'ERROR:' + e.message; }
+  for (const base of bases) {
+    for (const p of testPaths) {
+      const key = base.replace('https://','') + p;
+      try {
+        const url = `${base}${p}?pos_id=${FORUMPAY_POS_ID}&invoice_currency=USD&invoice_amount=25&currency=USDT_TRC20`;
+        const r = await fetch(url, { headers: { Authorization: AUTH }, signal: AbortSignal.timeout(5000) });
+        const text = await r.text();
+        let d; try { d = JSON.parse(text); } catch { d = {raw: text.slice(0,100)}; }
+        const status = d.err_code === 'unknownEndpoint' ? 'NOT_FOUND' : (d.err ? `ERR:${d.err}` : `OK:${JSON.stringify(d).slice(0,60)}`);
+        results[key] = `${r.status} ${status}`;
+      } catch(e) { results[key] = 'FAIL:' + e.message; }
+    }
   }
   res.json(results);
 });
