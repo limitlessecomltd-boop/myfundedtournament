@@ -28,7 +28,7 @@ function tradeDuration(t: any): number {
 
 /* ── Countdown formatter ── */
 function fmtCountdown(ms: number): string {
-  if (ms <= 0) return "00:00";
+  if (!ms || ms <= 0) return "00:00";
   const totalMin = Math.floor(ms / 60000);
   const s = Math.floor((ms % 60000) / 1000);
   return `${String(totalMin).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
@@ -470,7 +470,9 @@ export default function TradePage() {
 
             {/* ── BIG TIMER — always gold ── */}
             {isActive && countdown && (() => {
-              const [mm, ss] = countdown.split(":");
+              const parts = countdown.split(":");
+              if (parts.length < 2) return null;
+              const [mm, ss] = parts;
               const urgent  = msLeft > 0 && msLeft <= 3 * 60 * 1000;
               const warning = msLeft > 0 && msLeft <= 15 * 60 * 1000 && !urgent;
               const glow    = urgent ? "0 0 16px #FFD700cc" : warning ? "0 0 10px #FFD70066" : "0 0 6px #FFD70033";
