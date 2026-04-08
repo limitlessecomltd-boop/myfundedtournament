@@ -22,29 +22,6 @@ interface Certificate {
   broker: string;
 }
 
-const DEMO_CERTS: Certificate[] = [
-  {
-    id: "1", place: 1, tournamentName: "December Pro Challenge",
-    winnerName: "John Doe", walletId: "0x4f8a3e9c...b7d2",
-    profitPct: 22.18, profitAbs: 2218, winRate: 72, tradingDays: 7,
-    prizeAmount: 13365, prizeDesc: "Funded Account · 90% of $14,850 prize pool",
-    issueDate: "15 Dec 2024", certId: "MFT-2024-1219-1ST-JD4F8A", broker: "ICMarkets",
-  },
-  {
-    id: "2", place: 2, tournamentName: "December Pro Challenge",
-    winnerName: "Alex Chen", walletId: "0x9a2fb3c1...d4e7",
-    profitPct: 18.43, profitAbs: 1843, winRate: 64, tradingDays: 7,
-    prizeAmount: 150, prizeDesc: "3× entry fee returned · $50 × 3 = $150 USDT",
-    issueDate: "15 Dec 2024", certId: "MFT-2024-1219-2ND-AC9A2F", broker: "Exness",
-  },
-  {
-    id: "3", place: 3, tournamentName: "December Pro Challenge",
-    winnerName: "Sara Williams", walletId: "0x7c1da4e2...f9c3",
-    profitPct: 15.92, profitAbs: 1592, winRate: 61, tradingDays: 7,
-    prizeAmount: 100, prizeDesc: "2× entry fee returned · $50 × 2 = $100 USDT",
-    issueDate: "15 Dec 2024", certId: "MFT-2024-1219-3RD-SW7C1D", broker: "Tickmill",
-  },
-];
 
 const PLACE_CONFIG = {
   1: { medal:"🥇", label:"Tournament Champion", headline:"Tournament Champion", typeLabel:"Certificate of Achievement",  color:"#FFD700", border:"rgba(255,215,0,.5)",  bg:"#0c0c0c", stripe:"rgba(255,215,0,.08)",  corner:"rgba(255,215,0,.5)"  },
