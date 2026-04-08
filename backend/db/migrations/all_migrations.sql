@@ -173,3 +173,7 @@ CREATE INDEX idx_trades_status        ON trades(status);
 CREATE INDEX idx_payments_nowpayments ON payments(nowpayments_id);
 CREATE INDEX idx_violations_entry     ON violations(entry_id);
 CREATE INDEX idx_violations_status    ON violations(status);
+
+-- ─── ForumPay columns (Session 16) ──────────────────────────────────────────
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS amount_crypto  VARCHAR(50);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS reference_no   VARCHAR(200);

@@ -14,149 +14,160 @@ import { Tournament, Entry } from "@/types";
 
 const BROKERS = ["Exness", "ICMarkets", "Tickmill", "Other"];
 
-// ── QR Code Payment Card ───────────────────────────────────────────────────────
-function PaymentCard({ payment }: { payment: any }) {
+// ── ForumPay Payment Card ─────────────────────────────────────────────────────
+const FORUMPAY_CURRENCIES = [
+  { id:"USDT_TRC20",   name:"USDT",    network:"TRC-20",   icon:"₮", color:"#27A17C" },
+  { id:"USDT",         name:"USDT",    network:"ERC-20",   icon:"₮", color:"#27A17C" },
+  { id:"USDT_POLYGON", name:"USDT",    network:"Polygon",  icon:"₮", color:"#7F3CDE" },
+  { id:"USDT_SOLANA",  name:"USDT",    network:"Solana",   icon:"₮", color:"#9945FF" },
+  { id:"USDC",         name:"USDC",    network:"ERC-20",   icon:"$", color:"#2775CA" },
+  { id:"BTC",          name:"Bitcoin", network:"BTC",      icon:"₿", color:"#F89D2F" },
+  { id:"ETH",          name:"Ethereum",network:"ETH",      icon:"Ξ", color:"#828384" },
+  { id:"LTC",          name:"Litecoin",network:"LTC",      icon:"Ł", color:"#385D9A" },
+];
+
+function PaymentCard({ payment, onCurrencyChange, selectedCurrency }: { payment: any; onCurrencyChange: (c:string)=>void; selectedCurrency: string }) {
   const qrRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
-  const [qrReady, setQrReady] = useState(false);
 
   useEffect(() => {
     if (!payment?.address) return;
     let mounted = true;
-
     function renderQR() {
-      const container = qrRef.current;
-      if (!container || !mounted) return;
-      container.innerHTML = "";
+      const el = qrRef.current;
+      if (!el || !mounted) return;
+      el.innerHTML = "";
       try {
-        new (window as any).QRCode(container, {
-          text: payment.address,
-          width: 180,
-          height: 180,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-          correctLevel: (window as any).QRCode?.CorrectLevel?.H || 1,
-        });
-        setQrReady(true);
-      } catch(e) { console.error("QR error:", e); }
+        new (window as any).QRCode(el, { text: payment.address, width:160, height:160, colorDark:"#000", colorLight:"#fff", correctLevel:(window as any).QRCode?.CorrectLevel?.H||1 });
+      } catch {}
     }
-
-    // If already loaded, render immediately
-    if ((window as any).QRCode) {
-      renderQR();
-      return;
-    }
-
-    // Load script if not already present
-    const existing = document.querySelector('script[data-qr]');
-    if (existing) {
-      existing.addEventListener("load", renderQR);
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-    script.setAttribute("data-qr", "1");
-    script.onload = renderQR;
-    document.head.appendChild(script);
-
+    if ((window as any).QRCode) { renderQR(); return; }
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+    s.setAttribute("data-qr","1");
+    s.onload = renderQR;
+    document.head.appendChild(s);
     return () => { mounted = false; };
   }, [payment?.address]);
 
-  function copyAddress() {
-    navigator.clipboard.writeText(payment.address).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }).catch(() => {
-      // Fallback for browsers that block clipboard
+  function copy() {
+    navigator.clipboard.writeText(payment.address).catch(() => {
       const el = document.createElement("textarea");
       el.value = payment.address;
       document.body.appendChild(el);
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
     });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   }
 
+  const currMeta = FORUMPAY_CURRENCIES.find(c => c.id === selectedCurrency) || FORUMPAY_CURRENCIES[0];
+  const isConfirmed = payment?.confirmed;
+  const isConfirming = payment?.status === "confirming";
+
   return (
-    <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,215,0,.3)", borderRadius:16, padding:"18px 20px", marginBottom:16 }}>
+    <div style={{ background:"rgba(13,18,29,.98)", border:"1px solid rgba(255,215,0,.3)", borderRadius:16, padding:"20px 22px" }}>
       {/* Header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-        <div style={{ fontSize:14, fontWeight:700, color:"#FFD700" }}>⏳ Payment Pending</div>
-        <div style={{ fontSize:11, color:"rgba(255,255,255,.35)", display:"flex", alignItems:"center", gap:5 }}>
-          <span style={{ width:7, height:7, borderRadius:"50%", background:"#FFD700", display:"inline-block", animation:"pulse 1.5s infinite" }}/>
-          Waiting...
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+        <div style={{ fontSize:14, fontWeight:800, color: isConfirmed?"#22C55E": isConfirming?"#fbbf24":"#FFD700" }}>
+          {isConfirmed ? "✅ Payment Confirmed!" : isConfirming ? "⏳ Confirming..." : "💳 Pay with Crypto"}
         </div>
+        {!isConfirmed && (
+          <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"rgba(255,255,255,.35)" }}>
+            <span style={{ width:6,height:6,borderRadius:"50%",background:"#FFD700",display:"inline-block",animation:"pulse 1.5s infinite" }}/>
+            Waiting for payment
+          </div>
+        )}
       </div>
 
-      <div style={{ fontSize:12, color:"rgba(255,255,255,.45)", marginBottom:16 }}>
-        Scan QR or copy the address. Send <strong style={{ color:"#FFD700" }}>exactly</strong> this amount.
-      </div>
-
-      {/* Amount */}
-      <div style={{ background:"rgba(255,215,0,.06)", border:"1px solid rgba(255,215,0,.2)", borderRadius:10, padding:"12px 14px", marginBottom:14, textAlign:"center" }}>
-        <div style={{ fontSize:10, fontWeight:700, letterSpacing:".1em", color:"rgba(255,255,255,.35)", marginBottom:5, textTransform:"uppercase" }}>Amount to Send</div>
-        <div style={{ fontSize:22, fontWeight:900, color:"#FFD700", fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", letterSpacing:"-0.5px" }}>
-          {payment.amount} <span style={{ fontSize:12, fontWeight:600, color:"rgba(255,215,0,.7)" }}>USDT TRC-20</span>
+      {isConfirmed ? (
+        <div style={{ textAlign:"center", padding:"20px 0" }}>
+          <div style={{ fontSize:40, marginBottom:10 }}>🎉</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"#22C55E" }}>Entry Activated!</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,.4)", marginTop:6 }}>Your battle has started. Good luck!</div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Currency selector */}
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:8 }}>Select Currency</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {FORUMPAY_CURRENCIES.map(c => (
+                <button key={c.id} onClick={() => onCurrencyChange(c.id)}
+                  style={{ padding:"5px 10px", borderRadius:8, cursor:"pointer", border:"none", fontFamily:"inherit", fontSize:11, fontWeight:600, transition:"all .15s",
+                    background: selectedCurrency===c.id ? `${c.color}22` : "rgba(255,255,255,.05)",
+                    color:      selectedCurrency===c.id ? c.color : "rgba(255,255,255,.45)",
+                    outline:    selectedCurrency===c.id ? `1px solid ${c.color}55` : "1px solid transparent",
+                  }}>
+                  {c.icon} {c.name} <span style={{ fontSize:9, opacity:.7 }}>{c.network}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {/* QR Code — ref-based, no getElementById */}
-      <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
-        <div style={{ background:"#fff", borderRadius:12, padding:10, display:"inline-flex", alignItems:"center", justifyContent:"center", minWidth:200, minHeight:200, position:"relative" }}>
-          <div ref={qrRef}/>
-          {!qrReady && (
-            <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <div style={{ width:32, height:32, border:"3px solid #eee", borderTopColor:"#000", borderRadius:"50%", animation:"spin .7s linear infinite" }}/>
+          {/* Amount */}
+          <div style={{ background:"rgba(255,215,0,.06)", border:"1px solid rgba(255,215,0,.2)", borderRadius:10, padding:"12px 16px", marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div>
+              <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:4 }}>Amount to Send</div>
+              <div style={{ fontSize:22, fontWeight:900, color:"#FFD700", fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-1px" }}>
+                {payment.amount} <span style={{ fontSize:13, color:"rgba(255,215,0,.6)", fontWeight:600 }}>{currMeta.name}</span>
+              </div>
+              <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginTop:2 }}>≈ ${payment.amount_usd} USD · {currMeta.network} network</div>
+            </div>
+            {/* QR */}
+            <div style={{ background:"#fff", borderRadius:8, padding:4 }}>
+              <div ref={qrRef} style={{ width:80, height:80 }} />
+            </div>
+          </div>
+
+          {/* Notice from ForumPay (e.g. ETH requires extra notice) */}
+          {payment.notice && (
+            <div style={{ fontSize:11, color:"#fbbf24", background:"rgba(251,191,36,.06)", border:"1px solid rgba(251,191,36,.2)", borderRadius:8, padding:"8px 12px", marginBottom:12 }}>
+              ℹ️ {payment.notice}
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Network badge */}
-      <div style={{ textAlign:"center", marginBottom:12 }}>
-        <span style={{ fontSize:11, fontWeight:700, background:"rgba(96,165,250,.12)", border:"1px solid rgba(96,165,250,.3)", color:"#60a5fa", borderRadius:20, padding:"3px 12px" }}>
-          TRC-20 Network Only
-        </span>
-      </div>
-
-      {/* Address with copy */}
-      <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"10px 12px", marginBottom:12 }}>
-        <div style={{ fontSize:10, fontWeight:700, letterSpacing:".1em", color:"rgba(255,255,255,.3)", marginBottom:6, textTransform:"uppercase" }}>Wallet Address</div>
-        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ fontSize:10, wordBreak:"break-all", color:"rgba(255,255,255,.75)", fontFamily:"'JetBrains Mono','Fira Code',monospace", flex:1, lineHeight:1.7 }}>
-            {payment.address}
+          {/* Address */}
+          <div style={{ background:"rgba(255,255,255,.04)", borderRadius:10, padding:"10px 12px", marginBottom:12 }}>
+            <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:6 }}>
+              {currMeta.name} ({currMeta.network}) Address
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <div style={{ fontSize:10, wordBreak:"break-all", color:"rgba(255,255,255,.75)", fontFamily:"'JetBrains Mono','Fira Code',monospace", flex:1, lineHeight:1.7 }}>
+                {payment.address}
+              </div>
+              <button onClick={copy}
+                style={{ flexShrink:0, borderRadius:8, padding:"8px 12px", cursor:"pointer", fontSize:12, fontWeight:700, whiteSpace:"nowrap",
+                  background: copied?"rgba(34,197,94,.15)":"rgba(255,215,0,.1)",
+                  border:`1px solid ${copied?"rgba(34,197,94,.4)":"rgba(255,215,0,.3)"}`,
+                  color: copied?"#22C55E":"#FFD700" }}>
+                {copied ? "✓ Copied!" : "📋 Copy"}
+              </button>
+            </div>
           </div>
-          <button onClick={copyAddress} style={{
-            flexShrink:0, borderRadius:8, padding:"8px 12px", cursor:"pointer",
-            fontSize:12, fontWeight:700, whiteSpace:"nowrap", transition:"all .2s",
-            background: copied ? "rgba(34,197,94,.15)" : "rgba(255,215,0,.1)",
-            border: `1px solid ${copied ? "rgba(34,197,94,.4)" : "rgba(255,215,0,.3)"}`,
-            color: copied ? "#22C55E" : "#FFD700",
-          }}>
-            {copied ? "✓ Copied!" : "📋 Copy"}
-          </button>
-        </div>
-      </div>
 
-      {/* Warning */}
-      <div style={{ fontSize:11, color:"rgba(239,68,68,.8)", background:"rgba(239,68,68,.06)", border:"1px solid rgba(239,68,68,.18)", borderRadius:8, padding:"9px 12px", marginBottom:14, lineHeight:1.65, display:"flex", gap:8 }}>
-        <span style={{ flexShrink:0 }}>⚠️</span>
-        <span>Send <strong>USDT on TRC-20 only</strong>. Sending on wrong network will result in permanent loss of funds.</span>
-      </div>
+          {/* Confirmations progress */}
+          {isConfirming && payment.confirmations !== undefined && (
+            <div style={{ background:"rgba(251,191,36,.06)", border:"1px solid rgba(251,191,36,.2)", borderRadius:8, padding:"8px 12px", marginBottom:12, fontSize:11, color:"#fbbf24" }}>
+              ⛓ {payment.confirmations || 0} / {payment.waiting_confirmations || "?"} confirmations received
+            </div>
+          )}
 
-      <a href={payment.paymentUrl} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ width:"100%", justifyContent:"center", display:"flex", marginBottom:8 }}>
-        Open NOWPayments Invoice →
-      </a>
-      <div style={{ fontSize:11, color:"rgba(255,255,255,.22)", textAlign:"center" }}>
-        Confirms automatically on payment · No need to refresh
-      </div>
+          {/* Warning */}
+          <div style={{ fontSize:11, color:"rgba(239,68,68,.8)", background:"rgba(239,68,68,.06)", border:"1px solid rgba(239,68,68,.18)", borderRadius:8, padding:"9px 12px", marginBottom:4, lineHeight:1.65, display:"flex", gap:8 }}>
+            <span style={{ flexShrink:0 }}>⚠️</span>
+            <span>Send <strong>exactly</strong> the amount shown on the <strong>{currMeta.network} network</strong>. Wrong network = permanent loss.</span>
+          </div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,.22)", textAlign:"center", marginTop:8 }}>
+            Powered by ForumPay · Auto-confirms · No need to refresh
+          </div>
+        </>
+      )}
     </div>
   );
 }
-
 function TimeDisplay({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -199,6 +210,7 @@ export default function TournamentDetailPage() {
   const [topTraders, setTopTraders] = useState<any[]>([]);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [payment, setPayment] = useState<any>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState("USDT_TRC20");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", broker:"Exness" });
@@ -206,28 +218,55 @@ export default function TournamentDetailPage() {
   const [verified, setVerified] = useState(false);
   const [verifyResult, setVerifyResult] = useState<any>(null);
 
-  // Poll payment status every 8s as fallback (WebSocket may not work in production)
+  // Poll ForumPay payment status every 8s
   useEffect(() => {
     if (!payment?.paymentId || payment?.confirmed) return;
+    const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
     const poll = async () => {
       try {
-        const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
         const token = localStorage.getItem("fc_token") || "";
         const r = await fetch(`${API}/api/payments/${payment.paymentId}/status`, {
           headers: { Authorization: "Bearer " + token }
         });
         const d = await r.json();
+        setPayment((p: any) => ({
+          ...p,
+          status: d.status,
+          confirmed: d.confirmed || d.status === "confirmed",
+          confirmations: d.confirmations,
+          waiting_confirmations: d.waiting_confirmations,
+        }));
         if (d.confirmed || d.status === "confirmed") {
-          setPayment((p: any) => ({ ...p, confirmed: true }));
-          // Refresh entries
           if (user) entryApi.getMy(id).then(setMyEntries).catch(() => {});
         }
       } catch {}
     };
-    poll(); // immediate check
+    poll();
     const iv = setInterval(poll, 8000);
     return () => clearInterval(iv);
   }, [payment?.paymentId, payment?.confirmed]);
+
+  // When user changes currency, fetch new rate + start new payment
+  const handleCurrencyChange = async (currency: string) => {
+    setSelectedCurrency(currency);
+    if (!payment?.entryId) return;
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+      const token = localStorage.getItem("fc_token") || "";
+      const r = await fetch(`${API}/api/payments/create`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify({ entry_id: payment.entryId, currency }),
+      });
+      const d = await r.json();
+      if (d.success) {
+        setPayment((p: any) => ({
+          ...p, paymentId: d.payment_id, address: d.address,
+          amount: d.amount, currency: d.currency, notice: d.notice, status: "waiting",
+        }));
+      }
+    } catch {}
+  };
 
   usePaymentSocket(payment?.paymentId || null, () => {
     setPayment((p: any) => p ? {...p, confirmed:true} : p);
@@ -272,35 +311,40 @@ export default function TournamentDetailPage() {
     e.preventDefault();
     setError(""); setSubmitting(true);
     try {
-      const result = await entryApi.create({ tournamentId:id, mt5Login:form.mt5Login, mt5Password:form.mt5Password, mt5Server:form.mt5Server, broker:form.broker.toLowerCase() });
-      // entry.payment comes from entryService → createEntryPayment
-      // but also trigger /api/payments/create as backup to ensure it's in payments table
-      let paymentData = result.payment;
-      if (!paymentData?.address && result.entry?.id) {
-        try {
-          const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
-          const token = localStorage.getItem("fc_token") || "";
-          const pr = await fetch(`${API}/api/payments/create`, {
-            method: "POST",
-            headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-            body: JSON.stringify({ entry_id: result.entry.id, tournament_id: id }),
-          });
-          const pd = await pr.json();
-          if (pd.success) {
-            paymentData = {
-              paymentId: pd.payment_id,
-              address: pd.pay_address,
-              amount: pd.pay_amount,
-              currency: "USDTTRC20",
-              paymentUrl: pd.paymentUrl || `https://nowpayments.io/payment?iid=${pd.payment_id}`,
-            };
-          }
-        } catch {}
-      }
-      setPayment(paymentData);
+      // 1. Create entry (status = pending_payment)
+      const result = await entryApi.create({
+        tournamentId: id, mt5Login: form.mt5Login,
+        mt5Password: form.mt5Password, mt5Server: form.mt5Server,
+        broker: form.broker.toLowerCase()
+      });
+      const entryId = result.entry?.id || result.id;
+
+      // 2. Create ForumPay payment
+      const API   = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+      const token = localStorage.getItem("fc_token") || "";
+      const pr = await fetch(`${API}/api/payments/create`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+        body: JSON.stringify({ entry_id: entryId, currency: selectedCurrency }),
+      });
+      const pd = await pr.json();
+
+      if (!pd.success) throw new Error(pd.error || "Payment creation failed");
+
+      setPayment({
+        entryId,
+        paymentId:   pd.payment_id,
+        address:     pd.address,
+        amount:      pd.amount,
+        amount_usd:  pd.amount_usd,
+        currency:    pd.currency,
+        notice:      pd.notice,
+        status:      "waiting",
+        confirmed:   false,
+      });
       setShowJoinForm(false);
     } catch (err: any) {
-      setError(err?.response?.data?.error || "Failed to create entry");
+      setError(err?.response?.data?.error || err.message || "Failed to create entry");
     } finally { setSubmitting(false); }
   }
 
@@ -473,7 +517,7 @@ export default function TournamentDetailPage() {
 
             {/* Payment pending */}
             {payment && !payment.confirmed && (
-              <PaymentCard payment={payment}/>
+              <PaymentCard payment={payment} selectedCurrency={selectedCurrency} onCurrencyChange={handleCurrencyChange} />
             )}
 
             {payment?.confirmed && (

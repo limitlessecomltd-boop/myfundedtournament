@@ -3,6 +3,14 @@ const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
 const { initWebSocket } = require("./websocket/liveSocket");
+const db = require("./config/db");
+
+// Auto-migrate: add ForumPay columns if not present
+db.query(`
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS amount_crypto VARCHAR(50);
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS reference_no  VARCHAR(200);
+`).then(() => console.log('[DB] ForumPay columns ready'))
+  .catch(e => console.warn('[DB] Migration note:', e.message));
 // MetaApi sync replaced by C# bridge — bridge polls every 30s automatically
 const { startTournamentCron } = require("./services/tournamentService");
 

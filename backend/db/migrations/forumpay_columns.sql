@@ -1,0 +1,2 @@
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS amount_crypto  VARCHAR(50);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS reference_no   VARCHAR(200);

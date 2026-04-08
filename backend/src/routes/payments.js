@@ -1,23 +1,53 @@
-const express = require('express');
-const router  = express.Router();
-const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
-const email = require('../services/emailService');
-const db = require('../config/db');
+/**
+ * payments.js — ForumPay crypto payment routes
+ * Replaces NOWPayments with ForumPay sandbox integration.
+ */
+const express  = require('express');
+const router   = express.Router();
+const db       = require('../config/db');
 const { authenticate } = require('../middleware/auth');
+const email    = require('../services/emailService');
+const { CURRENCIES, getRate, startPayment, checkPayment, cancelPayment, mapStatus } = require('../services/forumPayService');
 
-const BRIDGE_URL    = process.env.MT5_BRIDGE_URL    || 'http://38.60.196.145:5099';
-const BRIDGE_SECRET = process.env.BRIDGE_SECRET     || 'mft_bridge_secret_2024';
+const BRIDGE_URL    = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
+const BACKEND_URL   = process.env.BACKEND_URL    || 'https://myfundedtournament-production.up.railway.app';
 
-// âââ POST /api/payments/create ââââââââââââââââââââââââââââââââââââââââââââââââ
-// Called by frontend after entry is created â generates a NOWPayments invoice
+// ── GET /api/payments/currencies ─────────────────────────────────────────────
+// Returns list of supported crypto currencies
+router.get('/currencies', (req, res) => {
+  res.json({ success: true, data: CURRENCIES });
+});
+
+// ── GET /api/payments/rate ───────────────────────────────────────────────────
+// Get live exchange rate: ?amount=50&currency=USDT_TRC20
+router.get('/rate', authenticate, async (req, res) => {
+  try {
+    const { amount, currency } = req.query;
+    if (!amount || !currency) return res.status(400).json({ error: 'amount and currency required' });
+    const rate = await getRate(parseFloat(amount), currency);
+    res.json({ success: true, data: rate });
+  } catch (err) {
+    console.error('[ForumPay] getRate error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/payments/create ─────────────────────────────────────────────────
+// Create a ForumPay payment for an entry
 router.post('/create', authenticate, async (req, res) => {
   try {
-    const { entry_id, tournament_id } = req.body;
+    const { entry_id, currency = 'USDT_TRC20' } = req.body;
     const userId = req.user.id;
 
-    // Get entry + tournament details
+    // Validate currency
+    const validCurrency = CURRENCIES.find(c => c.id === currency);
+    if (!validCurrency) return res.status(400).json({ error: 'Invalid currency' });
+
+    // Get entry + tournament
     const { rows } = await db.query(
-      `SELECT t.entry_fee, t.name AS tournament_name, e.id AS entry_id, e.status, e.tournament_id
+      `SELECT t.entry_fee, t.name AS tournament_name, e.id AS entry_id,
+              e.status, e.tournament_id, e.payment_id
        FROM entries e
        JOIN tournaments t ON t.id = e.tournament_id
        WHERE e.id = $1 AND e.user_id = $2`,
@@ -25,325 +55,273 @@ router.post('/create', authenticate, async (req, res) => {
     );
     if (!rows.length) return res.status(404).json({ error: 'Entry not found' });
     const entry = rows[0];
+
     if (entry.status !== 'pending_payment') {
-      return res.status(400).json({ error: 'Entry is already paid or active' });
+      return res.status(400).json({ error: 'Entry is not awaiting payment' });
     }
 
-    // Check if payment already exists for this entry
+    // Check for existing active ForumPay payment
     const { rows: existing } = await db.query(
-      `SELECT * FROM payments WHERE entry_id = $1 AND status IN ('waiting','confirming','confirmed')`,
+      `SELECT * FROM payments
+       WHERE entry_id = $1 AND status IN ('waiting','confirming')
+       ORDER BY created_at DESC LIMIT 1`,
       [entry_id]
     );
-    if (existing.length) {
-      // Return existing payment
-      return res.json({
-        success: true,
-        payment_id: existing[0].nowpayments_id,
-        pay_address: existing[0].payment_address,
-        pay_amount: existing[0].amount_usd,
-        price_amount: existing[0].amount_usd,
-        pay_currency: 'USDT (TRC-20)',
-        paymentUrl: `https://nowpayments.io/payment?iid=${existing[0].nowpayments_id}`,
-        status: existing[0].status,
-        reused: true,
-      });
+
+    if (existing.length && existing[0].payment_address) {
+      const p = existing[0];
+      const fp_id = p.nowpayments_id; // reusing column for forumpay_payment_id
+      try {
+        const live = await checkPayment(fp_id);
+        if (!['cancelled','failed'].includes(mapStatus(live.status))) {
+          return res.json({
+            success: true,
+            payment_id: fp_id,
+            address:    p.payment_address,
+            amount:     p.amount_crypto || p.amount_usd,
+            currency:   p.currency,
+            currency_meta: validCurrency,
+            status:     mapStatus(live.status),
+            reused:     true,
+          });
+        }
+      } catch {}
+      // If check fails or cancelled, fall through to create new
     }
 
-    const BACKEND = process.env.BACKEND_URL || process.env.RAILWAY_STATIC_URL
-      ? `https://${process.env.RAILWAY_STATIC_URL}`
-      : 'https://myfundedtournament-production.up.railway.app';
+    const orderId   = `mft_${entry_id}_${Date.now()}`;
+    const ipnUrl    = `${BACKEND_URL}/api/payments/webhook`;
+    const amount    = parseFloat(entry.entry_fee);
 
-    const callbackUrl = `${BACKEND}/api/payments/webhook`;
+    // Start payment with ForumPay
+    const fp = await startPayment({ invoiceAmount: amount, currency, orderId, ipnUrl });
 
-    // Create NOWPayments invoice
-    const payment = await createPayment({
-      orderId: `entry_${entry_id}_${Date.now()}`,
-      amount: parseFloat(entry.entry_fee),
-      description: `MFT Entry â ${entry.tournament_name}`,
-      callbackUrl,
-    });
+    console.log('[ForumPay] StartPayment response:', JSON.stringify(fp));
 
-    // Save to DB
+    const paymentId = fp.payment_id || fp.id || orderId;
+    const address   = fp.address;
+    const cryptoAmt = fp.amount || fp.invoice_amount;
+    const notice    = fp.notice;
+
+    // Save to DB (reuse nowpayments_id column for forumpay payment_id)
     await db.query(
-      `INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, currency, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'usdttrc20', 'waiting')
-       ON CONFLICT (nowpayments_id) DO NOTHING`,
-      [entry_id, userId, entry.tournament_id || tournament_id,
-       payment.payment_id.toString(), payment.pay_address,
-       parseFloat(entry.entry_fee)]
+      `INSERT INTO payments
+         (entry_id, user_id, tournament_id, nowpayments_id, payment_address,
+          amount_usd, amount_crypto, currency, status, reference_no)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'waiting',$9)
+       ON CONFLICT (nowpayments_id) DO UPDATE SET
+         payment_address=EXCLUDED.payment_address,
+         amount_crypto=EXCLUDED.amount_crypto,
+         status='waiting'`,
+      [entry_id, userId, entry.tournament_id,
+       String(paymentId), address,
+       amount, String(cryptoAmt || amount), currency,
+       orderId]
     );
 
-    // Link payment to entry
-    await db.query(`UPDATE entries SET payment_id = $1 WHERE id = $2`,
-      [payment.payment_id.toString(), entry_id]);
+    await db.query(`UPDATE entries SET payment_id=$1 WHERE id=$2`, [String(paymentId), entry_id]);
 
     res.json({
-      success: true,
-      payment_id: payment.payment_id,
-      pay_address: payment.pay_address,
-      pay_amount: payment.pay_amount,
-      price_amount: payment.price_amount,
-      pay_currency: 'USDT (TRC-20)',
-      paymentUrl: `https://nowpayments.io/payment?iid=${payment.payment_id}`,
-      expires_at: payment.expiration_estimate_date,
-      status: payment.payment_status,
+      success:       true,
+      payment_id:    paymentId,
+      address,
+      amount:        cryptoAmt,
+      amount_usd:    amount,
+      currency,
+      currency_meta: validCurrency,
+      notice,
+      status:        'waiting',
     });
   } catch (err) {
-    console.error('[Payment] Create error:', err.response?.data || err.message);
-    res.status(500).json({ error: 'Failed to create payment. Please try again.' });
+    console.error('[ForumPay] Create error:', err.message);
+    res.status(500).json({ error: 'Failed to create payment: ' + err.message });
   }
 });
 
-// âââ GET /api/payments/:paymentId/status âââââââââââââââââââââââââââââââââââââ
-// Frontend polls this to check payment status
+// ── GET /api/payments/:paymentId/status ──────────────────────────────────────
+// Frontend polls this every 10s while waiting for confirmation
 router.get('/:paymentId/status', authenticate, async (req, res) => {
   try {
-    const paymentId = req.params.paymentId;
+    const { paymentId } = req.params;
 
-    // Check local DB first
     const { rows } = await db.query(
       `SELECT p.*, e.status AS entry_status
-       FROM payments p
-       LEFT JOIN entries e ON e.id = p.entry_id
+       FROM payments p LEFT JOIN entries e ON e.id = p.entry_id
        WHERE p.nowpayments_id = $1`,
       [paymentId]
     );
-
     if (!rows.length) return res.status(404).json({ error: 'Payment not found' });
+    const p = rows[0];
 
-    // If already confirmed locally, return that
-    if (rows[0].status === 'confirmed') {
-      return res.json({
-        success: true,
-        status: 'confirmed',
-        confirmed: true,
-        entry_status: rows[0].entry_status,
-        payment: rows[0],
-      });
+    if (p.status === 'confirmed') {
+      return res.json({ success: true, status: 'confirmed', confirmed: true, entry_status: p.entry_status });
     }
 
-    // Otherwise check live status from NOWPayments API
+    // Live check from ForumPay
     try {
-      const live = await getPaymentStatus(paymentId);
-      const statusMap = {
-        waiting: 'waiting', confirming: 'confirming',
-        confirmed: 'confirmed', finished: 'confirmed',
-        failed: 'failed', expired: 'expired', refunded: 'failed',
-      };
-      const ourStatus = statusMap[live.payment_status] || rows[0].status;
+      const fp = await checkPayment(paymentId);
+      const ourStatus = mapStatus(fp.status);
+      const confirmed = ourStatus === 'confirmed';
 
-      // Update if status changed
-      if (ourStatus !== rows[0].status) {
+      if (ourStatus !== p.status) {
         await db.query(
-          `UPDATE payments SET status = $1,
-           confirmed_at = CASE WHEN $1 = 'confirmed' THEN NOW() ELSE confirmed_at END
-           WHERE nowpayments_id = $2`,
+          `UPDATE payments SET status=$1,
+           confirmed_at=CASE WHEN $1='confirmed' THEN NOW() ELSE confirmed_at END
+           WHERE nowpayments_id=$2`,
           [ourStatus, paymentId]
         );
-
-        // Activate entry if now confirmed
-        if (ourStatus === 'confirmed' && rows[0].entry_id) {
-          await activateEntry(rows[0].entry_id, rows[0].tournament_id, rows[0].user_id);
+        if (confirmed && p.entry_id) {
+          await activateEntry(p.entry_id, p.tournament_id, p.user_id);
+        }
+        if ((ourStatus === 'expired' || ourStatus === 'failed') && p.entry_id) {
+          await db.query(
+            `UPDATE entries SET status='cancelled' WHERE id=$1 AND status='pending_payment'`,
+            [p.entry_id]
+          );
         }
       }
 
       res.json({
-        success: true,
-        status: ourStatus,
-        confirmed: ourStatus === 'confirmed',
-        live_status: live.payment_status,
-        payment: rows[0],
+        success:            true,
+        status:             ourStatus,
+        confirmed,
+        entry_status:       p.entry_status,
+        // ForumPay-specific details for frontend display
+        unconfirmed_amount: fp.unconfirmed_amount,
+        confirmed_amount:   fp.confirmed_amount,
+        waiting_confirmations: fp.waiting_confirmations,
+        confirmations:      fp.confirmations,
       });
-    } catch {
-      // NOWPayments API down â return local status
-      res.json({
-        success: true,
-        status: rows[0].status,
-        confirmed: rows[0].status === 'confirmed',
-        payment: rows[0],
-      });
+    } catch (fpErr) {
+      console.warn('[ForumPay] checkPayment failed:', fpErr.message);
+      res.json({ success: true, status: p.status, confirmed: p.status === 'confirmed' });
     }
   } catch (err) {
-    console.error('[Payment] Status error:', err.message);
-    res.status(500).json({ error: 'Failed to get payment status' });
+    console.error('[ForumPay] Status error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// âââ POST /api/payments/webhook âââââââââââââââââââââââââââââââââââââââââââââââ
-// NOWPayments IPN callback â called when payment status changes
-// IMPORTANT: Must be registered BEFORE express.json() globally parses the body,
-// OR we just use the already-parsed body (since express.json is global in server.js)
+// ── POST /api/payments/webhook ────────────────────────────────────────────────
+// ForumPay IPN — called when payment status changes
 router.post('/webhook', async (req, res) => {
   try {
-    const signature = req.headers['x-nowpayments-sig'];
     const body = req.body;
-
-    console.log('[Webhook] Received:', JSON.stringify({ 
+    console.log('[ForumPay] Webhook:', JSON.stringify({
       payment_id: body?.payment_id,
-      payment_status: body?.payment_status,
-      order_id: body?.order_id,
-      hasSignature: !!signature 
+      status:     body?.status,
+      reference:  body?.reference_no,
     }));
 
-    if (!body || !body.payment_id) {
-      console.warn('[Webhook] Empty or invalid body');
-      return res.status(400).json({ error: 'Invalid webhook body' });
-    }
+    if (!body?.payment_id) return res.status(400).json({ error: 'Invalid body' });
 
-    // Verify IPN signature â log but don't block if invalid (prevents missed payments)
-    if (signature && process.env.NOWPAYMENTS_IPN_SECRET) {
-      const valid = await verifyIpnSignature(body, signature);
-      if (!valid) {
-        console.warn('[Webhook] Signature mismatch for payment', body.payment_id, 'â processing anyway');
-        // Don't return 401 â still process the payment to avoid missing confirmations
-      }
-    }
+    const ourStatus = mapStatus(body.status);
+    const paymentId = String(body.payment_id);
 
-    const { payment_id, payment_status, order_id } = body;
-    const paymentIdStr = payment_id.toString();
-
-    console.log(`[Webhook] Payment ${paymentIdStr} â ${payment_status}`);
-
-    const statusMap = {
-      waiting: 'waiting', confirming: 'confirming',
-      confirmed: 'confirmed', finished: 'confirmed',
-      failed: 'failed', expired: 'expired', refunded: 'failed',
-    };
-    const ourStatus = statusMap[payment_status] || 'waiting';
-
-    // Update payment record
+    // Verify reference_no matches what we stored
     const { rows: updated } = await db.query(
-      `UPDATE payments SET status = $1,
-       confirmed_at = CASE WHEN $1 = 'confirmed' THEN NOW() ELSE confirmed_at END
-       WHERE nowpayments_id = $2
-       RETURNING entry_id, tournament_id, user_id, status`,
-      [ourStatus, paymentIdStr]
+      `UPDATE payments SET status=$1,
+       confirmed_at=CASE WHEN $1='confirmed' THEN NOW() ELSE confirmed_at END
+       WHERE nowpayments_id=$2
+       RETURNING entry_id, tournament_id, user_id, reference_no`,
+      [ourStatus, paymentId]
     );
 
     if (!updated.length) {
-      console.warn(`[Webhook] Payment ${paymentIdStr} not found in DB`);
-      // Still return 200 to stop NOWPayments retrying
-      return res.json({ success: true, note: 'Payment not found' });
+      console.warn('[ForumPay] Webhook: payment not found:', paymentId);
+      return res.json({ success: true });
     }
 
-    // Activate entry if confirmed
+    const { entry_id, tournament_id, user_id, reference_no } = updated[0];
+
+    // Security: verify reference_no
+    if (body.reference_no && reference_no && body.reference_no !== reference_no) {
+      console.error('[ForumPay] reference_no mismatch! Webhook ignored.');
+      return res.status(400).json({ error: 'reference_no mismatch' });
+    }
+
     if (ourStatus === 'confirmed') {
-      const { entry_id, tournament_id, user_id } = updated[0];
       await activateEntry(entry_id, tournament_id, user_id);
     }
-
-    // Handle expiry â clean up pending_payment entry so trader can retry
     if (ourStatus === 'expired' || ourStatus === 'failed') {
-      const { entry_id } = updated[0];
       if (entry_id) {
         await db.query(
-          `UPDATE entries SET status = 'cancelled' WHERE id = $1 AND status = 'pending_payment'`,
+          `UPDATE entries SET status='cancelled' WHERE id=$1 AND status='pending_payment'`,
           [entry_id]
         );
-        console.log(`[Webhook] Entry ${entry_id} cancelled due to ${ourStatus} payment`);
       }
     }
 
     res.json({ success: true });
   } catch (err) {
-    console.error('[Webhook] Error:', err.message);
-    // Always return 200 to NOWPayments or they'll keep retrying
+    console.error('[ForumPay] Webhook error:', err.message);
     res.json({ success: true, error: err.message });
   }
 });
 
-// âââ Helper: activate entry after confirmed payment âââââââââââââââââââââââââââ
+// ── POST /api/payments/cancel ─────────────────────────────────────────────────
+router.post('/cancel', authenticate, async (req, res) => {
+  try {
+    const { payment_id } = req.body;
+    await cancelPayment(payment_id);
+    await db.query(`UPDATE payments SET status='expired' WHERE nowpayments_id=$1`, [String(payment_id)]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Helper: activate entry after confirmed payment ────────────────────────────
 async function activateEntry(entryId, tournamentId, userId) {
   try {
-    // Activate the entry
     const { rows } = await db.query(
-      `UPDATE entries SET status = 'active'
-       WHERE id = $1 AND status = 'pending_payment'
+      `UPDATE entries SET status='active'
+       WHERE id=$1 AND status='pending_payment'
        RETURNING id, tournament_id`,
       [entryId]
     );
-
-    if (!rows.length) {
-      console.log(`[Payment] Entry ${entryId} already active or not pending`);
-      return;
-    }
+    if (!rows.length) { console.log(`[ForumPay] Entry ${entryId} already active`); return; }
 
     const tId = rows[0].tournament_id || tournamentId;
-
-    // Add entry fee to prize pool
     await db.query(
-      `UPDATE tournaments
-       SET prize_pool = COALESCE(prize_pool, 0) + (SELECT entry_fee FROM tournaments WHERE id = $1)
-       WHERE id = $1`,
+      `UPDATE tournaments SET prize_pool=COALESCE(prize_pool,0)+(SELECT entry_fee FROM tournaments WHERE id=$1) WHERE id=$1`,
       [tId]
     );
+    console.log(`✅ [ForumPay] Entry ${entryId} activated`);
 
-    console.log(`â [Payment] Entry ${entryId} activated, prize pool updated`);
-
-    // Send confirmation email
     try {
-      const { rows: entryInfo } = await db.query(`
-        SELECT u.email, u.username, t.name AS tournament_name, t.entry_fee, t.id AS tournament_id
-        FROM entries e
-        JOIN users u ON u.id = e.user_id
-        JOIN tournaments t ON t.id = e.tournament_id
-        WHERE e.id = $1
-      `, [entryId]);
-      if (entryInfo.length) {
+      const { rows: info } = await db.query(
+        `SELECT u.email, u.username, t.name AS tournament_name, t.entry_fee, t.id AS tournament_id
+         FROM entries e JOIN users u ON u.id=e.user_id JOIN tournaments t ON t.id=e.tournament_id
+         WHERE e.id=$1`, [entryId]
+      );
+      if (info.length) {
         await email.sendPaymentConfirmed({
-          email:          entryInfo[0].email,
-          username:       entryInfo[0].username,
-          tournamentName: entryInfo[0].tournament_name,
-          entryFee:       parseFloat(entryInfo[0].entry_fee),
-          tournamentId:   entryInfo[0].tournament_id,
+          email: info[0].email, username: info[0].username,
+          tournamentName: info[0].tournament_name,
+          entryFee: parseFloat(info[0].entry_fee),
+          tournamentId: info[0].tournament_id,
         });
       }
-    } catch (emailErr) {
-      console.warn('[Email] Payment confirmed email failed:', emailErr.message);
-    }
+    } catch (e) { console.warn('[Email] failed:', e.message); }
 
-    // Connect MT5 account to C# Bridge (async — don't block the response)
-    connectMt5ToBridge(entryId).catch(err => {
-      console.warn(`[Payment] Bridge activation failed for ${entryId}:`, err.message);
-    });
-
-  } catch (err) {
-    console.error(`[Payment] activateEntry failed for ${entryId}:`, err.message);
-  }
+    connectMt5ToBridge(entryId).catch(e => console.warn('[Bridge]', e.message));
+  } catch (err) { console.error('[ForumPay] activateEntry error:', err.message); }
 }
 
-// ─── Helper: connect MT5 credentials to C# Bridge ─────────────────────────────
 async function connectMt5ToBridge(entryId) {
-  try {
-    const { rows } = await db.query(
-      `SELECT mt5_login, mt5_password, mt5_server FROM entries WHERE id = $1`,
-      [entryId]
-    );
-    if (!rows.length || !rows[0].mt5_login || !rows[0].mt5_password) {
-      console.warn(`[Bridge] Entry ${entryId} has no MT5 credentials — skipping bridge connect`);
-      return;
-    }
-    const { mt5_login, mt5_password, mt5_server } = rows[0];
-    const r = await fetch(`${BRIDGE_URL}/connect-account`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        login:    String(mt5_login),
-        password: mt5_password,
-        server:   mt5_server || 'Exness-MT5Trial15',
-        secret:   BRIDGE_SECRET,
-      }),
-    });
-    const data = await r.json();
-    if (data.connected) {
-      console.log(`✅ [Bridge] Account ${mt5_login} connected for entry ${entryId}`);
-    } else {
-      console.warn(`[Bridge] Connect failed for ${mt5_login}:`, data.error || data);
-    }
-  } catch (err) {
-    console.error(`[Bridge] connectMt5ToBridge error for entry ${entryId}:`, err.message);
-    throw err;
-  }
+  const { rows } = await db.query(
+    `SELECT mt5_login, mt5_password, mt5_server FROM entries WHERE id=$1`, [entryId]
+  );
+  if (!rows.length || !rows[0].mt5_login) return;
+  const { mt5_login, mt5_password, mt5_server } = rows[0];
+  const r = await fetch(`${BRIDGE_URL}/connect-account`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ login: String(mt5_login), password: mt5_password, server: mt5_server||'Exness-MT5Trial15', secret: BRIDGE_SECRET }),
+  });
+  const d = await r.json();
+  console.log(`[Bridge] connect ${mt5_login}:`, d.connected ? '✅' : d.error);
 }
 
 module.exports = router;
