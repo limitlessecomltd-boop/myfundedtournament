@@ -50,14 +50,27 @@ async function getRate(invoiceAmount, currency) {
   return fpGet('GetRate', { pos_id: FORUMPAY_POS_ID, invoice_currency:'USD', invoice_amount: String(invoiceAmount), currency, accept_zero_confirmations:'false' });
 }
 
-async function startPayment({ invoiceAmount, currency, paymentId, referenceNo, webhookUrl }) {
-  return fpPost('StartPayment', {
+async function startPayment({ invoiceAmount, currency, referenceNo, webhookUrl }) {
+  // Step 1: GetRate to obtain ForumPay's payment_id (required for StartPayment)
+  const rate = await fpGet('GetRate', {
+    pos_id: FORUMPAY_POS_ID, invoice_currency:'USD',
+    invoice_amount: String(invoiceAmount), currency,
+    accept_zero_confirmations:'false',
+  });
+  if (!rate.payment_id) throw new Error('GetRate did not return payment_id: ' + JSON.stringify(rate));
+  
+  // Step 2: StartPayment using the payment_id from GetRate
+  const result = await fpPost('StartPayment', {
     pos_id: FORUMPAY_POS_ID, invoice_currency:'USD', invoice_amount: String(invoiceAmount),
-    currency, payment_id: paymentId, reference_no: referenceNo,
+    currency, payment_id: rate.payment_id, reference_no: referenceNo,
     accept_zero_confirmations:'false', auto_accept_underpayment:'false', auto_accept_underpayment_min:'0',
     auto_accept_overpayment:'false', auto_accept_late_payment:'false',
     webhook_url: webhookUrl, locale:'en-GB',
   });
+  // Attach rate info for convenience
+  result.rate_amount = rate.amount;
+  result.forumpay_payment_id = rate.payment_id;
+  return result;
 }
 
 // CheckPayment REQUIRES all 4: pos_id, currency, payment_id, address

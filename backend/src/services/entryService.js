@@ -67,30 +67,31 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
   const entry = rows[0];
   // Create ForumPay payment — default to USDT_TRC20, frontend can switch currency
   const BACKEND_URL = process.env.BACKEND_URL || 'https://myfundedtournament-production.up.railway.app';
-  const orderId = 'mft_' + entry.id.replace(/-/g,'').slice(0,16) + '_' + Date.now();
+  const referenceNo = 'mft_' + entry.id.replace(/-/g,'').slice(0,16) + '_' + Date.now();
   const fp = await startPayment({
     invoiceAmount: parseFloat(tournament.entry_fee),
     currency:      'USDT_TRC20',
-    paymentId:     orderId,
-    referenceNo:   orderId,
+    referenceNo,
     webhookUrl:    BACKEND_URL + '/api/payments/webhook',
   });
+  // ForumPay payment_id comes from GetRate (embedded in startPayment response)
+  const fpPaymentId = fp.forumpay_payment_id || fp.payment_id || referenceNo;
   // Save payment to DB
   await db.query(
     `INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, amount_crypto, currency, status, reference_no)
      VALUES ($1,$2,$3,$4,$5,$6,$7,'USDT_TRC20','waiting',$8)
      ON CONFLICT (nowpayments_id) DO NOTHING`,
-    [entry.id, userId, tournamentId, orderId, fp.address, parseFloat(tournament.entry_fee), String(fp.amount||''), orderId]
+    [entry.id, userId, tournamentId, fpPaymentId, fp.address, parseFloat(tournament.entry_fee), String(fp.amount||fp.rate_amount||''), referenceNo]
   );
-  await db.query('UPDATE entries SET payment_id=$1 WHERE id=$2', [orderId, entry.id]);
+  await db.query('UPDATE entries SET payment_id=$1 WHERE id=$2', [fpPaymentId, entry.id]);
   const paymentInfo = {
-    paymentId: orderId,
-    address:   fp.address,
-    amount:    fp.amount,
+    paymentId:  fpPaymentId,
+    address:    fp.address,
+    amount:     fp.amount || fp.rate_amount,
     amount_usd: parseFloat(tournament.entry_fee),
-    currency:  'USDT_TRC20',
-    notice:    fp.notice,
-    status:    'waiting',
+    currency:   'USDT_TRC20',
+    notice:     fp.notice,
+    status:     'waiting',
   };
   return { entry, payment: paymentInfo };
 }

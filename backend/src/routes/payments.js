@@ -87,12 +87,13 @@ router.post('/create', authenticate, async (req, res) => {
     }
 
     // Generate our order ID — used as payment_id in ForumPay
-    const orderId = 'mft_' + entry_id.replace(/-/g,'').slice(0,16) + '_' + Date.now();
+    const referenceNo = 'mft_' + entry_id.replace(/-/g,'').slice(0,16) + '_' + Date.now();
     const amount  = parseFloat(entry.entry_fee);
     const ipnUrl  = BACKEND_URL + '/api/payments/webhook';
 
-    console.log('[ForumPay] StartPayment:', { orderId, amount, currency });
-    const fp = await startPayment({ invoiceAmount: amount, currency, paymentId: orderId, referenceNo: orderId, webhookUrl: ipnUrl });
+    console.log('[ForumPay] StartPayment:', { referenceNo, amount, currency });
+    const fp = await startPayment({ invoiceAmount: amount, currency, referenceNo, webhookUrl: ipnUrl });
+    const fpPaymentId = fp.forumpay_payment_id || fp.payment_id || referenceNo;
     console.log('[ForumPay] StartPayment response:', JSON.stringify(fp));
 
     // ForumPay StartPayment returns: address, amount, sid, valid_until, notice, ...
@@ -114,11 +115,11 @@ router.post('/create', authenticate, async (req, res) => {
         amount_crypto   = EXCLUDED.amount_crypto,
         currency        = EXCLUDED.currency,
         status          = 'waiting'
-    `, [entry_id, userId, entry.tournament_id, orderId, address, amount, String(cryptoAmt), currency, orderId]);
+    `, [entry_id, userId, entry.tournament_id, fpPaymentId, address, amount, String(cryptoAmt), currency, referenceNo]);
 
-    await db.query(`UPDATE entries SET payment_id=$1 WHERE id=$2`, [orderId, entry_id]);
+    await db.query(`UPDATE entries SET payment_id=$1 WHERE id=$2`, [fpPaymentId, entry_id]);
 
-    res.json({ success:true, payment_id:orderId, address, amount:cryptoAmt, amount_usd:amount, currency, notice, status:'waiting' });
+    res.json({ success:true, payment_id:fpPaymentId, address, amount:cryptoAmt, amount_usd:amount, currency, notice, status:'waiting' });
   } catch (err) {
     console.error('[ForumPay] Create error:', err.message);
     res.status(500).json({ error: 'Payment creation failed: ' + err.message });
