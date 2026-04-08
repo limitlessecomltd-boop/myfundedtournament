@@ -1,7 +1,6 @@
 "use client";
 export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import MFTLogo from "@/components/ui/MFTLogo";
@@ -156,8 +155,11 @@ function CertificateCard({ cert }: { cert: Certificate }) {
 
 export default function CertificatesPage() {
   const { user } = useAuth();
-  const searchParams = useSearchParams();
-  const tournamentId = searchParams.get("t");
+  const [tournamentId, setTournamentId] = useState<string|null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setTournamentId(params.get("t"));
+  }, []);
 
   const [certs, setCerts]         = useState<Certificate[]>([]);
   const [tournament, setTournament] = useState<any>(null);
