@@ -103,4 +103,4 @@ function mapStatus(fpStatus) {
   return map[String(fpStatus)] || 'waiting';
 }
 
-module.exports = { CURRENCIES, getRate, startPayment, checkPayment, cancelPayment, mapStatus };
+module.exports = { CURRENCIES, getRate, startPayment, checkPayment, cancelPayment, mapStatus, FORUMPAY_API, AUTH: 'Basic ' + Buffer.from(`${FORUMPAY_USER}:${FORUMPAY_SECRET}`).toString('base64'), FORUMPAY_POS_ID };

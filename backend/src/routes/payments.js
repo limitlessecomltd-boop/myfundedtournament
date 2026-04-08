@@ -14,9 +14,31 @@ const BRIDGE_SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
 const BACKEND_URL   = process.env.BACKEND_URL    || 'https://myfundedtournament-production.up.railway.app';
 
 // ── GET /api/payments/currencies ─────────────────────────────────────────────
-// Returns list of supported crypto currencies
 router.get('/currencies', (req, res) => {
   res.json({ success: true, data: CURRENCIES });
+});
+
+// ── GET /api/payments/probe-forumpay ─────────────────────────────────────────
+// Diagnostic: try all endpoint name variations to find correct ForumPay paths
+router.get('/probe-forumpay', async (req, res) => {
+  const { FORUMPAY_API, AUTH, FORUMPAY_POS_ID } = require('../services/forumPayService');
+  const paths = [
+    '/GetRate', '/getRate', '/get_rate', '/rate',
+    '/StartPayment', '/startPayment', '/start_payment',
+    '/CheckPayment', '/checkPayment', '/check_payment',
+    '/ping', '/Ping',
+    '/GetCryptoCurrencyList', '/getCryptoCurrencyList',
+  ];
+  const results = {};
+  for (const p of paths) {
+    try {
+      const url = `${FORUMPAY_API}${p}?pos_id=${FORUMPAY_POS_ID}&invoice_currency=USD&invoice_amount=25&currency=USDT_TRC20`;
+      const r = await fetch(url, { headers: { Authorization: AUTH }, signal: AbortSignal.timeout(5000) });
+      const d = await r.json();
+      results[p] = d.err_code === 'unknownEndpoint' ? 'NOT_FOUND' : (d.err ? d.err : 'OK:' + JSON.stringify(d).slice(0,80));
+    } catch(e) { results[p] = 'ERROR:' + e.message; }
+  }
+  res.json(results);
 });
 
 // ── GET /api/payments/rate ───────────────────────────────────────────────────
