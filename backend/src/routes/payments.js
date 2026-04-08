@@ -93,7 +93,7 @@ router.post('/create', authenticate, async (req, res) => {
 
     console.log('[ForumPay] StartPayment:', { referenceNo, amount, currency });
     const payerIp = req.headers['x-forwarded-for']?.split(',')[0] || req.ip || '127.0.0.1';
-    const fp = await startPayment({ invoiceAmount: amount, currency, referenceNo, webhookUrl: ipnUrl, payerIp });
+    const fp = await startPayment({ invoiceAmount: amount, currency, referenceNo, webhookUrl: ipnUrl, payerIp, payerId: 'mft_' + userId.replace(/-/g,'').slice(0,16) });
     const fpPaymentId = fp.forumpay_payment_id || fp.payment_id || referenceNo;
     console.log('[ForumPay] StartPayment response:', JSON.stringify(fp));
 

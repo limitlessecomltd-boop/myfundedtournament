@@ -73,7 +73,8 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
     currency:      'USDT_TRC20',
     referenceNo,
     webhookUrl:    BACKEND_URL + '/api/payments/webhook',
-    payerIp:       payerIp || '1.1.1.1',
+    payerIp:       payerIp || '8.8.8.8',
+    payerId:       'mft_' + userId.replace(/-/g,'').slice(0,16),
   });
   // ForumPay payment_id comes from GetRate (embedded in startPayment response)
   const fpPaymentId = fp.forumpay_payment_id || fp.payment_id || referenceNo;
