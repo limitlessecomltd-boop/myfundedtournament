@@ -20,7 +20,7 @@ print("[Startup] Rebuilding C# bridge...")
 try:
     result = subprocess.run(
         [r"C:\dotnet\dotnet.exe", "build", r"C:\mft-bridge\mt5csharp",
-         "-c", "Release", "-o", r"C:\mft-bridge\mt5csharp\bin\"],
+         "-c", "Release", "-o", "C:\\mft-bridge\\mt5csharp\\bin\\"],
         capture_output=True, text=True, timeout=120
     )
     if result.returncode == 0:
