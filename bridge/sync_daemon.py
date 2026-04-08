@@ -122,9 +122,16 @@ def full_trade_sync(conn, login):
     ppct    = round(pabs / STARTING_BALANCE * 100, 2)
 
     open_trades = bridge_get("/trades/open?login="    + login) or []
-    history     = bridge_get("/trades/history?login=" + login + "&days=30") or []
+    history     = bridge_get("/trades/history?login=" + login + "&days=90") or []
 
-    closed = [t for t in history if isinstance(t, dict)]
+    # Real trades only — strip Balance/deposit/credit rows
+    def is_real_trade(t):
+        if not isinstance(t, dict): return False
+        sym  = str(t.get("symbol", "")).strip()
+        typ  = str(t.get("type",   "")).lower()
+        return sym != "" and typ not in ("balance", "deposit", "credit", "withdrawal")
+
+    closed = [t for t in history if is_real_trade(t)]
     wins   = sum(1 for t in closed if float(t.get("profit", 0)) > 0)
     total  = len(closed)
 

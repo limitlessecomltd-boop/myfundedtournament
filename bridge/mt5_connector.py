@@ -104,14 +104,20 @@ class MT5AccountManager:
                 for p in positions:
                     db.execute("INSERT OR REPLACE INTO trades (mt5_login,ticket,symbol,side,volume,open_price,open_time,profit,swap,commission,status,excluded,synced) VALUES (?,?,?,?,?,?,?,?,0,0,'open',0,0)",
                                [login, str(p.get("ticket","")), p.get("symbol",""), p.get("type","").lower()[:4], p.get("lots",0), p.get("open_price",0), p.get("open_time",""), p.get("profit",0)])
-            history = _get("/trades/history", {"login": login, "days": 30})
+            history = _get("/trades/history", {"login": login, "days": 90})
             if history:
                 for h in history:
+                    # Skip Balance/deposit/credit/withdrawal rows — not real trades
+                    sym = str(h.get("symbol", "")).strip()
+                    typ = str(h.get("type", "")).lower()
+                    if not sym or typ in ("balance", "deposit", "credit", "withdrawal"):
+                        continue
                     db.execute("INSERT OR REPLACE INTO trades (mt5_login,ticket,symbol,side,volume,open_price,close_price,open_time,close_time,profit,swap,commission,status,excluded,synced) VALUES (?,?,?,?,?,?,?,?,?,?,0,0,'closed',0,0)",
-                               [login, str(h.get("ticket","")), h.get("symbol",""), h.get("type","").lower()[:4], h.get("lots",0), h.get("open_price",0), h.get("close_price",0), h.get("open_time",""), h.get("close_time",""), h.get("profit",0)])
+                               [login, str(h.get("ticket","")), sym, typ[:4], h.get("lots",0), h.get("open_price",0), h.get("close_price",0), h.get("open_time",""), h.get("close_time",""), h.get("profit",0)])
             db.commit()
-            total = db.execute("SELECT COUNT(*) FROM trades WHERE mt5_login=? AND excluded=0", [login]).fetchone()[0]
-            wins = db.execute("SELECT COUNT(*) FROM trades WHERE mt5_login=? AND excluded=0 AND profit>0", [login]).fetchone()[0]
+            # Count only real trades (symbol not empty)
+            total = db.execute("SELECT COUNT(*) FROM trades WHERE mt5_login=? AND excluded=0 AND symbol!='' AND side NOT IN ('bala','cred','depo','with')", [login]).fetchone()[0]
+            wins = db.execute("SELECT COUNT(*) FROM trades WHERE mt5_login=? AND excluded=0 AND symbol!='' AND side NOT IN ('bala','cred','depo','with') AND profit>0", [login]).fetchone()[0]
             db.execute("UPDATE accounts SET total_trades=?, winning_trades=? WHERE mt5_login=?", [total, wins, login])
             db.commit()
             acc = db.execute("SELECT * FROM accounts WHERE mt5_login=?", [login]).fetchone()

@@ -172,9 +172,12 @@ router.get('/:id/mt5', async (req, res) => {
     const profitPct = Math.round((profitAbs / startBal) * 10000) / 100;
 
     // Calculate win rate from history
-    const closed = Array.isArray(histRes) ? histRes : [];
-    const wins = closed.filter(t => t.profit > 0).length;
-    const losses = closed.filter(t => t.profit < 0).length;
+    // Real trades only — strip Balance/deposit/credit rows
+    const isTrade = t => t.symbol && t.symbol.trim() !== "" &&
+                         !["balance","deposit","credit","withdrawal"].includes((t.type||"").toLowerCase());
+    const closed = (Array.isArray(histRes) ? histRes : []).filter(isTrade);
+    const wins = closed.filter(t => parseFloat(t.profit) > 0).length;
+    const losses = closed.filter(t => parseFloat(t.profit) <= 0).length;
     const winRate = closed.length > 0 ? Math.round(wins / closed.length * 100) : 0;
 
     // Max drawdown

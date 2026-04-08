@@ -263,7 +263,13 @@ export default function TradePage() {
   const violations = data?.violations || [];
   const live       = mt5 || null;
   const openTrades: any[]   = live?.open_trades   || [];
-  const closedTrades: any[] = live?.trade_history  || [];
+  // Filter out Balance/deposit/credit rows — only real market trades
+  const isRealTrade = (t: any) => {
+    const sym = String(t.symbol || "").trim();
+    const typ = String(t.type   || "").toLowerCase();
+    return sym !== "" && !["balance","deposit","credit","withdrawal"].includes(typ);
+  };
+  const closedTrades: any[] = (live?.trade_history || []).filter(isRealTrade);
 
   const startBal   = parseFloat(entry?.starting_balance || 1000);
   const balance    = parseFloat(live?.balance ?? entry?.current_balance ?? startBal);
