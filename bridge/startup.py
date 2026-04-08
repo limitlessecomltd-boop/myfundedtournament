@@ -22,7 +22,16 @@ for fname, dest in [
     except Exception as e:
         print("[Startup] WARNING: Could not update", fname, "-", str(e))
 
-# Step 2: Rebuild C# bridge
+# Step 2: Stop service before build so the .exe isn't locked
+print("[Startup] Stopping MftMt5Bridge for rebuild...")
+try:
+    subprocess.run([NSSM, "stop", "MftMt5Bridge"], capture_output=True, timeout=30)
+    time.sleep(3)
+    print("[Startup] Service stopped")
+except Exception as e:
+    print("[Startup] Stop error:", str(e))
+
+# Step 3: Rebuild C# bridge
 print("[Startup] Rebuilding C# bridge...")
 try:
     r = subprocess.run([DOTNET, "build", PROJ, "-c", "Release", "-o", OUTDIR],
@@ -34,14 +43,14 @@ try:
 except Exception as e:
     print("[Startup] Build error:", str(e))
 
-# Step 3: Restart service
+# Step 4: Restart service
 print("[Startup] Restarting MftMt5Bridge...")
 try:
-    subprocess.run([NSSM, "restart", "MftMt5Bridge"], capture_output=True, timeout=30)
-    print("[Startup] Service restarted, waiting 6s...")
+    subprocess.run([NSSM, "start", "MftMt5Bridge"], capture_output=True, timeout=30)
+    print("[Startup] Service started, waiting 6s...")
     time.sleep(6)
 except Exception as e:
-    print("[Startup] Restart error:", str(e))
+    print("[Startup] Start error:", str(e))
 
 # Step 4: Wait for bridge to be ready
 print("[Startup] Waiting for C# bridge...")
