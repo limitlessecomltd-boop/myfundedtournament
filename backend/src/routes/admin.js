@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { authenticate, requireAdmin } = require("../middleware/auth");
-const { createTournament } = require("../services/tournamentService");
+const { getAllTournaments, getTournamentById, finalizeOneTournament, finalizeDueTournaments } = require('../services/tournamentService');
 const db = require("../config/db");
 const email = require("../services/emailService");
 
@@ -573,10 +573,16 @@ router.post("/tournaments/:id/force-start", async (req, res, next) => {
 
 router.post("/tournaments/:id/force-end", async (req, res, next) => {
   try {
-    await db.query(
-      `UPDATE tournaments SET status='ended', end_time=NOW() WHERE id=$1`,
-      [req.params.id]
-    );
-    res.json({ success: true, message: "Battle force-ended" });
+    // Full finalization: sync balances, determine winner, create funded account, send emails
+    const result = await finalizeOneTournament(req.params.id);
+    res.json({ success: true, message: "Battle finalized", result });
+  } catch (err) { next(err); }
+});
+
+// Also expose a /finalize-all for cron recovery
+router.post("/finalize-all", async (req, res, next) => {
+  try {
+    await finalizeDueTournaments();
+    res.json({ success: true, message: 'Finalization run complete' });
   } catch (err) { next(err); }
 });

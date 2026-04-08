@@ -263,10 +263,70 @@ function startTournamentCron() {
   console.log("Tournament lifecycle cron started (30s interval)");
 }
 
+
+// ─── Finalize a specific tournament by ID ─────────────────────────────────────
+async function finalizeOneTournament(tournamentId) {
+  // First sync profit_pct from bridge for all active entries
+  const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+  const { rows: activeEntries } = await db.query(
+    `SELECT id, mt5_login, starting_balance FROM entries WHERE tournament_id=$1 AND status='active'`,
+    [tournamentId]
+  );
+  for (const entry of activeEntries) {
+    try {
+      const acc = await fetch(`${BRIDGE}/account?login=${entry.mt5_login}`).then(r=>r.json()).catch(()=>null);
+      if (acc && acc.balance && !acc.error) {
+        const startBal = parseFloat(entry.starting_balance || 1000);
+        const bal      = parseFloat(acc.balance);
+        const profitAbs = bal - startBal;
+        const profitPct = ((profitAbs / startBal) * 100).toFixed(4);
+        await db.query(
+          `UPDATE entries SET current_balance=$1, current_equity=$2, profit_abs=$3, profit_pct=$4 WHERE id=$5`,
+          [bal, parseFloat(acc.equity || bal), profitAbs.toFixed(2), profitPct, entry.id]
+        );
+      }
+    } catch(e) { console.warn('[finalizeOne] sync error for', entry.mt5_login, e.message); }
+  }
+
+  // Set end_time to past if not already past (forces cron to pick it up)
+  await db.query(
+    `UPDATE tournaments SET end_time=NOW() - INTERVAL '1 second'
+     WHERE id=$1 AND (end_time IS NULL OR end_time > NOW())`,
+    [tournamentId]
+  );
+
+  // Re-check: run finalize for this specific tournament
+  const { rows } = await db.query(
+    `SELECT * FROM tournaments WHERE id=$1 AND status='active' AND end_time <= NOW()`,
+    [tournamentId]
+  );
+
+  if (!rows.length) {
+    // Tournament may already be ended or not active — try to re-finalize
+    const { rows: t2 } = await db.query(`SELECT * FROM tournaments WHERE id=$1`, [tournamentId]);
+    if (!t2.length) throw new Error('Tournament not found');
+    // Force re-run even if ended (for recovery)
+    const { rows: ended } = await db.query(
+      `SELECT * FROM tournaments WHERE id=$1 AND end_time <= NOW()`, [tournamentId]
+    );
+    if (ended.length) {
+      await db.query(`UPDATE tournaments SET status='active' WHERE id=$1 AND status='ended'`, [tournamentId]);
+      await finalizeDueTournaments();
+      return { done: true, recovered: true };
+    }
+    return { done: false, reason: 'Tournament not eligible for finalization' };
+  }
+
+  await finalizeDueTournaments();
+  return { done: true };
+}
+
 module.exports = {
   getAllTournaments, getTournamentById,
   createTournament, startTournamentCron,
-  createGuildBattle, getMyGuildBattles
+  createGuildBattle, getMyGuildBattles,
+  finalizeDueTournaments,
+  finalizeOneTournament,
 };
 
 // ─── Guild Battle ─────────────────────────────────────────────────────────────
