@@ -11,7 +11,9 @@ router.post("/", authenticate, async (req, res, next) => {
     if (!tournamentId || !mt5Login || !mt5Password || !mt5Server || !broker) {
       return res.status(400).json({ error: "All MT5 fields are required" });
     }
-    const payerIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || '1.1.1.1';
+    const rawForwarded = req.headers['x-forwarded-for'] || '';
+    const payerIp = rawForwarded.split(',').map(s=>s.trim()).find(ip => !ip.startsWith('10.') && !ip.startsWith('172.') && !ip.startsWith('192.168.') && ip !== '127.0.0.1') || rawForwarded.split(',')[0].trim() || req.ip || '8.8.8.8';
+    console.log('[Entry] payerIp resolved:', payerIp, 'from x-forwarded-for:', rawForwarded, 'req.ip:', req.ip);
     const result = await createEntry(
       req.user.id, tournamentId,
       mt5Login, mt5Password, mt5Server, broker, payerIp
