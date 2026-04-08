@@ -11,6 +11,11 @@ db.query(`
   ALTER TABLE payments ADD COLUMN IF NOT EXISTS reference_no  VARCHAR(200);
 `).then(() => console.log('[DB] ForumPay columns ready'))
   .catch(e => console.warn('[DB] Migration note:', e.message));
+
+// Add missing enum values
+db.query(`ALTER TYPE entry_status ADD VALUE IF NOT EXISTS 'cancelled'`)
+  .then(() => console.log('[DB] entry_status cancelled value ready'))
+  .catch(e => console.warn('[DB] entry_status migration:', e.message));
 // MetaApi sync replaced by C# bridge — bridge polls every 30s automatically
 const { startTournamentCron } = require("./services/tournamentService");
 
