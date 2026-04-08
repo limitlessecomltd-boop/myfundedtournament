@@ -181,7 +181,7 @@ export default function HomePage() {
       `}</style>
 
       {/* ═══ HERO ═══ */}
-      <section className="hero-pad hero-grid" className="hero-grid" style={{ maxWidth:1280, margin:"0 auto", padding:"52px 48px 36px", display:"grid", gridTemplateColumns:"1fr 480px", gap:56, alignItems:"center" }}>
+      <section className="hero-pad hero-grid" style={{ maxWidth:1280, margin:"0 auto", padding:"52px 48px 36px", display:"grid", gridTemplateColumns:"1fr 480px", gap:56, alignItems:"center" }}>
         <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, background:"radial-gradient(ellipse 700px 600px at 68% 38%, rgba(34,197,94,.06) 0%, transparent 70%), radial-gradient(ellipse 500px 400px at 12% 65%, rgba(255,215,0,.04) 0%, transparent 60%)" }}/>
         <div style={{ position:"relative", zIndex:1 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.22)", borderRadius:100, padding:"6px 16px 6px 10px", fontSize:13, fontWeight:600, color:"#FFD700", marginBottom:28 }}>

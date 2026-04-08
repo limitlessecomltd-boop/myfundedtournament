@@ -289,7 +289,7 @@ export default function TournamentsPage() {
         ) : (
           <>
             {/* Empty state — no battles at all */}
-            {registration.length === 0 && active.length === 0 && ended.length === 0 && (
+            {registration.length === 0 && active.length === 0 && past.length === 0 && (
               <div style={{ textAlign:"center", padding:"80px 20px",
                 border:"1px dashed rgba(255,255,255,.08)", borderRadius:20, marginBottom:48 }}>
                 <div style={{ fontSize:56, marginBottom:16 }}>⚔️</div>

@@ -540,9 +540,9 @@ export default function TournamentDetailPage() {
                     <label className="input-label">Server IP <span style={{fontSize:10,color:"rgba(255,255,255,.3)"}}>(auto-resolved)</span></label>
                     <div style={{display:"flex",gap:8}}>
                       <input className="input" type="text" placeholder="Click Resolve to auto-fill"
-                        value={form.mt5ServerIp||""}
+                        value={form.mt5Server||""}
                         onChange={e => setForm(f => ({...f,mt5ServerIp:e.target.value}))}
-                        style={{flex:1,color:form.mt5ServerIp&&!form.mt5ServerIp.includes("...")?"#4ade80":"inherit"}}
+                        style={{flex:1,color:form.mt5Server&&!form.mt5Server.includes("...")?"#4ade80":"inherit"}}
                         readOnly={false}/>
                       <button type="button"
                         style={{padding:"0 14px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,.2)",borderRadius:8,color:"#fff",cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}
@@ -609,7 +609,7 @@ export default function TournamentDetailPage() {
                     <div style={{color:"#4ade80",fontWeight:700,fontSize:13,marginBottom:6}}>✅ MT5 Account Verified</div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,fontSize:12,color:"rgba(255,255,255,.7)"}}>
                       <div>Login: <span style={{color:"#fff",fontWeight:600}}>{verifyResult.login}</span></div>
-                      <div>Balance: <span style={{color:"#4ade80",fontWeight:600}}>{verifyResult.balance{"}"}</span></div>
+                      <div>Balance: <span style={{color:"#4ade80",fontWeight:600}}>{verifyResult.balance}</span></div>
                       <div>Open Trades: <span style={{color:"#fff",fontWeight:600}}>{verifyResult.open_trades}</span></div>
                       <div>Status: <span style={{color:"#4ade80",fontWeight:600}}>Ready ✓</span></div>
                     </div>

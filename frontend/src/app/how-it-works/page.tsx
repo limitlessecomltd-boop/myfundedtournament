@@ -177,7 +177,7 @@ export default function HowItWorksPage() {
                 <p style={{ fontSize:14.5, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:22 }}>{step.desc}</p>
 
                 {/* Sub-steps */}
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:22 }} className="step-substeps">
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:22 }}>
                   {step.substeps.map((sub, j) => (
                     <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, padding:"10px 14px" }}>
                       <span style={{ fontSize:18, flexShrink:0 }}>{sub.icon}</span>
@@ -217,7 +217,7 @@ export default function HowItWorksPage() {
           <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>Battle Rules</h2>
           <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:480, margin:"0 auto" }}>All rules are auto-enforced by our system in real time. No manual review, no grey areas.</p>
         </div>
-        <div className="rules-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }} className="rules-grid">
+        <div className="rules-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
           {RULES.map(r => (
             <div key={r.title} style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:14, padding:"18px 20px", display:"flex", gap:14 }}>
               <span style={{ fontSize:24, flexShrink:0 }}>{r.icon}</span>
@@ -238,7 +238,7 @@ export default function HowItWorksPage() {
             <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>3 Supported Brokers</h2>
             <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:480, margin:"0 auto" }}>All three offer free MT5 demo accounts with no deposit required. Open one in under 5 minutes.</p>
           </div>
-          <div className="brokers-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:18 }} className="brokers-grid">
+          <div className="brokers-grid" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:18 }}>
             {BROKERS.map(b => (
               <div key={b.name} style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${b.color}33`, borderRadius:16, padding:"24px 22px", textAlign:"center" }}>
                 <div style={{ fontSize:40, marginBottom:14 }}>{b.logo}</div>
@@ -267,7 +267,7 @@ export default function HowItWorksPage() {
         </div>
 
         {/* Example calculations */}
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:28 }} className="prize-calc-grid">
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20, marginBottom:28 }}>
           {[
             { plan:"Starter Bullet", fee:25, entries:25, color:"#FFD700", border:"rgba(255,215,0,.25)" },
             { plan:"Pro Bullet", fee:50, entries:25, color:"#22C55E", border:"rgba(34,197,94,.25)" },

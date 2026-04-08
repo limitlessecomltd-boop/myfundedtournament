@@ -78,7 +78,7 @@ export default function GuildBattlePage() {
           <div style={{ display:"inline-flex", alignItems:"center", gap:8,
             background:"rgba(255,100,0,.08)", border:"1px solid rgba(255,100,0,.25)",
             borderRadius:20, padding:"4px 14px", fontSize:12, fontWeight:700,
-            color:"#FF6400", marginBottom:16, display:"block" }}>
+            color:"#FF6400", marginBottom:16 }}>
             🔥 Guild Battle
           </div>
           <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
