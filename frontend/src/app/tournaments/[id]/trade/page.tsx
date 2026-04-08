@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,14 +8,35 @@ import { useEntrySocket } from "@/hooks/useSockets";
 import MFTLogo from "@/components/ui/MFTLogo";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
-
-/* ── tiny helpers ── */
 const fmt  = (v: number, d = 2) => v.toLocaleString("en", { minimumFractionDigits: d, maximumFractionDigits: d });
-const pct  = (v: number)        => `${v >= 0 ? "+" : ""}${fmt(v)}%`;
-const usd  = (v: number)        => `${v >= 0 ? "+" : "-"}$${fmt(Math.abs(v))}`;
-const col  = (v: number)        => v >= 0 ? "var(--green)" : "var(--red)";
+const col  = (v: number) => v >= 0 ? "var(--green)" : "var(--red)";
 
-/* ── Radial gauge ── */
+/* ── Real trade filter ── */
+const isRealTrade = (t: any) => {
+  const sym = String(t.symbol || "").trim();
+  const typ = String(t.type   || "").toLowerCase();
+  return sym !== "" && !["balance","deposit","credit","withdrawal"].includes(typ);
+};
+
+/* ── Compute trade duration in seconds ── */
+function tradeDuration(t: any): number {
+  if (!t.open_time) return 999;
+  const open  = new Date(t.open_time).getTime();
+  const close = t.close_time ? new Date(t.close_time).getTime() : Date.now();
+  return Math.round((close - open) / 1000);
+}
+
+/* ── Countdown formatter ── */
+function fmtCountdown(ms: number): string {
+  if (ms <= 0) return "00:00:00";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  if (h > 0) return `${h}h ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
+  return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+/* ── Gauge ── */
 function Gauge({ value, max, label, color, size = 76 }: any) {
   const r = 28, cx = size / 2, cy = size / 2;
   const circ = 2 * Math.PI * r;
@@ -38,80 +59,58 @@ function Gauge({ value, max, label, color, size = 76 }: any) {
   );
 }
 
-/* ── Equity Curve SVG ── */
+/* ── Equity Curve ── */
 function EquityCurve({ trades, startBal, balance, equity }: any) {
   const w = 600, h = 140;
   const closed = [...(trades || [])].sort((a: any, b: any) =>
     new Date(a.close_time || a.open_time).getTime() - new Date(b.close_time || b.open_time).getTime()
   );
-  const points: { x: number; y: number; bal: number }[] = [{ x: 0, y: startBal, bal: startBal }];
+  const points: { x: number; y: number }[] = [{ x: 0, y: startBal }];
   let running = startBal;
   closed.forEach((t: any, i: number) => {
     running += parseFloat(t.profit || 0);
-    points.push({ x: i + 1, y: running, bal: running });
+    points.push({ x: i + 1, y: running });
   });
-  // add current equity as final point
-  points.push({ x: points.length, y: equity, bal: balance });
-
+  points.push({ x: points.length, y: equity });
   const allY = points.map(p => p.y);
   const maxY = Math.max(...allY, startBal * 1.01);
   const minY = Math.min(...allY, startBal * 0.99);
   const rangeY = maxY - minY || 1;
   const n = points.length;
-
   const toX = (i: number) => (i / (n - 1 || 1)) * w;
   const toY = (v: number) => h - ((v - minY) / rangeY) * (h - 20) - 8;
-
   const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"}${toX(i).toFixed(1)},${toY(p.y).toFixed(1)}`).join(" ");
   const areaD = `${pathD} L${w},${h} L0,${h} Z`;
   const startLineY = toY(startBal);
   const isUp = balance >= startBal;
   const lineColor = isUp ? "#22C55E" : "#EF4444";
-  const gradId = `ecg_${Math.random().toString(36).slice(2)}`;
-
+  const gradId = `ecg${Math.random().toString(36).slice(2,6)}`;
   return (
-    <div style={{ position: "relative" }}>
-      <svg width="100%" viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible", display: "block" }}>
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {/* grid lines */}
-        {[0.25, 0.5, 0.75, 1].map(f => (
-          <line key={f} x1="0" y1={f * h} x2={w} y2={f * h}
-            stroke="rgba(255,255,255,.04)" strokeWidth="1" />
-        ))}
-        {/* start baseline */}
-        <line x1="0" y1={startLineY} x2={w} y2={startLineY}
-          stroke="rgba(255,215,0,.25)" strokeWidth="1" strokeDasharray="6,4" />
-        {/* area fill */}
-        <path d={areaD} fill={`url(#${gradId})`} />
-        {/* line */}
-        <path d={pathD} fill="none" stroke={lineColor} strokeWidth="2.5"
-          strokeLinecap="round" strokeLinejoin="round" />
-        {/* live dot */}
-        {n > 1 && (
-          <>
-            <circle cx={toX(n - 1)} cy={toY(points[n - 1].y)} r="5" fill={lineColor} />
-            <circle cx={toX(n - 1)} cy={toY(points[n - 1].y)} r="9" fill={lineColor} opacity="0.25">
-              <animate attributeName="r" values="5;11;5" dur="2s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.25;0;0.25" dur="2s" repeatCount="indefinite" />
-            </circle>
-          </>
-        )}
-        {/* labels */}
-        <text x="4" y={startLineY - 4} fontSize="9" fill="rgba(255,215,0,.5)" fontFamily="monospace">${fmt(startBal, 0)} start</text>
-        <text x="4" y="12" fontSize="9" fill={lineColor} fontFamily="monospace">${fmt(maxY, 0)}</text>
-      </svg>
-    </div>
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible", display: "block" }}>
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={lineColor} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {[0.25, 0.5, 0.75, 1].map(f => <line key={f} x1="0" y1={f * h} x2={w} y2={f * h} stroke="rgba(255,255,255,.04)" strokeWidth="1" />)}
+      <line x1="0" y1={startLineY} x2={w} y2={startLineY} stroke="rgba(255,215,0,.25)" strokeWidth="1" strokeDasharray="6,4" />
+      <path d={areaD} fill={`url(#${gradId})`} />
+      <path d={pathD} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      {n > 1 && <>
+        <circle cx={toX(n - 1)} cy={toY(points[n - 1].y)} r="5" fill={lineColor} />
+        <circle cx={toX(n - 1)} cy={toY(points[n - 1].y)} r="9" fill={lineColor} opacity="0.25">
+          <animate attributeName="r" values="5;11;5" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.25;0;0.25" dur="2s" repeatCount="indefinite" />
+        </circle>
+      </>}
+      <text x="4" y={startLineY - 4} fontSize="9" fill="rgba(255,215,0,.5)" fontFamily="monospace">${fmt(startBal, 0)} start</text>
+    </svg>
   );
 }
 
-/* ── Mini bar chart for daily P&L ── */
 function DailyBars({ trades }: { trades: any[] }) {
-  if (!trades || trades.length === 0) return null;
+  if (!trades?.length) return null;
   const byDay: Record<string, number> = {};
   trades.forEach((t: any) => {
     const d = String(t.close_time || t.open_time || "").slice(0, 10);
@@ -124,12 +123,10 @@ function DailyBars({ trades }: { trades: any[] }) {
     <div style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 48 }}>
       {days.map(([day, val]) => {
         const h = Math.max((Math.abs(val) / maxAbs) * 44, 2);
-        const isPos = val >= 0;
         return (
-          <div key={day} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}
+          <div key={day} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}
             title={`${day}: ${val >= 0 ? "+" : ""}$${val.toFixed(2)}`}>
-            <div style={{ width: "100%", height: h, background: isPos ? "#22C55E" : "#EF4444",
-              borderRadius: isPos ? "2px 2px 0 0" : "0 0 2px 2px", opacity: 0.8, minHeight: 2 }} />
+            <div style={{ width: "100%", height: h, background: val >= 0 ? "#22C55E" : "#EF4444", borderRadius: "2px 2px 0 0", opacity: 0.8 }} />
           </div>
         );
       })}
@@ -148,7 +145,6 @@ function Sidebar({ tournamentId, entry, profitPct }: any) {
   ];
   return (
     <div style={{ width: 230, background: "#060810", borderRight: "1px solid rgba(255,255,255,.06)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-      {/* Brand */}
       <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <MFTLogo size={30} />
@@ -158,8 +154,6 @@ function Sidebar({ tournamentId, entry, profitPct }: any) {
           </div>
         </div>
       </div>
-
-      {/* Account card */}
       <div style={{ margin: "14px 12px", background: "rgba(255,215,0,.04)", border: "1px solid rgba(255,215,0,.12)", borderRadius: 10, padding: "12px 14px" }}>
         <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,255,255,.3)", marginBottom: 6 }}>Active Account</div>
         <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "rgba(255,255,255,.6)", marginBottom: 8 }}>
@@ -180,25 +174,19 @@ function Sidebar({ tournamentId, entry, profitPct }: any) {
           </div>
         </div>
       </div>
-
-      {/* Nav */}
       <div style={{ padding: "4px 8px" }}>
         <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,255,255,.2)", padding: "8px 10px 4px" }}>Menu</div>
         {nav.map(n => {
           const active = pathname === n.href;
           return (
-            <Link key={n.href} href={n.href} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, marginBottom: 2, background: active ? "rgba(255,215,0,.08)" : "transparent", textDecoration: "none", transition: "background .12s" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={active ? "#FFD700" : "rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d={n.icon} />
-              </svg>
+            <Link key={n.href} href={n.href} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 8, marginBottom: 2, background: active ? "rgba(255,215,0,.08)" : "transparent", textDecoration: "none" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={active ? "#FFD700" : "rgba(255,255,255,.35)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={n.icon} /></svg>
               <span style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? "#FFD700" : "rgba(255,255,255,.5)" }}>{n.label}</span>
               {active && <div style={{ marginLeft: "auto", width: 4, height: 4, borderRadius: "50%", background: "#FFD700" }} />}
             </Link>
           );
         })}
       </div>
-
-      {/* Bottom profile */}
       <div style={{ marginTop: "auto", borderTop: "1px solid rgba(255,255,255,.05)", padding: "14px 18px" }}>
         <Link href="/profile" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,215,0,.1)", border: "1.5px solid rgba(255,215,0,.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "var(--gold)", flexShrink: 0 }}>T</div>
@@ -212,10 +200,10 @@ function Sidebar({ tournamentId, entry, profitPct }: any) {
   );
 }
 
-/* ── Objective row ── */
-function ObjRow({ label, desc, value, status }: any) {
+/* ── Objective Row — computed live ── */
+function ObjRow({ label, desc, value, status }: { label: string; desc: string; value: string; status: "pass" | "warn" | "fail" }) {
   const colors: any = { pass: "#22C55E", warn: "#FFD700", fail: "#EF4444" };
-  const c = colors[status] || "#22C55E";
+  const c = colors[status];
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 20px", borderBottom: "1px solid rgba(255,255,255,.04)" }}>
       <div style={{ width: 28, height: 28, borderRadius: "50%", background: `${c}15`, border: `1px solid ${c}40`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -232,18 +220,23 @@ function ObjRow({ label, desc, value, status }: any) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════ */
 export default function TradePage() {
-  const { id } = useParams<{ id: string }>();
+  const { id }   = useParams<{ id: string }>();
   const params   = useSearchParams();
   const entryId  = params.get("entry") || "";
 
-  const [data, setData]         = useState<any>(null);
-  const [mt5, setMt5]           = useState<any>(null);
-  const [tab, setTab]           = useState<"open" | "closed" | "violations">("open");
-  const [lastSync, setLastSync] = useState<Date | null>(null);
-  const [syncAge, setSyncAge]   = useState(0);
-  const liveEntry               = useEntrySocket(entryId);
+  const [data, setData]           = useState<any>(null);
+  const [mt5, setMt5]             = useState<any>(null);
+  const [tab, setTab]             = useState<"open" | "closed" | "violations">("open");
+  const [lastSync, setLastSync]   = useState<Date | null>(null);
+  const [syncAge, setSyncAge]     = useState(0);
+  const [countdown, setCountdown] = useState("");
+  const [msLeft, setMsLeft]       = useState<number>(Infinity);
+  const [closing, setClosing]     = useState(false);
+  const [closeMsg, setCloseMsg]   = useState("");
+  const autoClosedRef             = useRef(false);
+  const liveEntry                 = useEntrySocket(entryId);
 
   const fetchMt5 = useCallback(() => {
     if (!entryId) return;
@@ -255,23 +248,62 @@ export default function TradePage() {
       .catch(() => {});
   }, [entryId]);
 
+  const closeAllTrades = useCallback(async (reason = "manual") => {
+    if (closing) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("fc_token") : null;
+    setClosing(true);
+    setCloseMsg(reason === "auto" ? "⏱ Auto-closing trades (tournament ending)..." : "Closing all trades...");
+    try {
+      const r = await fetch(`${API}/api/entries/${entryId}/close-all`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+      const d = await r.json();
+      setCloseMsg(`✓ Closed ${d.closed ?? 0} trade${(d.closed ?? 0) !== 1 ? "s" : ""}`);
+      setTimeout(() => { setCloseMsg(""); fetchMt5(); }, 4000);
+    } catch (e: any) {
+      setCloseMsg(`✗ ${e.message}`);
+      setTimeout(() => setCloseMsg(""), 4000);
+    }
+    setClosing(false);
+  }, [entryId, closing, fetchMt5]);
+
   useEffect(() => { if (entryId) { entryApi.getById(entryId).then(setData).catch(console.error); } }, [entryId]);
   useEffect(() => { fetchMt5(); const iv = setInterval(fetchMt5, 10000); return () => clearInterval(iv); }, [fetchMt5]);
   useEffect(() => { const iv = setInterval(() => { if (lastSync) setSyncAge(Math.round((Date.now() - lastSync.getTime()) / 1000)); }, 1000); return () => clearInterval(iv); }, [lastSync]);
 
-  const entry      = liveEntry || data?.entry;
-  const violations = data?.violations || [];
-  const live       = mt5 || null;
+  /* ── Tournament countdown + auto-close ── */
+  useEffect(() => {
+    const entry = liveEntry || data?.entry;
+    const endRaw = entry?.tournament_end;
+    if (!endRaw) return;
+    const endMs = new Date(endRaw).getTime();
+    const tick = () => {
+      const diff = endMs - Date.now();
+      setMsLeft(diff);
+      setCountdown(diff > 0 ? fmtCountdown(diff) : "Ended");
+      // Auto-close at exactly 3 min before end
+      if (diff > 0 && diff <= 3 * 60 * 1000 && !autoClosedRef.current) {
+        const openCount = mt5?.open_trades?.length ?? 0;
+        if (openCount > 0) {
+          autoClosedRef.current = true;
+          closeAllTrades("auto");
+        }
+      }
+    };
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, [data?.entry, liveEntry, mt5?.open_trades?.length, closeAllTrades]);
+
+  const entry       = liveEntry || data?.entry;
+  const violations  = data?.violations || [];
+  const live        = mt5 || null;
   const openTrades: any[]   = live?.open_trades   || [];
-  // Filter out Balance/deposit/credit rows — only real market trades
-  const isRealTrade = (t: any) => {
-    const sym = String(t.symbol || "").trim();
-    const typ = String(t.type   || "").toLowerCase();
-    return sym !== "" && !["balance","deposit","credit","withdrawal"].includes(typ);
-  };
   const closedTrades: any[] = (live?.trade_history || []).filter(isRealTrade);
 
   const startBal   = parseFloat(entry?.starting_balance || 1000);
+  const tournStart = entry?.tournament_start ? new Date(entry.tournament_start) : null;
   const balance    = parseFloat(live?.balance ?? entry?.current_balance ?? startBal);
   const equity     = parseFloat(live?.equity  ?? entry?.current_equity  ?? balance);
   const profitAbs  = Math.round((balance - startBal) * 100) / 100;
@@ -287,18 +319,82 @@ export default function TradePage() {
   const bestTrade  = closedTrades.length ? Math.max(...closedTrades.map((t: any) => parseFloat(t.profit || 0))) : 0;
   const worstTrade = closedTrades.length ? Math.min(...closedTrades.map((t: any) => parseFloat(t.profit || 0))) : 0;
 
-  // symbol breakdown
-  const bySymbol: Record<string, { profit: number; count: number }> = {};
+  /* ── REAL Objectives checks ── */
+  // 1. Min 31s: any closed trade < 31s is a violation (excluded from score)
+  const hftTrades = closedTrades.filter((t: any) => tradeDuration(t) < 31);
+  const validTrades = closedTrades.filter((t: any) => tradeDuration(t) >= 31);
+  const hftStatus: "pass"|"warn"|"fail" = hftTrades.length > 0 ? "fail" : closedTrades.length > 0 ? "pass" : "pass";
+  const hftValue = hftTrades.length > 0
+    ? `${hftTrades.length} excluded (<31s)`
+    : closedTrades.length > 0 ? `${validTrades.length} valid` : "No trades";
+
+  // 2. No Hedging: simultaneous BUY+SELL on same symbol in open trades
+  const bySymbol: Record<string, Set<string>> = {};
+  openTrades.filter(isRealTrade).forEach((t: any) => {
+    const sym = t.symbol || "";
+    const side = String(t.type || t.side || "").toLowerCase();
+    const isBuy = side.includes("buy") || side === "0";
+    if (!bySymbol[sym]) bySymbol[sym] = new Set();
+    bySymbol[sym].add(isBuy ? "buy" : "sell");
+  });
+  const hedgedPairs = Object.entries(bySymbol).filter(([, sides]) => sides.has("buy") && sides.has("sell")).map(([s]) => s);
+  const hedgeStatus: "pass"|"warn"|"fail" = hedgedPairs.length > 0 ? "fail" : "pass";
+  const hedgeValue = hedgedPairs.length > 0 ? `⚠ ${hedgedPairs.join(", ")}` : "Clean";
+
+  // 3. External Deposit: balance at any close_time > starting balance POST tournament start
+  //    Only a breach if it happened AFTER tournament started
+  let depositBreach = false;
+  let depositBreachAmt = 0;
+  if (tournStart) {
+    const allHistory = (live?.trade_history || []);
+    // Check if any deposit/credit row exists AFTER tournament start
+    const deposits = allHistory.filter((t: any) => {
+      const typ = String(t.type || "").toLowerCase();
+      const isDeposit = ["balance","deposit","credit"].includes(typ) && parseFloat(t.profit || 0) > 0;
+      if (!isDeposit) return false;
+      const tradeTime = t.open_time ? new Date(t.open_time) : null;
+      return tradeTime && tradeTime > tournStart;
+    });
+    if (deposits.length > 0) {
+      depositBreach = true;
+      depositBreachAmt = deposits.reduce((s: number, t: any) => s + parseFloat(t.profit || 0), 0);
+    }
+  }
+  const depositStatus: "pass"|"warn"|"fail" = depositBreach ? "fail" : "pass";
+  const depositValue = depositBreach ? `⚠ +$${fmt(depositBreachAmt)} added` : "Clean";
+
+  // 4. Close 3min Early:
+  const inFinal3Min = msLeft > 0 && msLeft <= 3 * 60 * 1000;
+  const alreadyEnded = msLeft <= 0;
+  const close3Status: "pass"|"warn"|"fail" =
+    alreadyEnded ? (openTrades.filter(isRealTrade).length > 0 ? "fail" : "pass")
+    : inFinal3Min ? (openTrades.filter(isRealTrade).length > 0 ? "fail" : "pass")
+    : openTrades.filter(isRealTrade).length > 0 ? "warn" : "pass";
+  const close3Value = alreadyEnded
+    ? (openTrades.filter(isRealTrade).length > 0 ? "Open trades at end!" : "Clean")
+    : inFinal3Min
+    ? (openTrades.filter(isRealTrade).length > 0 ? `${openTrades.filter(isRealTrade).length} open — AUTO CLOSING` : "✓ All closed")
+    : openTrades.filter(isRealTrade).length > 0 ? `${openTrades.filter(isRealTrade).length} open (close before 3min)` : "Clean";
+
+  // Summary badge
+  const objFails = [hftStatus, hedgeStatus, depositStatus, close3Status].filter(s => s === "fail").length;
+  const objWarns = [hftStatus, hedgeStatus, depositStatus, close3Status].filter(s => s === "warn").length;
+
+  // Symbol breakdown for P&L chart
+  const symMap: Record<string, { profit: number; count: number }> = {};
   closedTrades.forEach((t: any) => {
     const s = t.symbol || "Other";
-    if (!bySymbol[s]) bySymbol[s] = { profit: 0, count: 0 };
-    bySymbol[s].profit += parseFloat(t.profit || 0);
-    bySymbol[s].count++;
+    if (!symMap[s]) symMap[s] = { profit: 0, count: 0 };
+    symMap[s].profit += parseFloat(t.profit || 0);
+    symMap[s].count++;
   });
-  const symbolRows = Object.entries(bySymbol).sort((a, b) => Math.abs(b[1].profit) - Math.abs(a[1].profit)).slice(0, 5);
+  const symbolRows = Object.entries(symMap).sort((a, b) => Math.abs(b[1].profit) - Math.abs(a[1].profit)).slice(0, 5);
   const maxSymAbs  = Math.max(...symbolRows.map(([, v]) => Math.abs(v.profit)), 1);
-
   const displayTrades = tab === "open" ? openTrades : tab === "closed" ? closedTrades : [];
+
+  /* ── Timer color ── */
+  const timerColor = msLeft <= 3 * 60 * 1000 ? "#EF4444" : msLeft <= 15 * 60 * 1000 ? "#FFD700" : "#22C55E";
+  const isActive = entry?.tournament_status === "active" || entry?.status === "active";
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#04060d" }}>
@@ -307,14 +403,14 @@ export default function TradePage() {
       <div style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
 
         {/* ── Top bar ── */}
-        <div style={{ background: "rgba(4,6,13,.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "0 28px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50, flexShrink: 0 }}>
+        <div style={{ background: "rgba(4,6,13,.97)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "0 28px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50, flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-.3px" }}>
                 {entry?.tournament_name || "Tournament"} — Entry #{entry?.entry_number ?? 1}
               </div>
               <div style={{ fontSize: 10, color: "rgba(255,255,255,.3)", marginTop: 1 }}>
-                {entry?.broker || "Exness"} · {entry?.mt5_login || "—"} · {live ? "Live via C# Bridge" : "Connecting..."} · synced {syncAge}s ago
+                {entry?.broker || "Exness"} · {entry?.mt5_login || "—"} · synced {syncAge}s ago
               </div>
             </div>
             {live && <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.2)", borderRadius: 20, padding: "3px 10px" }}>
@@ -322,20 +418,51 @@ export default function TradePage() {
               <span style={{ fontSize: 11, fontWeight: 700, color: "#22C55E" }}>Live</span>
             </div>}
           </div>
+
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* ── Tournament Timer ── */}
+            {isActive && countdown && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: `${timerColor}10`, border: `1px solid ${timerColor}30`, borderRadius: 10, padding: "6px 14px" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={timerColor} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: `${timerColor}99` }}>{msLeft <= 3 * 60 * 1000 ? "⚠ CLOSING SOON" : "Time Left"}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: timerColor, fontFamily: "'Space Grotesk',sans-serif", letterSpacing: "-1px", lineHeight: 1 }}>{countdown}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Close all button */}
+            {openTrades.filter(isRealTrade).length > 0 && (
+              <button onClick={() => closeAllTrades("manual")} disabled={closing}
+                style={{ padding: "6px 14px", background: "#EF4444", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: closing ? "not-allowed" : "pointer", opacity: closing ? .6 : 1 }}>
+                {closing ? "Closing..." : `Close All (${openTrades.filter(isRealTrade).length})`}
+              </button>
+            )}
+            {closeMsg && <div style={{ fontSize: 12, fontWeight: 600, color: closeMsg.startsWith("✓") ? "#22C55E" : "#fbbf24", padding: "4px 10px", background: "rgba(255,255,255,.05)", borderRadius: 8 }}>{closeMsg}</div>}
             <button className="btn btn-primary btn-sm">+ Re-enter</button>
           </div>
         </div>
 
+        {/* ── 3min warning banner ── */}
+        {inFinal3Min && openTrades.filter(isRealTrade).length > 0 && (
+          <div style={{ background: "rgba(239,68,68,.12)", borderBottom: "1px solid rgba(239,68,68,.3)", padding: "10px 28px", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 16 }}>🚨</span>
+            <div style={{ flex: 1 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#EF4444" }}>Tournament ending in {countdown} — </span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,.6)" }}>Auto-closing all open trades now to protect your score.</span>
+            </div>
+          </div>
+        )}
+
         <div style={{ padding: "20px 28px 40px", display: "flex", flexDirection: "column", gap: 16 }}>
 
-          {/* ── Hero metrics strip ── */}
+          {/* Hero metrics */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10 }}>
             {[
-              { label: "% Gain", value: pct(profitPct), sub: `Ranking metric`, accent: col(profitPct), big: true },
-              { label: "Net Profit", value: usd(profitAbs), sub: `From $${fmt(startBal, 0)} start`, accent: col(profitAbs) },
+              { label: "% Gain", value: `${profitPct >= 0 ? "+" : ""}${fmt(profitPct)}%`, sub: "Ranking metric", accent: col(profitPct), big: true },
+              { label: "Net Profit", value: `${profitAbs >= 0 ? "+" : "-"}$${fmt(Math.abs(profitAbs))}`, sub: `From $${fmt(startBal, 0)} start`, accent: col(profitAbs) },
               { label: "Balance", value: `$${fmt(balance)}`, sub: `Equity $${fmt(equity)}`, accent: "#fff" },
-              { label: "Unrealized P&L", value: `${unrealized >= 0 ? "+" : ""}$${fmt(Math.abs(unrealized))}`, sub: `${openTrades.length} open position${openTrades.length !== 1 ? "s" : ""}`, accent: col(unrealized) },
+              { label: "Unrealized P&L", value: `${unrealized >= 0 ? "+" : ""}$${fmt(Math.abs(unrealized))}`, sub: `${openTrades.filter(isRealTrade).length} open position${openTrades.filter(isRealTrade).length !== 1 ? "s" : ""}`, accent: col(unrealized) },
               { label: "Max Drawdown", value: `-${fmt(Math.abs(maxDD))}%`, sub: "100% limit · Safe", accent: Math.abs(maxDD) > 20 ? "var(--red)" : Math.abs(maxDD) > 10 ? "#FFD700" : "#22C55E" },
             ].map((s, i) => (
               <div key={i} style={{ background: "rgba(13,17,26,.9)", border: `1px solid ${i === 0 ? `${col(profitPct)}30` : "rgba(255,255,255,.07)"}`, borderRadius: 12, padding: "16px 18px", position: "relative", overflow: "hidden" }}>
@@ -347,10 +474,8 @@ export default function TradePage() {
             ))}
           </div>
 
-          {/* ── Equity curve + Objectives ── */}
+          {/* Equity curve + Objectives */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 14 }}>
-
-            {/* Equity curve panel */}
             <div style={{ background: "rgba(13,17,26,.9)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, overflow: "hidden" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
                 <div>
@@ -365,7 +490,6 @@ export default function TradePage() {
               <div style={{ padding: "16px 20px 14px" }}>
                 <EquityCurve trades={closedTrades} startBal={startBal} balance={balance} equity={equity} />
               </div>
-              {/* daily bars */}
               {closedTrades.length > 0 && (
                 <div style={{ padding: "0 20px 16px" }}>
                   <div style={{ fontSize: 10, color: "rgba(255,255,255,.25)", marginBottom: 6, textTransform: "uppercase", letterSpacing: ".08em" }}>Daily P&L</div>
@@ -374,18 +498,43 @@ export default function TradePage() {
               )}
             </div>
 
-            {/* Objectives */}
+            {/* Objectives — REAL computed checks */}
             <div style={{ background: "rgba(13,17,26,.9)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, overflow: "hidden" }}>
               <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Objectives</div>
-                <span style={{ fontSize: 10, padding: "2px 10px", borderRadius: 20, background: violations.length > 0 ? "rgba(239,68,68,.1)" : "rgba(34,197,94,.1)", color: violations.length > 0 ? "#EF4444" : "#22C55E", fontWeight: 700 }}>
-                  {violations.length > 0 ? `${violations.length} issue${violations.length > 1 ? "s" : ""}` : "4 / 4 pass"}
+                <span style={{ fontSize: 10, padding: "2px 10px", borderRadius: 20, fontWeight: 700,
+                  background: objFails > 0 ? "rgba(239,68,68,.1)" : objWarns > 0 ? "rgba(255,215,0,.1)" : "rgba(34,197,94,.1)",
+                  color: objFails > 0 ? "#EF4444" : objWarns > 0 ? "#FFD700" : "#22C55E" }}>
+                  {objFails > 0 ? `${objFails} breach${objFails > 1 ? "es" : ""}` : objWarns > 0 ? `${objWarns} warning${objWarns > 1 ? "s" : ""}` : "4 / 4 pass"}
                 </span>
               </div>
-              <ObjRow label="Min 31s Duration" desc="Trades under 31s excluded from score" value={closedTrades.length > 0 ? `${closedTrades.length} valid` : "No trades"} status="pass" />
-              <ObjRow label="No Hedging" desc="No simultaneous buy+sell same pair" value="Clean" status="pass" />
-              <ObjRow label="No External Deposit" desc="Balance must not exceed start" value="Clean" status="pass" />
-              <ObjRow label="Close 3min Early" desc="All trades before final 3 minutes" value="Required" status="warn" />
+
+              <ObjRow
+                label="Min 31s Duration"
+                desc="Trades < 31s excluded from % gain"
+                value={hftValue}
+                status={hftStatus}
+              />
+              <ObjRow
+                label="No Hedging"
+                desc="No simultaneous BUY+SELL same pair"
+                value={hedgeValue}
+                status={hedgeStatus}
+              />
+              <ObjRow
+                label="No External Deposit"
+                desc="No balance added after battle start"
+                value={depositValue}
+                status={depositStatus}
+              />
+              <ObjRow
+                label="Close 3min Early"
+                desc="All trades closed before final 3 min"
+                value={close3Value}
+                status={close3Status}
+              />
+
+              {/* Active violations from DB */}
               {violations.length > 0 && (
                 <div style={{ padding: "10px 14px" }}>
                   {violations.map((v: any, i: number) => (
@@ -396,6 +545,7 @@ export default function TradePage() {
                   ))}
                 </div>
               )}
+
               {/* Gauges */}
               <div style={{ padding: "14px 20px", borderTop: "1px solid rgba(255,255,255,.05)", display: "flex", justifyContent: "space-around" }}>
                 <Gauge value={winRate} max={100} label="Win Rate" color={winRate >= 50 ? "#22C55E" : "#EF4444"} />
@@ -405,10 +555,8 @@ export default function TradePage() {
             </div>
           </div>
 
-          {/* ── Stats row ── */}
+          {/* Stats row */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-
-            {/* Trading statistics */}
             <div style={{ background: "rgba(13,17,26,.9)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, overflow: "hidden" }}>
               <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Trading Statistics</div>
@@ -417,10 +565,10 @@ export default function TradePage() {
                 {[
                   ["Profit Factor", pf > 0 ? pf.toFixed(2) : "—", pf >= 1.5 ? "#22C55E" : pf >= 1 ? "#FFD700" : "rgba(255,255,255,.5)"],
                   ["Win Rate", `${winRate}%`, winRate >= 50 ? "#22C55E" : "#EF4444"],
-                  ["Total Trades", closedTrades.length, "#fff"],
+                  ["Valid Trades", validTrades.length, "#fff"],
                   ["Avg Win", avgWin > 0 ? `+$${fmt(avgWin)}` : "—", "#22C55E"],
                   ["Avg Loss", avgLoss > 0 ? `-$${fmt(avgLoss)}` : "—", "#EF4444"],
-                  ["Open Now", openTrades.length, openTrades.length > 0 ? "#60a5fa" : "rgba(255,255,255,.4)"],
+                  ["HFT Excluded", hftTrades.length, hftTrades.length > 0 ? "#EF4444" : "rgba(255,255,255,.4)"],
                   ["Best Trade", bestTrade > 0 ? `+$${fmt(bestTrade)}` : "—", "#22C55E"],
                   ["Worst Trade", worstTrade < 0 ? `-$${fmt(Math.abs(worstTrade))}` : "—", "#EF4444"],
                   ["Max Drawdown", `-${fmt(Math.abs(maxDD))}%`, Math.abs(maxDD) > 20 ? "#EF4444" : "#22C55E"],
@@ -433,11 +581,10 @@ export default function TradePage() {
               </div>
             </div>
 
-            {/* P&L by Symbol */}
             <div style={{ background: "rgba(13,17,26,.9)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, overflow: "hidden" }}>
               <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>P&L by Symbol</div>
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{Object.keys(bySymbol).length} pair{Object.keys(bySymbol).length !== 1 ? "s" : ""} traded</span>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>{Object.keys(symMap).length} pair{Object.keys(symMap).length !== 1 ? "s" : ""} traded</span>
               </div>
               <div style={{ padding: "14px 20px" }}>
                 {symbolRows.length === 0 ? (
@@ -460,13 +607,13 @@ export default function TradePage() {
             </div>
           </div>
 
-          {/* ── Trade Journal ── */}
+          {/* Trade Journal */}
           <div style={{ background: "rgba(13,17,26,.9)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Trade Journal</div>
               <div style={{ display: "flex", gap: 6 }}>
                 {(["open", "closed", "violations"] as const).map(t => {
-                  const count = t === "open" ? openTrades.length : t === "closed" ? closedTrades.length : violations.length;
+                  const count = t === "open" ? openTrades.filter(isRealTrade).length : t === "closed" ? closedTrades.length : violations.length;
                   return (
                     <button key={t} onClick={() => setTab(t)} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: "var(--font-body)", background: tab === t ? "rgba(255,215,0,.1)" : "rgba(255,255,255,.05)", color: tab === t ? "#FFD700" : "rgba(255,255,255,.4)" }}>
                       {t.charAt(0).toUpperCase() + t.slice(1)}{count > 0 ? ` (${count})` : ""}
@@ -481,7 +628,7 @@ export default function TradePage() {
                   <tr>
                     <th>Symbol</th><th>Side</th><th>Lots</th>
                     <th>Open Price</th><th>Close Price</th>
-                    <th>Opened</th><th>P&L</th><th>Status</th>
+                    <th>Duration</th><th>P&L</th><th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -495,25 +642,31 @@ export default function TradePage() {
                           <td><span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(239,68,68,.1)", color: "#EF4444", fontSize: 10, fontWeight: 700 }}>Violation</span></td>
                         </tr>
                       ))
-                  ) : displayTrades.length === 0 ? (
+                  ) : displayTrades.filter(isRealTrade).length === 0 ? (
                     <tr><td colSpan={8} style={{ textAlign: "center", color: "rgba(255,255,255,.25)", padding: "32px 0" }}>
                       {!live ? "Connecting to bridge..." : tab === "open" ? "No open positions" : "No closed trades yet"}
                     </td></tr>
-                  ) : displayTrades.map((t: any, i: number) => {
+                  ) : displayTrades.filter(isRealTrade).map((t: any, i: number) => {
                     const isOpen = tab === "open";
                     const side = (t.type || t.side || "buy").toString().toLowerCase();
                     const isBuy = side.includes("buy") || side === "0";
                     const pnl = parseFloat(t.profit ?? 0);
+                    const dur = isOpen ? tradeDuration(t) : tradeDuration(t);
+                    const isHFT = !isOpen && dur < 31;
                     return (
-                      <tr key={i}>
-                        <td style={{ fontWeight: 700, fontFamily: "var(--font-mono)", color: "#fff" }}>{t.symbol || "—"}</td>
+                      <tr key={i} style={{ opacity: isHFT ? 0.5 : 1 }}>
+                        <td style={{ fontWeight: 700, fontFamily: "var(--font-mono)", color: "#fff" }}>
+                          {t.symbol || "—"}{isHFT && <span style={{ fontSize: 9, color: "#EF4444", marginLeft: 4 }}>HFT</span>}
+                        </td>
                         <td><span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: isBuy ? "rgba(34,197,94,.12)" : "rgba(239,68,68,.12)", color: isBuy ? "#22C55E" : "#EF4444" }}>{isBuy ? "BUY" : "SELL"}</span></td>
                         <td style={{ fontFamily: "var(--font-mono)" }}>{parseFloat(t.lots ?? t.volume ?? 0).toFixed(2)}</td>
                         <td style={{ fontFamily: "var(--font-mono)", color: "rgba(255,255,255,.6)" }}>{t.open_price || "—"}</td>
                         <td style={{ fontFamily: "var(--font-mono)", color: "rgba(255,255,255,.6)" }}>{isOpen ? "—" : (t.close_price || "—")}</td>
-                        <td style={{ color: "rgba(255,255,255,.4)", fontSize: 11 }}>{t.open_time ? String(t.open_time).slice(5, 16) : "—"}</td>
+                        <td style={{ fontFamily: "var(--font-mono)", color: isHFT ? "#EF4444" : dur < 60 ? "#fbbf24" : "rgba(255,255,255,.5)", fontSize: 11 }}>
+                          {isOpen ? `${fmtCountdown(dur * 1000)} live` : dur < 60 ? `${dur}s` : `${Math.floor(dur / 60)}m ${dur % 60}s`}
+                        </td>
                         <td style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: col(pnl) }}>{pnl >= 0 ? "+" : ""}${fmt(Math.abs(pnl))}</td>
-                        <td><span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: isOpen ? "rgba(96,165,250,.1)" : "rgba(34,197,94,.1)", color: isOpen ? "#60a5fa" : "#22C55E" }}>{isOpen ? "Open" : "Closed"}</span></td>
+                        <td><span style={{ padding: "2px 8px", borderRadius: 20, fontSize: 10, fontWeight: 700, background: isHFT ? "rgba(239,68,68,.1)" : isOpen ? "rgba(96,165,250,.1)" : "rgba(34,197,94,.1)", color: isHFT ? "#EF4444" : isOpen ? "#60a5fa" : "#22C55E" }}>{isHFT ? "Excluded" : isOpen ? "Open" : "Closed"}</span></td>
                       </tr>
                     );
                   })}
@@ -522,7 +675,7 @@ export default function TradePage() {
             </div>
             <div style={{ padding: "10px 20px", borderTop: "1px solid rgba(255,255,255,.05)", display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,.28)" }}>
               <span>{live ? `Live · C# Bridge · synced ${syncAge}s ago` : "Connecting..."}</span>
-              <span style={{ color: "rgba(255,255,255,.4)" }}>{closedTrades.length} closed · {openTrades.length} open · {violations.length} violations</span>
+              <span>{closedTrades.length} closed · {openTrades.filter(isRealTrade).length} open · {hftTrades.length} excluded · {violations.length} violations</span>
             </div>
           </div>
 

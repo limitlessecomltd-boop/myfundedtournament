@@ -30,10 +30,18 @@ router.get("/my/:tournamentId", authenticate, async (req, res, next) => {
 // Get entry details including trades
 router.get("/:id", authenticate, async (req, res, next) => {
   try {
-    const { rows: entries } = await db.query(
-      "SELECT * FROM entries WHERE id=$1 AND user_id=$2",
-      [req.params.id, req.user.id]
-    );
+    const { rows: entries } = await db.query(`
+      SELECT e.*,
+             t.name        AS tournament_name,
+             t.start_time  AS tournament_start,
+             t.end_time    AS tournament_end,
+             t.status      AS tournament_status,
+             t.tier        AS tournament_tier,
+             t.prize_pool  AS tournament_prize_pool
+      FROM   entries e
+      JOIN   tournaments t ON t.id = e.tournament_id
+      WHERE  e.id=$1 AND e.user_id=$2
+    `, [req.params.id, req.user.id]);
     if (!entries.length) return res.status(404).json({ error: "Not found" });
 
     const { rows: trades } = await db.query(`
@@ -226,6 +234,36 @@ router.get('/:id/mt5', async (req, res) => {
     });
   } catch (e) {
     console.error('[mt5 route]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Force-close all open trades via bridge (called by frontend at tournament end)
+router.post('/:id/close-all', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await db.query(
+      `SELECT e.mt5_login, e.mt5_password, e.status, t.end_time
+       FROM entries e JOIN tournaments t ON t.id=e.tournament_id
+       WHERE e.id=$1 AND e.user_id=$2`,
+      [id, req.user.id]
+    );
+    const entry = rows[0];
+    if (!entry) return res.status(404).json({ error: 'Entry not found' });
+    if (!entry.mt5_login) return res.status(400).json({ error: 'No MT5 account' });
+
+    const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+    const r = await fetch(`${BRIDGE}/close-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login: String(entry.mt5_login), secret: process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024' }),
+      signal: AbortSignal.timeout(15000)
+    });
+    const result = await r.json();
+    console.log('[close-all] entry', id, 'result:', result);
+    res.json({ success: true, ...result });
+  } catch (e) {
+    console.error('[close-all]', e.message);
     res.status(500).json({ error: e.message });
   }
 });

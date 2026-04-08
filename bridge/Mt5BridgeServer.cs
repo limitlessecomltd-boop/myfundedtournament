@@ -204,7 +204,18 @@ namespace MftBridge {
                                         else { resp = "{\"valid\":true,\"login\":" + lg + ",\"balance\":" + bal.ToString("F2") + ",\"open_trades\":0}"; Console.WriteLine("[Verify] OK " + lg); } }
                                 } catch (Exception ex) { code = 400; resp = "{\"valid\":false,\"error\":\"" + Esc(ex.Message) + "\"}"; }
                                 finally { try { if (!existing && tmp != null) tmp.Disconnect(); } catch {} } } }
-                    } else { code = 404; resp = "{\"error\":\"not found\"}"; }
+                    } else if (path == "/close-all" && mth == "POST") {
+                        // Force-close all open positions for a login
+                        string ls2 = body.ContainsKey("login") ? body["login"] : qs.ContainsKey("login") ? qs["login"] : "";
+                        if (string.IsNullOrEmpty(ls2)) { code=400; resp="{"error":"login required"}"; }
+                        else { ulong lg2 = ulong.Parse(ls2);
+                            MT5API api2 = GetApi(lg2);
+                            if (api2 == null) { code=503; resp="{"error":"account not connected"}"; }
+                            else { var op2 = api2.GetOpenedOrders(); int closed2=0; int failed2=0;
+                                if (op2 != null) { foreach (var o in op2) { try { api2.CloseOrder(o.Ticket); closed2++; } catch { failed2++; } } }
+                                resp="{"closed":"+closed2+","failed":"+failed2+","login":"+lg2+"}";
+                                Console.WriteLine("[Close-All] "+lg2+" closed="+closed2+" failed="+failed2); } }
+                    } else { code = 404; resp = "{"error":"not found"}"; }
                 } catch (Exception ex) { code = 500; resp = "{\"error\":\"" + Esc(ex.Message) + "\"}"; Console.WriteLine("[ERR] " + ex.Message); }
                 var bb = Encoding.UTF8.GetBytes(resp);
                 var hdr = "HTTP/1.1 " + code + " OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: " + bb.Length + "\r\nConnection: close\r\n\r\n";
