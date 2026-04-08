@@ -670,7 +670,7 @@ export default function TournamentDetailPage() {
               )}
 
               <div style={{ fontSize:11, color:"rgba(255,255,255,.25)", textAlign:"center", marginTop:14 }}>
-                Payment via NOWPayments · Entry fee adds to prize pool
+                Crypto payment via ForumPay · Entry fee adds to prize pool
               </div>
             </div>
           </div>

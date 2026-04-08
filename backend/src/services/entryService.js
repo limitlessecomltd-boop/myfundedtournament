@@ -1,5 +1,5 @@
 const db = require("../config/db");
-const { createEntryPayment } = require("./paymentService");
+const { startPayment, CURRENCIES } = require("./forumPayService");
 
 const MAX_ACTIVE_PER_TRADER  = 1;
 const MAX_TOTAL_PER_TRADER   = 2;
@@ -65,7 +65,34 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
   `, [tournamentId, userId, entryNumber, mt5Login, mt5Password, mt5Server, broker]);
 
   const entry = rows[0];
-  const paymentInfo = await createEntryPayment(userId, tournamentId, entry.id, tournament.entry_fee);
+  // Create ForumPay payment — default to USDT_TRC20, frontend can switch currency
+  const BACKEND_URL = process.env.BACKEND_URL || 'https://myfundedtournament-production.up.railway.app';
+  const orderId = 'mft_' + entry.id.replace(/-/g,'').slice(0,16) + '_' + Date.now();
+  const fp = await startPayment({
+    invoiceAmount: parseFloat(tournament.entry_fee),
+    currency:      'USDT_TRC20',
+    paymentId:     orderId,
+    referenceNo:   orderId,
+    webhookUrl:    BACKEND_URL + '/api/payments/webhook',
+  });
+  // Save payment to DB
+  const db = require('../config/db');
+  await db.query(
+    `INSERT INTO payments (entry_id, user_id, tournament_id, nowpayments_id, payment_address, amount_usd, amount_crypto, currency, status, reference_no)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,'USDT_TRC20','waiting',$8)
+     ON CONFLICT (nowpayments_id) DO NOTHING`,
+    [entry.id, userId, tournamentId, orderId, fp.address, parseFloat(tournament.entry_fee), String(fp.amount||''), orderId]
+  );
+  await db.query('UPDATE entries SET payment_id=$1 WHERE id=$2', [orderId, entry.id]);
+  const paymentInfo = {
+    paymentId: orderId,
+    address:   fp.address,
+    amount:    fp.amount,
+    amount_usd: parseFloat(tournament.entry_fee),
+    currency:  'USDT_TRC20',
+    notice:    fp.notice,
+    status:    'waiting',
+  };
   return { entry, payment: paymentInfo };
 }
 
