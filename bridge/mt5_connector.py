@@ -63,7 +63,8 @@ class MT5AccountManager:
         while not stop_event.is_set():
             try: self._sync(login, entry_id)
             except Exception as e: log.error("[MT5] Sync error " + login + ": " + str(e))
-            _sync_from_bridge(db_factory)
+            try: _sync_from_bridge(self.db_factory)
+            except Exception as e: log.error("[MT5] Bridge sync error: " + str(e))
             stop_event.wait(timeout=30)
 
     def _init_db(self, login, server, broker, entry_id, tournament_id):
@@ -131,6 +132,17 @@ def init_manager(db_factory, rules_engine, sync_callback):
     log.info("[MT5] Manager initialized")
     _reconnect(db_factory)
     _sync_from_bridge(db_factory)
+    # Background thread: sync bridge every 30s regardless of connected accounts
+    def _bridge_poll_loop():
+        while True:
+            try:
+                _sync_from_bridge(db_factory)
+            except Exception as e:
+                log.error("[BridgePoll] " + str(e))
+            time.sleep(30)
+    t = threading.Thread(target=_bridge_poll_loop, daemon=True)
+    t.start()
+    log.info("[MT5] Bridge sync thread started (30s interval)")
 
 
 def _sync_from_bridge(db_factory):

@@ -1,10 +1,12 @@
 const express = require('express');
 const router  = express.Router();
 const { createPayment, getPaymentStatus, verifyIpnSignature } = require('../services/paymentService');
-const { activateEntryMetaApi } = require('../services/entryService');
 const email = require('../services/emailService');
 const db = require('../config/db');
 const { authenticate } = require('../middleware/auth');
+
+const BRIDGE_URL    = process.env.MT5_BRIDGE_URL    || 'http://38.60.196.145:5099';
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET     || 'mft_bridge_secret_2024';
 
 // âââ POST /api/payments/create ââââââââââââââââââââââââââââââââââââââââââââââââ
 // Called by frontend after entry is created â generates a NOWPayments invoice
@@ -300,13 +302,47 @@ async function activateEntry(entryId, tournamentId, userId) {
       console.warn('[Email] Payment confirmed email failed:', emailErr.message);
     }
 
-    // Connect MT5 account to MetaApi (async â don't block the response)
-    activateEntryMetaApi(entryId).catch(err => {
-      console.warn(`[Payment] MetaApi activation failed for ${entryId}:`, err.message);
+    // Connect MT5 account to C# Bridge (async — don't block the response)
+    connectMt5ToBridge(entryId).catch(err => {
+      console.warn(`[Payment] Bridge activation failed for ${entryId}:`, err.message);
     });
 
   } catch (err) {
     console.error(`[Payment] activateEntry failed for ${entryId}:`, err.message);
+  }
+}
+
+// ─── Helper: connect MT5 credentials to C# Bridge ─────────────────────────────
+async function connectMt5ToBridge(entryId) {
+  try {
+    const { rows } = await db.query(
+      `SELECT mt5_login, mt5_password, mt5_server FROM entries WHERE id = $1`,
+      [entryId]
+    );
+    if (!rows.length || !rows[0].mt5_login || !rows[0].mt5_password) {
+      console.warn(`[Bridge] Entry ${entryId} has no MT5 credentials — skipping bridge connect`);
+      return;
+    }
+    const { mt5_login, mt5_password, mt5_server } = rows[0];
+    const r = await fetch(`${BRIDGE_URL}/connect-account`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        login:    String(mt5_login),
+        password: mt5_password,
+        server:   mt5_server || 'Exness-MT5Trial15',
+        secret:   BRIDGE_SECRET,
+      }),
+    });
+    const data = await r.json();
+    if (data.connected) {
+      console.log(`✅ [Bridge] Account ${mt5_login} connected for entry ${entryId}`);
+    } else {
+      console.warn(`[Bridge] Connect failed for ${mt5_login}:`, data.error || data);
+    }
+  } catch (err) {
+    console.error(`[Bridge] connectMt5ToBridge error for entry ${entryId}:`, err.message);
+    throw err;
   }
 }
 

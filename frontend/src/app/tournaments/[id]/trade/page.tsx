@@ -65,34 +65,74 @@ function Sidebar({ tournamentId }: { tournamentId: string }) {
   );
 }
 
+const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+
 export default function TradePage() {
   const { id } = useParams<{ id: string }>();
   const params = useSearchParams();
   const entryId = params.get("entry") || "";
   const [data, setData] = useState<any>(null);
+  const [mt5, setMt5] = useState<any>(null);
   const [tab, setTab] = useState<"open"|"closed"|"violations">("open");
+  const [lastSync, setLastSync] = useState<Date | null>(null);
   const liveEntry = useEntrySocket(entryId);
 
+  // Fetch base entry data
   useEffect(() => {
     if (!entryId) return;
     entryApi.getById(entryId).then(setData).catch(console.error);
-    const iv = setInterval(() => entryApi.getById(entryId).then(setData).catch(()=>{}), 60000);
+  }, [entryId]);
+
+  // Fetch live MT5 data from C# bridge every 30s
+  useEffect(() => {
+    if (!entryId) return;
+    const fetchMt5 = () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("mft_token") : null;
+      fetch(`${API}/api/entries/${entryId}/mt5`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d && !d.error) { setMt5(d); setLastSync(new Date()); } })
+        .catch(() => {});
+    };
+    fetchMt5();
+    const iv = setInterval(fetchMt5, 30000);
     return () => clearInterval(iv);
   }, [entryId]);
 
   const entry = liveEntry || data?.entry;
-  const trades = data?.trades || [];
   const violations = data?.violations || [];
 
-  // Demo data for visual
-  const demoEntry = {
-    entry_number:2, broker:"ICMarkets", mt5_login:"8847291",
-    profit_pct:18.43, profit_abs:1843, current_balance:11843, current_equity:11920,
-    total_trades:25, winning_trades:17, max_drawdown_pct:4.2, excluded_trades:1,
-    status:"active"
+  // Use live MT5 data when available, fall back to entry data from DB
+  const live = mt5 || null;
+  const openTrades: any[] = live?.open_trades || [];
+  const closedTrades: any[] = live?.trade_history || [];
+  const trades = tab === "open" ? openTrades : tab === "closed" ? closedTrades : [];
+
+  const balance = live?.balance ?? entry?.current_balance ?? entry?.balance ?? 1000;
+  const equity = live?.equity ?? entry?.current_equity ?? balance;
+  const profitAbs = live ? Math.round((live.balance - (entry?.starting_balance || 1000)) * 100) / 100 : (entry?.profit_abs ?? 0);
+  const profitPct = live ? Math.round(profitAbs / (entry?.starting_balance || 1000) * 10000) / 100 : (entry?.profit_pct ?? 0);
+  const winRate = live?.win_rate ?? (entry?.total_trades > 0 ? Math.round((entry.winning_trades / entry.total_trades) * 100) : 0);
+  const maxDD = live?.max_drawdown ?? entry?.max_drawdown_pct ?? 0;
+  const totalTrades = live ? closedTrades.length + openTrades.length : (entry?.total_trades ?? 0);
+  const winningTrades = live ? closedTrades.filter((t: any) => t.profit > 0).length : (entry?.winning_trades ?? 0);
+
+  const e = {
+    entry_number: entry?.entry_number ?? 1,
+    broker: entry?.broker ?? "Exness",
+    mt5_login: entry?.mt5_login ?? "—",
+    profit_pct: profitPct,
+    profit_abs: profitAbs,
+    current_balance: balance,
+    current_equity: equity,
+    total_trades: totalTrades,
+    winning_trades: winningTrades,
+    max_drawdown_pct: maxDD,
+    excluded_trades: entry?.excluded_trades ?? 0,
+    status: entry?.status ?? "active"
   };
-  const e = entry || demoEntry;
-  const winRate = e.total_trades > 0 ? Math.round((e.winning_trades / e.total_trades) * 100) : 68;
+  const syncAgo = lastSync ? Math.round((Date.now() - lastSync.getTime()) / 1000) : null;
 
   // Re-entry slots
   const slots = [{s:"done",n:1},{s:"active",n:2},{s:"empty",n:3},{s:"empty",n:4},{s:"empty",n:5},{s:"divider",n:0},{s:"locked",n:6},{s:"locked",n:7},{s:"locked",n:8},{s:"locked",n:9},{s:"locked",n:10}];
@@ -105,8 +145,8 @@ export default function TradePage() {
         {/* Top bar */}
         <div style={{ background:"rgba(7,9,15,.96)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(255,255,255,.055)", padding:"0 28px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:50 }}>
           <div>
-            <div style={{ fontSize:15, fontWeight:800, letterSpacing:"-.3px", color:"#fff" }}>December Pro Challenge — Entry #{e.entry_number}</div>
-            <div style={{ fontSize:10, color:"rgba(255,255,255,.32)", marginTop:2 }}>{e.broker} · MT5 Account {e.mt5_login} · Synced via MetaApi · Last update 45s ago</div>
+            <div style={{ fontSize:15, fontWeight:800, letterSpacing:"-.3px", color:"#fff" }}>Tournament — Entry #{e.entry_number}</div>
+            <div style={{ fontSize:10, color:"rgba(255,255,255,.32)", marginTop:2 }}>{e.broker} · MT5 Account {e.mt5_login} · {e.broker} · MT5 Account {e.mt5_login} · {live ? 'Live via C# Bridge' : 'Connecting...'} · {syncAgo !== null ? `Synced ${syncAgo}s ago` : 'Syncing...'}</div>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <span className="pill pill-green"><span className="live-dot" style={{ marginRight:5, width:5, height:5 }}/>Live</span>
@@ -301,41 +341,59 @@ export default function TradePage() {
             <div className="panel-head">
               <span className="panel-title">Trading Journal</span>
               <div style={{ display:"flex", gap:6 }}>
-                {(["open","closed","violations"] as const).map(t=>(
-                  <button key={t} onClick={()=>setTab(t)} style={{ padding:"4px 10px", borderRadius:20, fontSize:11, fontWeight:600, cursor:"pointer", border:"none", fontFamily:"var(--font-body)", background:tab===t?"rgba(255,215,0,.09)":"rgba(255,255,255,.05)", color:tab===t?"var(--gold)":"rgba(255,255,255,.45)" }}>
-                    {t.charAt(0).toUpperCase()+t.slice(1)}
-                  </button>
-                ))}
+                {(["open","closed","violations"] as const).map(t=>{
+                  const count = t==="open" ? openTrades.length : t==="closed" ? closedTrades.length : violations.length;
+                  return (
+                    <button key={t} onClick={()=>setTab(t)} style={{ padding:"4px 10px", borderRadius:20, fontSize:11, fontWeight:600, cursor:"pointer", border:"none", fontFamily:"var(--font-body)", background:tab===t?"rgba(255,215,0,.09)":"rgba(255,255,255,.05)", color:tab===t?"var(--gold)":"rgba(255,255,255,.45)" }}>
+                      {t.charAt(0).toUpperCase()+t.slice(1)}{count > 0 ? ` (${count})` : ""}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Pair</th><th>Side</th><th>Lots</th><th>Open</th><th>Close</th><th>Duration</th><th>P&L</th><th>Status</th></tr></thead>
+                <thead><tr><th>Pair</th><th>Side</th><th>Lots</th><th>Open</th><th>Close</th><th>Open Time</th><th>P&L</th><th>Status</th></tr></thead>
                 <tbody>
-                  {[
-                    ["EUR/USD","BUY","0.50","1.08420","—","2h 12m","+$48","open","pass"],
-                    ["GBP/USD","BUY","0.30","1.26180","—","52m","+$21","open","pass"],
-                    ["EUR/USD","BUY","1.00","1.08210","1.08580","4h 12m","+$370","closed","pass"],
-                    ["GBP/JPY","SELL","0.50","188.420","187.910","2h 38m","+$190","closed","pass"],
-                    ["USD/CAD","BUY","0.30","1.35820","1.35640","45m","-$40","closed","pass"],
-                    ["EUR/GBP","SELL","0.20","0.85920","0.85890","18s","—","excluded","hft"],
-                  ].map(([pair,side,lots,open,close,dur,pnl,status,rule],i)=>(
-                    <tr key={i} style={{ opacity:status==="excluded"?.38:1 }}>
-                      <td style={{ color:"var(--text)", fontWeight:700, fontFamily:"var(--font-mono)" }}>{pair}</td>
-                      <td><span className={`pill pill-${side==="BUY"?"green":"red"}`} style={{ fontSize:9 }}>{side}</span></td>
-                      <td className="mono">{lots}</td>
-                      <td className="mono" style={{ color:"rgba(255,255,255,.6)" }}>{open}</td>
-                      <td className="mono" style={{ color:"rgba(255,255,255,.6)" }}>{close}</td>
-                      <td style={{ color:rule==="hft"?"var(--red)":"rgba(255,255,255,.4)" }}>{dur}{rule==="hft"?" ⚡":""}</td>
-                      <td className={`mono ${Number(pnl.replace(/[^0-9.-]/g,""))>=0?"pos":"neg"}`}>{pnl}</td>
-                      <td><span className={`pill pill-${rule==="hft"?"gold":status==="open"?"blue":"green"}`} style={{ fontSize:9 }}>{rule==="hft"?"HFT Excluded":status==="open"?"Open ✓":"Valid ✓"}</span></td>
-                    </tr>
-                  ))}
+                  {tab === "violations" ? (
+                    violations.length === 0
+                      ? <tr><td colSpan={8} style={{ textAlign:"center", color:"rgba(255,255,255,.28)", padding:"28px 0" }}>No violations recorded</td></tr>
+                      : violations.map((v: any, i: number) => (
+                          <tr key={i}>
+                            <td colSpan={6} style={{ color:"var(--red)", fontWeight:600 }}>{v.rule_name || v.type}</td>
+                            <td className="mono neg">{v.description || "—"}</td>
+                            <td><span className="pill pill-red" style={{ fontSize:9 }}>Violation</span></td>
+                          </tr>
+                        ))
+                  ) : trades.length === 0 ? (
+                    <tr><td colSpan={8} style={{ textAlign:"center", color:"rgba(255,255,255,.28)", padding:"28px 0" }}>
+                      {!live ? "Connecting to MT5 bridge..." : `No ${tab} trades`}
+                    </td></tr>
+                  ) : (
+                    trades.map((t: any, i: number) => {
+                      const isOpen = !t.close_time || t.close_time === "0001-01-01 00:00:00";
+                      const side = (t.type || t.side || "buy").toString().toLowerCase();
+                      const isBuy = side.includes("buy") || side === "0";
+                      const pnl = t.profit ?? 0;
+                      return (
+                        <tr key={i}>
+                          <td style={{ color:"var(--text)", fontWeight:700, fontFamily:"var(--font-mono)" }}>{t.symbol || "—"}</td>
+                          <td><span className={`pill pill-${isBuy?"green":"red"}`} style={{ fontSize:9 }}>{isBuy?"BUY":"SELL"}</span></td>
+                          <td className="mono">{(t.lots ?? t.volume ?? 0).toFixed(2)}</td>
+                          <td className="mono" style={{ color:"rgba(255,255,255,.6)" }}>{t.open_price ?? "—"}</td>
+                          <td className="mono" style={{ color:"rgba(255,255,255,.6)" }}>{isOpen ? "—" : (t.close_price ?? "—")}</td>
+                          <td style={{ color:"rgba(255,255,255,.4)", fontSize:11 }}>{t.open_time ? String(t.open_time).slice(5,16) : "—"}</td>
+                          <td className={`mono ${pnl >= 0 ? "pos" : "neg"}`}>{pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}</td>
+                          <td><span className={`pill pill-${isOpen?"blue":"green"}`} style={{ fontSize:9 }}>{isOpen?"Open ✓":"Closed ✓"}</span></td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
             <div style={{ padding:"10px 16px", borderTop:"1px solid rgba(255,255,255,.05)", fontSize:10, color:"rgba(255,255,255,.28)", display:"flex", justifyContent:"space-between" }}>
-              <span>Synced via MetaApi · Updates every 60s · Last sync 45s ago</span>
+              <span>{live ? 'Live data from C# Bridge · Updates every 30s' : 'Waiting for bridge...'} · {syncAgo !== null ? `Last sync ${syncAgo}s ago` : ''}</span>
               <span style={{ color:"var(--blue)", cursor:"pointer", fontWeight:600 }}>View all {e.total_trades} trades →</span>
             </div>
           </div>

@@ -1,4 +1,4 @@
-﻿using mtapi.mt5;
+using mtapi.mt5;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,13 +9,10 @@ using System.Threading;
 
 namespace MftBridge {
     class Program {
-        static readonly ulong LOGIN1 = 260325865;
-        static readonly string PASS1 = "uoqcyW3|Eh";
-        static readonly ulong LOGIN2 = 260552450;
-        static readonly string PASS2 = "h/8f3P4vpT";
         const int MPORT = 443;
         const int HPORT = 5099;
         const string SECRET = "mft_bridge_secret_2024";
+        const string ACCOUNTS_FILE = @"C:\mft-bridge\db\accounts.json";
         static readonly Dictionary<ulong, MT5API> Accounts = new Dictionary<ulong, MT5API>();
         static readonly object Lock = new object();
 
@@ -38,10 +35,74 @@ namespace MftBridge {
             return "47.91.105.29";
         }
 
+        // Read accounts.json and return list of {login, password, server}
+        static List<(ulong login, string password, string server)> LoadAccountsFromFile() {
+            var result = new List<(ulong, string, string)>();
+            try {
+                if (!File.Exists(ACCOUNTS_FILE)) {
+                    Console.WriteLine("[Accounts] accounts.json not found at " + ACCOUNTS_FILE);
+                    return result;
+                }
+                string json = File.ReadAllText(ACCOUNTS_FILE);
+                // Simple JSON array parser: [{login,password,server},...]
+                int pos = 0;
+                while (pos < json.Length) {
+                    int start = json.IndexOf('{', pos);
+                    if (start < 0) break;
+                    int end = json.IndexOf('}', start);
+                    if (end < 0) break;
+                    string obj = json.Substring(start, end - start + 1);
+                    string ls = GetJV(obj, "login");
+                    string pw = GetJV(obj, "password");
+                    string sv = GetJV(obj, "server");
+                    if (!string.IsNullOrEmpty(ls) && !string.IsNullOrEmpty(pw) && ulong.TryParse(ls, out ulong lg)) {
+                        result.Add((lg, pw, sv ?? "Exness-MT5Trial15"));
+                    }
+                    pos = end + 1;
+                }
+                Console.WriteLine("[Accounts] Loaded " + result.Count + " accounts from file");
+            } catch (Exception e) {
+                Console.WriteLine("[Accounts] Error reading accounts.json: " + e.Message);
+            }
+            return result;
+        }
+
+        // Save a new/updated account to accounts.json
+        static void SaveAccountToFile(ulong login, string password, string server) {
+            try {
+                var accounts = LoadAccountsFromFile();
+                // Remove existing entry for this login
+                accounts.RemoveAll(a => a.login == login);
+                // Add new/updated entry
+                accounts.Add((login, password, server));
+                // Write back
+                var sb = new StringBuilder();
+                sb.Append("[");
+                for (int i = 0; i < accounts.Count; i++) {
+                    if (i > 0) sb.Append(",");
+                    sb.Append("{\"login\":\"" + accounts[i].login + "\",\"password\":\"" + Esc(accounts[i].password) + "\",\"server\":\"" + Esc(accounts[i].server) + "\"}");
+                }
+                sb.Append("]");
+                Directory.CreateDirectory(Path.GetDirectoryName(ACCOUNTS_FILE));
+                File.WriteAllText(ACCOUNTS_FILE, sb.ToString());
+                Console.WriteLine("[Accounts] Saved account " + login + " to file");
+            } catch (Exception e) {
+                Console.WriteLine("[Accounts] Error saving accounts.json: " + e.Message);
+            }
+        }
+
         static void Main(string[] a) {
             Console.WriteLine("[MFT] Starting port " + HPORT);
-            ConnectAccount(LOGIN1, PASS1, "47.91.105.29", "Admin1");
-            ConnectAccount(LOGIN2, PASS2, "47.91.105.29", "Admin2");
+            // Auto-connect all accounts from accounts.json
+            var accounts = LoadAccountsFromFile();
+            if (accounts.Count == 0) {
+                Console.WriteLine("[MFT] No accounts in file, will accept connections via /connect-account");
+            } else {
+                foreach (var acc in accounts) {
+                    string ip = ServerToIP(acc.server);
+                    ConnectAccount(acc.login, acc.password, ip, "Auto-" + acc.login);
+                }
+            }
             var srv = new TcpListener(IPAddress.Any, HPORT);
             srv.Start();
             Console.WriteLine("[MFT] Listening...");
@@ -120,6 +181,8 @@ namespace MftBridge {
                         else { string ls = GetJV(body, "login") ?? ""; string pw = GetJV(body, "password") ?? ""; string sv = GetJV(body, "server") ?? "";
                             if (string.IsNullOrEmpty(ls) || string.IsNullOrEmpty(pw)) { code = 400; resp = "{\"error\":\"login and password required\"}"; }
                             else { ulong lg = ulong.Parse(ls); string ip = ServerToIP(sv);
+                                // SAVE to accounts.json FIRST (so it persists across reboots)
+                                SaveAccountToFile(lg, pw, string.IsNullOrEmpty(sv) ? "Exness-MT5Trial15" : sv);
                                 if (GetApi(lg) != null) { resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"already connected\"}"; }
                                 else { ThreadPool.QueueUserWorkItem(_ => ConnectAccount(lg, pw, ip, "User-" + lg)); resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"connecting\"}"; } } }
                     } else if (path == "/verify-account" && mth == "POST") {
