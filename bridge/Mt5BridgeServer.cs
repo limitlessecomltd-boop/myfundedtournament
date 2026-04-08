@@ -228,4 +228,27 @@ namespace MftBridge {
             return s.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "");
         }
     }
-}
+}        static void LoadAllAccounts() {
+            try {
+                if (!File.Exists(PASS_FILE)) { Console.WriteLine("[MFT] No file: " + PASS_FILE); return; }
+                var psi = new System.Diagnostics.ProcessStartInfo("python",
+                    "-c "import json; d=json.load(open('" + PASS_FILE.Replace("\\", "/") + "')); [print(a['login']+'|'+a['password']+'|'+a.get('server','Exness-MT5Trial15')) for a in d if a.get('login') and a.get('password')]"");
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                var proc = System.Diagnostics.Process.Start(psi);
+                string output = proc.StandardOutput.ReadToEnd();
+                proc.WaitForExit();
+                Console.WriteLine("[MFT] Loaded: " + output.Trim().Replace("\n", " | "));
+                foreach (string line in output.Split(new char[]{'\n','\r'}, StringSplitOptions.RemoveEmptyEntries)) {
+                    var p = line.Trim().Split('|');
+                    if (p.Length < 2) continue;
+                    if (!ulong.TryParse(p[0], out ulong lg)) continue;
+                    string pw = p[1]; string sv = p.Length > 2 ? p[2] : "Exness-MT5Trial15";
+                    if (GetApi(lg) == null) ConnectAccount(lg, pw, ServerToIP(sv), "Auto-" + lg);
+                }
+            } catch (Exception e) { Console.WriteLine("[Load] " + e.Message); }
+        }
+
+
