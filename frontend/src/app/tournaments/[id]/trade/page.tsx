@@ -233,6 +233,8 @@ export default function TradePage() {
   const [msLeft, setMsLeft]       = useState<number>(Infinity);
   const [closing, setClosing]     = useState(false);
   const [closeMsg, setCloseMsg]   = useState("");
+  const [rank, setRank]           = useState<number | null>(null);
+  const [totalTraders, setTotalTraders] = useState<number>(0);
   const autoClosedRef             = useRef(false);
   const liveEntry                 = useEntrySocket(entryId);
 
@@ -269,6 +271,23 @@ export default function TradePage() {
   useEffect(() => { if (entryId) { entryApi.getById(entryId).then(setData).catch(console.error); } }, [entryId]);
   useEffect(() => { fetchMt5(); const iv = setInterval(fetchMt5, 10000); return () => clearInterval(iv); }, [fetchMt5]);
   useEffect(() => { const iv = setInterval(() => { if (lastSync) setSyncAge(Math.round((Date.now() - lastSync.getTime()) / 1000)); }, 1000); return () => clearInterval(iv); }, [lastSync]);
+
+  // Fetch rank from leaderboard every 30s
+  useEffect(() => {
+    if (!id || !entryId) return;
+    const fetchRank = () => {
+      fetch(`${API}/api/leaderboard/${id}`)
+        .then(r => r.json()).then(d => {
+          const lb: any[] = d?.data || [];
+          setTotalTraders(lb.length);
+          const me = lb.find((e: any) => e.id === entryId);
+          if (me) setRank(parseInt(me.position || me.rank || "1"));
+        }).catch(() => {});
+    };
+    fetchRank();
+    const iv = setInterval(fetchRank, 30000);
+    return () => clearInterval(iv);
+  }, [id, entryId]);
 
   /* ── Tournament countdown + auto-close ── */
   useEffect(() => {
@@ -417,26 +436,74 @@ export default function TradePage() {
             </div>}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* ── Tournament Timer ── big segmented display ── */}
+          {/* ── Right side: info strip + timer + actions — all gold ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+            {/* Info pills — rank, traders, prize */}
+            {isActive && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {rank !== null && (
+                  <div style={{ background: "rgba(255,215,0,.08)", border: "1px solid rgba(255,215,0,.2)", borderRadius: 8, padding: "4px 10px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,215,0,.5)" }}>Rank</div>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: "#FFD700", fontFamily: "'Space Grotesk',sans-serif", lineHeight: 1 }}>
+                      #{rank}<span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,215,0,.5)" }}>/{totalTraders}</span>
+                    </div>
+                  </div>
+                )}
+                <div style={{ background: "rgba(255,215,0,.08)", border: "1px solid rgba(255,215,0,.2)", borderRadius: 8, padding: "4px 10px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,215,0,.5)" }}>Your Gain</div>
+                  <div style={{ fontSize: 15, fontWeight: 900, color: profitPct >= 0 ? "#22C55E" : "#EF4444", fontFamily: "'Space Grotesk',sans-serif", lineHeight: 1 }}>
+                    {profitPct >= 0 ? "+" : ""}{fmt(profitPct)}%
+                  </div>
+                </div>
+                <div style={{ background: "rgba(255,215,0,.08)", border: "1px solid rgba(255,215,0,.2)", borderRadius: 8, padding: "4px 10px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: "rgba(255,215,0,.5)" }}>Open</div>
+                  <div style={{ fontSize: 15, fontWeight: 900, color: openTrades.filter(isRealTrade).length > 0 ? "#60a5fa" : "rgba(255,215,0,.4)", fontFamily: "'Space Grotesk',sans-serif", lineHeight: 1 }}>
+                    {openTrades.filter(isRealTrade).length}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Divider */}
+            {isActive && countdown && <div style={{ width: 1, height: 36, background: "rgba(255,215,0,.15)" }} />}
+
+            {/* ── BIG TIMER — always gold ── */}
             {isActive && countdown && (() => {
               const [mm, ss] = countdown.split(":");
-              const urgent   = msLeft > 0 && msLeft <= 3 * 60 * 1000;
-              const warning  = msLeft > 0 && msLeft <= 15 * 60 * 1000 && !urgent;
-              const tc       = urgent ? "#EF4444" : warning ? "#FFD700" : "#22C55E";
-              const pulse    = urgent ? "0 0 12px #EF444488" : warning ? "0 0 8px #FFD70066" : "none";
+              const urgent  = msLeft > 0 && msLeft <= 3 * 60 * 1000;
+              const warning = msLeft > 0 && msLeft <= 15 * 60 * 1000 && !urgent;
+              const glow    = urgent ? "0 0 16px #FFD700cc" : warning ? "0 0 10px #FFD70066" : "0 0 6px #FFD70033";
+              const label   = urgent ? "⚡ CLOSING SOON" : warning ? "⚠ HURRY UP" : "TIME LEFT";
               const DigitBlock = ({ v }: { v: string }) => (
-                <div style={{ background: `${tc}12`, border: `1px solid ${tc}30`, borderRadius: 6, minWidth: 32, height: 40, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Space Grotesk',monospace", fontSize: 22, fontWeight: 900, color: tc, letterSpacing: "-1px", boxShadow: pulse, transition: "box-shadow .3s" }}>{v}</div>
+                <div style={{
+                  background: urgent ? "rgba(255,215,0,.18)" : "rgba(255,215,0,.10)",
+                  border: "1.5px solid rgba(255,215,0,.35)",
+                  borderRadius: 7,
+                  minWidth: 36, height: 46,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "'Space Grotesk',monospace",
+                  fontSize: 26, fontWeight: 900,
+                  color: "#FFD700",
+                  letterSpacing: "-1px",
+                  boxShadow: glow,
+                  transition: "box-shadow .4s, background .4s",
+                }}>{v}</div>
               );
               return (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                  <div style={{ fontSize: 8, fontWeight: 800, letterSpacing: ".15em", textTransform: "uppercase", color: `${tc}80` }}>
-                    {urgent ? "⚡ CLOSING SOON" : warning ? "⚠ HURRY UP" : "TIME LEFT"}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                  <div style={{ fontSize: 8, fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase", color: urgent ? "#FFD700" : "rgba(255,215,0,.55)", animation: urgent ? "pulse-colon .8s step-start infinite" : "none" }}>
+                    {label}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <DigitBlock v={mm[0]} />
                     <DigitBlock v={mm[1]} />
-                    <span style={{ fontSize: 20, fontWeight: 900, color: tc, opacity: urgent ? 1 : 0.6, lineHeight: 1, paddingBottom: 2, animation: urgent ? "pulse-colon 1s step-start infinite" : "none" }}>:</span>
+                    <span style={{
+                      fontSize: 24, fontWeight: 900, color: "#FFD700",
+                      lineHeight: 1, paddingBottom: 2,
+                      opacity: urgent ? 1 : 0.7,
+                      animation: urgent ? "pulse-colon 1s step-start infinite" : "none",
+                    }}>:</span>
                     <DigitBlock v={ss[0]} />
                     <DigitBlock v={ss[1]} />
                   </div>
@@ -444,10 +511,13 @@ export default function TradePage() {
               );
             })()}
 
+            {/* Divider */}
+            <div style={{ width: 1, height: 36, background: "rgba(255,255,255,.08)" }} />
+
             {/* Close all button */}
             {openTrades.filter(isRealTrade).length > 0 && (
               <button onClick={() => closeAllTrades("manual")} disabled={closing}
-                style={{ padding: "6px 14px", background: "#EF4444", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: closing ? "not-allowed" : "pointer", opacity: closing ? .6 : 1 }}>
+                style={{ padding: "7px 14px", background: "#EF4444", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: closing ? "not-allowed" : "pointer", opacity: closing ? .6 : 1 }}>
                 {closing ? "Closing..." : `Close All (${openTrades.filter(isRealTrade).length})`}
               </button>
             )}
