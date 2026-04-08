@@ -510,29 +510,34 @@ router.get("/guild", async (req, res, next) => {
 router.get("/activity", async (req, res, next) => {
   try {
     const { rows } = await db.query(`
-      (SELECT 'entry' AS type, e.created_at AS ts,
-        u.username AS actor, t.name AS context,
-        e.status AS detail, e.id AS ref_id
-       FROM entries e
-       JOIN users u ON u.id = e.user_id
-       JOIN tournaments t ON t.id = e.tournament_id
-       ORDER BY e.created_at DESC LIMIT 10)
-      UNION ALL
-      (SELECT 'payment' AS type, p.created_at AS ts,
-        u.username AS actor, t.name AS context,
-        p.status AS detail, p.id::text AS ref_id
-       FROM payments p
-       LEFT JOIN users u ON u.id = p.user_id
-       LEFT JOIN tournaments t ON t.id = p.tournament_id
-       ORDER BY p.created_at DESC LIMIT 10)
-      UNION ALL
-      (SELECT 'winner' AS type, fa.created_at AS ts,
-        u.username AS actor, t.name AS context,
-        fa.status AS detail, fa.id AS ref_id
-       FROM funded_accounts fa
-       JOIN users u ON u.id = fa.user_id
-       JOIN tournaments t ON t.id = fa.tournament_id
-       ORDER BY fa.created_at DESC LIMIT 5)
+      SELECT * FROM (
+        (SELECT 'entry' AS type, e.created_at AS ts,
+          u.username AS actor, t.name AS context,
+          e.status AS detail, e.id::text AS ref_id,
+          CONCAT(u.username, ' joined ', t.name) AS description
+         FROM entries e
+         JOIN users u ON u.id = e.user_id
+         JOIN tournaments t ON t.id = e.tournament_id
+         ORDER BY e.created_at DESC LIMIT 8)
+        UNION ALL
+        (SELECT 'payment' AS type, p.created_at AS ts,
+          u.username AS actor, t.name AS context,
+          p.status AS detail, p.id::text AS ref_id,
+          CONCAT(u.username, ' payment ', p.status, ' $', p.amount_usd) AS description
+         FROM payments p
+         LEFT JOIN users u ON u.id = p.user_id
+         LEFT JOIN tournaments t ON t.id = p.tournament_id
+         ORDER BY p.created_at DESC LIMIT 8)
+        UNION ALL
+        (SELECT 'winner' AS type, fa.created_at AS ts,
+          u.username AS actor, t.name AS context,
+          fa.status AS detail, fa.id::text AS ref_id,
+          CONCAT(u.username, ' won ', t.name) AS description
+         FROM funded_accounts fa
+         JOIN users u ON u.id = fa.user_id
+         JOIN tournaments t ON t.id = fa.tournament_id
+         ORDER BY fa.created_at DESC LIMIT 5)
+      ) combined
       ORDER BY ts DESC LIMIT 20
     `);
     res.json({ success: true, data: rows });
