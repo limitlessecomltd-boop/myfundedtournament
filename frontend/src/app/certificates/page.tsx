@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
 import MFTLogo from "@/components/ui/MFTLogo";
@@ -175,7 +176,36 @@ function CertificateCard({ cert }: { cert: Certificate }) {
 }
 
 export default function CertificatesPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
+  const searchParams = useSearchParams();
+  const tournamentId = searchParams.get("t");
+
+  const [certs, setCerts]         = useState<Certificate[]>([]);
+  const [tournament, setTournament] = useState<any>(null);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState("");
+  const [filter, setFilter]       = useState<"all"|"1"|"2"|"3">("all");
+
+  const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+
+  useEffect(() => {
+    if (!tournamentId) { setLoading(false); return; }
+    setLoading(true);
+    fetch(`${API}/api/tournaments/${tournamentId}/certificates`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          setCerts(d.data || []);
+          setTournament(d.tournament);
+        } else {
+          setError(d.error || "Failed to load certificates");
+        }
+      })
+      .catch(() => setError("Failed to load certificates"))
+      .finally(() => setLoading(false));
+  }, [tournamentId]);
+
+  const filtered = filter === "all" ? certs : certs.filter(c => String(c.place) === filter);
 
   return (
     <div className="page" style={{ maxWidth:900 }}>
@@ -191,47 +221,83 @@ export default function CertificatesPage() {
           </div>
         </div>
         <div style={{ width:80, height:1, background:"linear-gradient(90deg,transparent,rgba(255,215,0,.4),transparent)", margin:"0 auto 16px" }}/>
+        {tournament && (
+          <div style={{ fontSize:16, fontWeight:700, color:"#FFD700", marginBottom:6 }}>{tournament.name}</div>
+        )}
         <p style={{ fontSize:14, color:"rgba(255,255,255,.4)", maxWidth:500, margin:"0 auto" }}>
-          Download and share your certificate of achievement. Every top-3 finisher receives a verifiable on-chain certificate.
+          Official certificates of achievement for top-3 finishers.
         </p>
       </div>
 
       {/* Filter tabs */}
       <div style={{ display:"flex", gap:8, marginBottom:36, justifyContent:"center" }}>
-        {[["All","all"],["1st Place","1"],["2nd Place","2"],["3rd Place","3"]].map(([l,v])=>(
-          <button key={v} className={`btn btn-sm ${v==="all"?"btn-primary":"btn-ghost"}`}>{l}</button>
+        {([["All","all"],["1st Place","1"],["2nd Place","2"],["3rd Place","3"]] as [string,string][]).map(([l,v])=>(
+          <button key={v} onClick={() => setFilter(v as any)}
+            className={`btn btn-sm ${filter===v?"btn-primary":"btn-ghost"}`}>{l}</button>
         ))}
       </div>
 
-      {/* No certs state */}
-      {!user && (
+      {/* Loading */}
+      {loading && (
+        <div style={{ textAlign:"center", padding:"60px 0", color:"rgba(255,255,255,.3)" }}>
+          <div style={{ fontSize:32, marginBottom:12 }}>⏳</div>
+          <div style={{ fontSize:14 }}>Loading certificates...</div>
+        </div>
+      )}
+
+      {/* No tournament ID */}
+      {!loading && !tournamentId && (
         <div style={{ textAlign:"center", padding:"60px 0", color:"rgba(255,255,255,.3)" }}>
           <div style={{ fontSize:48, marginBottom:16 }}>🏆</div>
-          <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No certificates yet</div>
-          <p style={{ fontSize:14, marginBottom:24 }}>Enter a tournament and finish in the top 3 to earn your certificate.</p>
+          <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No tournament selected</div>
+          <p style={{ fontSize:14, marginBottom:24 }}>Browse ended tournaments to view their certificates.</p>
           <Link href="/tournaments" className="btn btn-primary">Browse Tournaments →</Link>
         </div>
       )}
 
-      {/* Demo certificates (replace with real API data) */}
-      {user && DEMO_CERTS.map(cert => (
+      {/* Tournament not ended */}
+      {!loading && tournament && tournament.status !== "ended" && (
+        <div style={{ textAlign:"center", padding:"60px 0", color:"rgba(255,255,255,.3)" }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>⏱</div>
+          <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>Battle still in progress</div>
+          <p style={{ fontSize:14 }}>Certificates are issued when the tournament ends.</p>
+        </div>
+      )}
+
+      {/* Error */}
+      {!loading && error && (
+        <div style={{ textAlign:"center", padding:"40px 0", color:"#EF4444" }}>{error}</div>
+      )}
+
+      {/* No finishers */}
+      {!loading && !error && tournament?.status === "ended" && filtered.length === 0 && (
+        <div style={{ textAlign:"center", padding:"60px 0", color:"rgba(255,255,255,.3)" }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>🏅</div>
+          <div style={{ fontSize:18, fontWeight:700, color:"rgba(255,255,255,.6)", marginBottom:8 }}>No certificates for this filter</div>
+        </div>
+      )}
+
+      {/* Real certificates */}
+      {!loading && filtered.map(cert => (
         <CertificateCard key={cert.id} cert={cert} />
       ))}
 
       {/* Info section */}
-      <div style={{ background:"rgba(255,255,255,.02)", border:"1px solid var(--border)", borderRadius:14, padding:24, marginTop:20 }}>
-        <div style={{ fontFamily:"var(--font-head)", fontSize:15, fontWeight:700, marginBottom:12 }}>About MFT Certificates</div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
-          {[["🥇 1st Place","Funded trading account worth 90% of the prize pool. Your trading career starts here.","var(--gold)"],
-            ["🥈 2nd Place","3× your entry fee returned in USDT. Proof you're among the elite.","var(--silver)"],
-            ["🥉 3rd Place","2× your entry fee returned in USDT. Top finisher recognition.","var(--bronze)"]].map(([t,d,c])=>(
-            <div key={t as string}>
-              <div style={{ fontSize:13, fontWeight:700, color:c as string, marginBottom:6 }}>{t}</div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", lineHeight:1.6 }}>{d}</div>
-            </div>
-          ))}
+      {!loading && (
+        <div style={{ background:"rgba(255,255,255,.02)", border:"1px solid var(--border)", borderRadius:14, padding:24, marginTop:20 }}>
+          <div style={{ fontFamily:"var(--font-head)", fontSize:15, fontWeight:700, marginBottom:12 }}>About MFT Certificates</div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+            {[["🥇 1st Place","Funded trading account worth 90% of the prize pool. Your trading career starts here.","var(--gold)"],
+              ["🥈 2nd Place","3× your entry fee returned in USDT. Proof you're among the elite.","var(--silver)"],
+              ["🥉 3rd Place","2× your entry fee returned in USDT. Top finisher recognition.","var(--bronze)"]].map(([t,d,c])=>(
+              <div key={t as string}>
+                <div style={{ fontSize:13, fontWeight:700, color:c as string, marginBottom:6 }}>{t}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", lineHeight:1.6 }}>{d}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
