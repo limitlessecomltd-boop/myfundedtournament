@@ -7,7 +7,7 @@ const MAX_TOTAL_PER_TRADER   = 2;
 /**
  * Create a new entry (or re-entry) for a trader in a tournament.
  */
-async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Server, broker) {
+async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Server, broker, payerIp) {
   const { rows: tours } = await db.query("SELECT * FROM tournaments WHERE id=$1", [tournamentId]);
   if (!tours.length) throw new Error("Tournament not found");
   const tournament = tours[0];
@@ -73,7 +73,7 @@ async function createEntry(userId, tournamentId, mt5Login, mt5Password, mt5Serve
     currency:      'USDT_TRC20',
     referenceNo,
     webhookUrl:    BACKEND_URL + '/api/payments/webhook',
-    payerIp:       '127.0.0.1',
+    payerIp:       payerIp || '1.1.1.1',
   });
   // ForumPay payment_id comes from GetRate (embedded in startPayment response)
   const fpPaymentId = fp.forumpay_payment_id || fp.payment_id || referenceNo;
