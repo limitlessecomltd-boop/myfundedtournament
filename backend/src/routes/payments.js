@@ -156,7 +156,7 @@ router.get('/:paymentId/status', authenticate, async (req, res) => {
       const confirmed = ourStatus === 'confirmed';
 
       if (ourStatus !== p.status) {
-        await db.query(`UPDATE payments SET status=$1, confirmed_at=CASE WHEN $1='confirmed' THEN NOW() ELSE confirmed_at END WHERE nowpayments_id=$2`, [ourStatus, paymentId]);
+        await db.query(`UPDATE payments SET status=$1::payment_status, confirmed_at=CASE WHEN $1='confirmed' THEN NOW() ELSE confirmed_at END WHERE nowpayments_id=$2`, [ourStatus, paymentId]);
         if (confirmed && p.entry_id) await activateEntry(p.entry_id, p.tournament_id, p.user_id);
         if ((ourStatus==='expired'||ourStatus==='failed') && p.entry_id) {
           await db.query(`UPDATE entries SET status='cancelled' WHERE id=$1 AND status='pending_payment'`, [p.entry_id]);
@@ -198,7 +198,7 @@ router.post('/webhook', async (req, res) => {
     const paymentId = String(body.payment_id);
 
     const { rows: updated } = await db.query(`
-      UPDATE payments SET status=$1,
+      UPDATE payments SET status=$1::payment_status,
         confirmed_at=CASE WHEN $1='confirmed' THEN NOW() ELSE confirmed_at END
       WHERE nowpayments_id=$2
       RETURNING entry_id, tournament_id, user_id, reference_no, currency, payment_address
