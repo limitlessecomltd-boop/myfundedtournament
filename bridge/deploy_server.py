@@ -2,7 +2,7 @@
 MFT Deploy Webhook Server - port 9090
 POST /deploy         -> downloads latest startup.py + runs it
 GET  /deploy/status  -> returns last deploy log
-Install once as service: nssm install MftDeployServer python C:\mft-bridge\deploy_server.py
+Install once as service: nssm install MftDeployServer
 """
 import http.server, subprocess, threading, urllib.request, os, json, datetime
 
