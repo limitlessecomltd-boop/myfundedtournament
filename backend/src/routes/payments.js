@@ -8,9 +8,8 @@ const db      = require('../config/db');
 const { authenticate } = require('../middleware/auth');
 const email   = require('../services/emailService');
 const { CURRENCIES, ping, getRate, startPayment, checkPayment, cancelPayment, mapStatus } = require('../services/forumPayService');
+const { activateEntryMetaApi } = require('../services/entryService');
 
-const BRIDGE_URL    = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
-const BRIDGE_SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
 const BACKEND_URL   = process.env.BACKEND_URL    || 'https://myfundedtournament-production.up.railway.app';
 
 // ── GET /api/payments/currencies ─────────────────────────────────────────────
@@ -259,17 +258,10 @@ async function activateEntry(entryId, tournamentId, userId) {
       `, [entryId]);
       if (info.length) await email.sendPaymentConfirmed({ email:info[0].email, username:info[0].username, tournamentName:info[0].tournament_name, entryFee:parseFloat(info[0].entry_fee), tournamentId:info[0].tournament_id });
     } catch {}
-    connectMt5ToBridge(entryId).catch(e => console.warn('[Bridge]', e.message));
+    activateEntryMetaApi(entryId).catch(e => console.warn('[Bridge/MetaApi]', e.message));
   } catch (e) { console.error('[ForumPay] activateEntry:', e.message); }
 }
 
-async function connectMt5ToBridge(entryId) {
-  const { rows } = await db.query(`SELECT mt5_login, mt5_password, mt5_server FROM entries WHERE id=$1`, [entryId]);
-  if (!rows.length || !rows[0].mt5_login) return;
-  const { mt5_login, mt5_password, mt5_server } = rows[0];
-  const r = await fetch(BRIDGE_URL + '/connect-account', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ login:String(mt5_login), password:mt5_password, server:mt5_server||'Exness-MT5Trial15', secret:BRIDGE_SECRET }) });
-  const d = await r.json();
-  console.log('[Bridge] connect', mt5_login, d.connected ? 'OK' : (d.error||'fail'));
-}
+
 
 module.exports = router;
