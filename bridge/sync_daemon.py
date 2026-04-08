@@ -11,7 +11,7 @@ log = logging.getLogger('sync')
 BRIDGE  = "http://localhost:5099"
 DB_PATH = "C:\\mft-bridge\\db\\mft_bridge.db"
 STARTING_BALANCE = 1000.0
-INTERVAL = 30  # seconds
+INTERVAL = 5  # seconds
 
 def get_bridge(path):
     try:
