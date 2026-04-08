@@ -22,12 +22,17 @@ async function getAllTournaments(filter) {
 async function getTournamentById(id) {
   const { rows } = await db.query(`
     SELECT t.*,
-      COUNT(DISTINCT e.id) FILTER (WHERE e.status='active') AS active_entries,
-      COUNT(DISTINCT e.user_id) AS unique_traders
+      COUNT(DISTINCT e.id) FILTER (WHERE e.status IN ('active','completed')) AS active_entries,
+      COUNT(DISTINCT e.user_id) FILTER (WHERE e.status NOT IN ('pending_payment','cancelled')) AS unique_traders,
+      -- Winner info
+      wu.username AS winner_username,
+      we.profit_pct AS winner_profit_pct
     FROM tournaments t
     LEFT JOIN entries e ON e.tournament_id = t.id
+    LEFT JOIN entries we ON we.id = t.winner_entry_id
+    LEFT JOIN users wu ON wu.id = we.user_id
     WHERE t.id = $1
-    GROUP BY t.id
+    GROUP BY t.id, wu.username, we.profit_pct
   `, [id]);
   return rows[0] || null;
 }

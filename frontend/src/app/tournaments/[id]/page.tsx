@@ -416,6 +416,27 @@ export default function TournamentDetailPage() {
             {/* Live countdown if active */}
             {tournament.status === "active" && <LiveCountdown endTime={tournament.end_time}/>}
 
+            {/* Winner Banner — shown when tournament ended */}
+            {tournament.status === "ended" && (
+              <div style={{ background:"linear-gradient(135deg, rgba(255,215,0,.12), rgba(255,165,0,.06))", border:"1px solid rgba(255,215,0,.35)", borderRadius:16, padding:"20px 24px", marginBottom:20, textAlign:"center", position:"relative", overflow:"hidden" }}>
+                <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:"linear-gradient(90deg, #FFD700, #FF8C00, #FFD700)" }} />
+                <div style={{ fontSize:32, marginBottom:8 }}>🏆</div>
+                <div style={{ fontSize:13, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,215,0,.6)", marginBottom:6 }}>Battle Ended · Champion</div>
+                {(tournament as any).winner_username ? (
+                  <>
+                    <div style={{ fontSize:28, fontWeight:900, color:"#FFD700", fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-1px", marginBottom:4 }}>
+                      {(tournament as any).winner_username}
+                    </div>
+                    <div style={{ fontSize:16, color:(tournament as any).winner_profit_pct >= 0 ? "#22C55E" : "#EF4444", fontWeight:700 }}>
+                      {parseFloat((tournament as any).winner_profit_pct || 0) >= 0 ? "+" : ""}{parseFloat((tournament as any).winner_profit_pct || 0).toFixed(2)}% gain
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize:16, color:"rgba(255,255,255,.4)" }}>No participants</div>
+                )}
+              </div>
+            )}
+
             {/* Stats grid */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }} className="detail-stats">
               {[
