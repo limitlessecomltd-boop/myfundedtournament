@@ -1,10 +1,4 @@
-"""
-MFT Deploy Webhook Server - port 9090
-POST /deploy         -> downloads latest startup.py + runs it
-GET  /deploy/status  -> returns last deploy log
-Install once as service: nssm install MftDeployServer
-"""
-import http.server, subprocess, threading, urllib.request, os, json, datetime
+import http.server, subprocess, threading, urllib.request, os, json, datetime, signal, sys, time
 
 PORT   = 9090
 SECRET = "mft_deploy_secret_2024"
@@ -25,9 +19,9 @@ def run_deploy():
                 "https://raw.githubusercontent.com/limitlessecomltd-boop/myfundedtournament/main/bridge/startup.py",
                 "C:\\mft-bridge\\startup.py"
             )
-            LOG.append("[Deploy] startup.py downloaded from GitHub")
+            LOG.append("[Deploy] startup.py downloaded")
             result = subprocess.run(
-                ["python", "C:\\mft-bridge\\startup.py"],
+                ["C:\\Program Files\\Python313\\python.exe", "C:\\mft-bridge\\startup.py"],
                 capture_output=True, text=True, timeout=300
             )
             for line in (result.stdout + result.stderr).splitlines():
@@ -48,19 +42,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/deploy/status":
             body = json.dumps({"running": RUNNING[0], "log": LOG[-100:]}).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self._respond(200, body)
         elif self.path == "/health":
-            body = b'{"status":"ok"}'
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self._respond(200, b'{"status":"ok"}')
         else:
             self.send_response(404)
             self.end_headers()
@@ -74,21 +58,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             except Exception:
                 data = {}
             if data.get("secret") != SECRET:
-                resp = json.dumps({"error": "Unauthorized"}).encode()
-                self.send_response(403)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(resp)))
-                self.end_headers()
-                self.wfile.write(resp)
+                self._respond(403, json.dumps({"error": "Unauthorized"}).encode())
                 return
             result = run_deploy()
-            resp = json.dumps(result).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Content-Length", str(len(resp)))
-            self.end_headers()
-            self.wfile.write(resp)
+            self._respond(200, json.dumps(result).encode())
         else:
             self.send_response(404)
             self.end_headers()
@@ -100,6 +73,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
+    def _respond(self, code, body):
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
 if __name__ == "__main__":
-    print("[DeployServer] Listening on port", PORT)
-    http.server.HTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+    signal.signal(signal.SIGINT,  signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    server = http.server.HTTPServer(("0.0.0.0", PORT), Handler)
+    print("[DeployServer] Listening on port " + str(PORT), flush=True)
+    server.serve_forever()
