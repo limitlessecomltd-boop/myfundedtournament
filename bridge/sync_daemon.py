@@ -183,21 +183,22 @@ def run():
                 conn = sqlite3.connect(DB_PATH)
                 conn.row_factory = sqlite3.Row
                 n = bulk_balance_sync(conn, accounts)
-                # Fetch real equity per-account if /health doesn't include it yet
+                # Equity sync (fallback if /health doesn't have equity)
                 equity_sync(conn, accounts)
 
-                # 2. Full trade sync — only for accounts in active tournaments
+                # Full trade sync for ALL bridge accounts every TRADE_INTERVAL
+                # (only 3 accounts so very cheap - ~9 bridge calls per cycle)
                 now = time.time()
                 if now - last_trade_sync >= TRADE_INTERVAL:
-                    active = get_active_logins()
-                    if active:
-                        log.info("Trade sync for %d active accounts" % len(active))
-                        for login in active:
+                    log.info("Full trade sync for all %d accounts" % len(accounts))
+                    for acc in accounts:
+                        login = str(acc.get("login",""))
+                        if login:
                             full_trade_sync(conn, login)
-                        last_trade_sync = now
+                    last_trade_sync = now
 
                 conn.close()
-                log.info("Balance sync: %d accounts in %.2fs" % (n, time.time()-cycle_start))
+                log.info("Synced %d accounts in %.2fs" % (n, time.time()-cycle_start))
             else:
                 log.warning("Bridge unhealthy, skipping")
 
