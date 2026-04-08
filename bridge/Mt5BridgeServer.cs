@@ -149,9 +149,11 @@ namespace MftBridge {
                         lock (Lock) {
                             foreach (var kv in Accounts) {
                                 if (!first) sb.Append(","); first = false;
-                                string bal = "null";
+                                string bal = "null"; string eq = "null"; string prof = "null";
                                 try { bal = kv.Value.Account.Balance.ToString(); } catch {}
-                                sb.Append("{\"login\":" + kv.Key + ",\"connected\":true,\"balance\":" + bal + "}");
+                                try { eq = kv.Value.AccountEquity.ToString(); } catch {}
+                                try { prof = Math.Round(kv.Value.AccountProfit, 2).ToString(); } catch {}
+                                sb.Append("{\"login\":" + kv.Key + ",\"connected\":true,\"balance\":" + bal + ",\"equity\":" + eq + ",\"profit\":" + prof + "}");
                             }
                         }
                         sb.Append("]}"); resp = sb.ToString();

@@ -51,13 +51,15 @@ def get_active_logins():
         return set()
 
 def bulk_balance_sync(conn, accounts):
-    """Fast update: just balance/equity from /health — O(1) regardless of account count."""
+    """Fast update: balance + equity + profit from /health — O(1) regardless of account count."""
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     updated = 0
     for acc in accounts:
         login   = str(acc.get("login", ""))
         balance = float(acc.get("balance") or STARTING_BALANCE)
-        equity  = balance  # /health doesn't return equity, use balance as proxy
+        # Use equity from /health (available after bridge update), fallback to balance
+        equity  = float(acc.get("equity")  or balance)
+        profit  = float(acc.get("profit")  or 0)
         if not login:
             continue
         pabs = round(balance - STARTING_BALANCE, 2)
@@ -82,6 +84,29 @@ def bulk_balance_sync(conn, accounts):
         updated += 1
     conn.commit()
     return updated
+
+def equity_sync(conn, accounts):
+    """
+    Interim equity fix: fetch /account for each account to get real equity.
+    This runs every cycle until /health returns equity (after bridge rebuild).
+    Once bridge is rebuilt, /health already has equity — this becomes a no-op fallback.
+    """
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    for acc in accounts:
+        login = str(acc.get("login", ""))
+        # Skip if /health already returned equity
+        if acc.get("equity") is not None:
+            continue
+        detail = bridge_get("/account?login=" + login)
+        if not detail or detail.get("error"):
+            continue
+        equity = float(detail.get("equity") or detail.get("balance") or STARTING_BALANCE)
+        profit = float(detail.get("profit") or 0)
+        conn.execute(
+            "UPDATE accounts SET equity=?, last_sync=? WHERE mt5_login=?",
+            [equity, now, login]
+        )
+    conn.commit()
 
 def full_trade_sync(conn, login):
     """Detailed sync: account info + open trades + history. Only for active accounts."""
@@ -158,6 +183,8 @@ def run():
                 conn = sqlite3.connect(DB_PATH)
                 conn.row_factory = sqlite3.Row
                 n = bulk_balance_sync(conn, accounts)
+                # Fetch real equity per-account if /health doesn't include it yet
+                equity_sync(conn, accounts)
 
                 # 2. Full trade sync — only for accounts in active tournaments
                 now = time.time()
