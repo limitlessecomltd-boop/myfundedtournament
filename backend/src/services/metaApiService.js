@@ -155,26 +155,8 @@ async function flagDepositBreach(entry, newBalance) {
  * Sync all active entries across all active tournaments every 60 seconds.
  */
 function startSyncCron() {
-  cron.schedule("* * * * *", async () => {
-    try {
-      const { rows: entries } = await db.query(`
-        SELECT e.*, t.start_time, t.end_time
-        FROM entries e
-        JOIN tournaments t ON t.id = e.tournament_id
-        WHERE e.status = 'active'
-          AND t.status = 'active'
-          AND e.metaapi_account_id IS NOT NULL
-      `);
-
-      for (const entry of entries) {
-        await syncEntry(entry);
-      }
-    } catch (err) {
-      console.error("[Sync cron] Error:", err.message);
-    }
-  });
-
-  console.log("MetaApi sync cron started (every 60s)");
+  // Sync is handled by C# bridge + mt5_connector.py polling every 30s on VPS
+  console.log("[Sync] Using C# bridge sync — MetaApi cron disabled");
 }
 
 module.exports = { connectAccount, syncEntry, startSyncCron };

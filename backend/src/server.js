@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const { createServer } = require("http");
 const { initWebSocket } = require("./websocket/liveSocket");
-const { startSyncCron } = require("./services/metaApiService");
+// MetaApi sync replaced by C# bridge — bridge polls every 30s automatically
 const { startTournamentCron } = require("./services/tournamentService");
 
 const tournamentRoutes = require("./routes/tournaments");
@@ -14,6 +14,7 @@ const userRoutes       = require("./routes/users");
 const adminRoutes      = require("./routes/admin");
 const guildRoutes      = require("./routes/guild");
 const errorHandler     = require("./middleware/errorHandler");
+const { startBridgeSyncCron } = require("./services/bridgeSyncService");
 
 const app = express();
 const httpServer = createServer(app);
@@ -39,7 +40,7 @@ app.get("/health", (req, res) => res.json({
 app.use(errorHandler);
 
 initWebSocket(httpServer);
-startSyncCron();
+startBridgeSyncCron();
 startTournamentCron();
 
 const PORT = process.env.PORT || 4000;

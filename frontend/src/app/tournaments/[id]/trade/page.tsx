@@ -87,7 +87,7 @@ export default function TradePage() {
   useEffect(() => {
     if (!entryId) return;
     const fetchMt5 = () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("mft_token") : null;
+      const token = typeof window !== "undefined" ? localStorage.getItem("fc_token") : null;
       fetch(`${API}/api/entries/${entryId}/mt5`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })

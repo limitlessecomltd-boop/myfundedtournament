@@ -287,15 +287,15 @@ router.post('/entries/:id/connect-metaapi', async (req, res) => {
       }
     }
 
-    // Trigger MetaApi activation async
+    // Trigger Bridge connection async
     const { activateEntryMetaApi } = require('../services/entryService');
-    res.json({ success: true, message: 'MetaApi connection triggered — check back in 30s' });
+    res.json({ success: true, message: 'Bridge connection triggered — check back in 15s' });
 
     // Run async after response
     activateEntryMetaApi(id).then(() => {
-      console.log(`[Admin] MetaApi manually connected for entry ${id}`);
+      console.log(`[Admin] Bridge manually connected for entry ${id}`);
     }).catch(err => {
-      console.error(`[Admin] MetaApi manual connect failed for entry ${id}:`, err.message);
+      console.error(`[Admin] Bridge manual connect failed for entry ${id}:`, err.message);
     });
 
   } catch (err) {
