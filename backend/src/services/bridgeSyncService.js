@@ -1,47 +1,52 @@
 /**
- * bridgeSyncService.js
- * Polls the C# bridge every 30s and updates entry stats in Supabase.
- * Replaces MetaApi sync cron — bridge handles the MT5 connection.
+ * bridgeSyncService.js — polls C# bridge every 30s, updates ALL active entries.
+ * Fixes: removed metaapi_account_id filter, uses 90-day history, writes all metrics.
  */
 const db   = require("../config/db");
 const cron = require("node-cron");
 
-const BRIDGE = process.env.MT5_BRIDGE_URL || "http://38.60.196.145:5099";
-const STARTING_BALANCE = 1000;
+const BRIDGE          = process.env.MT5_BRIDGE_URL || "http://38.60.196.145:5099";
+const DEFAULT_BALANCE = 1000;
 
-async function bridgeFetch(path) {
-  const r = await fetch(`${BRIDGE}${path}`, { signal: AbortSignal.timeout(10000) });
-  if (!r.ok) throw new Error(`Bridge ${path} returned ${r.status}`);
+async function bf(path) {
+  const r = await fetch(`${BRIDGE}${path}`, { signal: AbortSignal.timeout(12000) });
+  if (!r.ok) throw new Error(`Bridge ${r.status}`);
   return r.json();
 }
 
 async function syncActiveEntries() {
   try {
-    // Get all active entries that use the bridge
+    // All active entries with an mt5_login — NO metaapi_account_id filter
     const { rows: entries } = await db.query(`
-      SELECT e.id, e.mt5_login, e.starting_balance, e.tournament_id
-      FROM entries e
-      JOIN tournaments t ON t.id = e.tournament_id
-      WHERE e.status = 'active'
-        AND t.status = 'active'
-        AND e.mt5_login IS NOT NULL
-        AND e.metaapi_account_id LIKE 'bridge:%'
+      SELECT e.id, e.mt5_login, e.starting_balance
+      FROM   entries e
+      JOIN   tournaments t ON t.id = e.tournament_id
+      WHERE  e.status = 'active'
+        AND  e.mt5_login IS NOT NULL
     `);
 
     if (!entries.length) return;
 
+    // One health call to know what's connected
+    let connected = new Set();
+    try {
+      const h = await bf("/health");
+      connected = new Set((h.accounts||[]).map(a => String(a.login)));
+    } catch(e) { console.error("[BridgeSync] health failed:", e.message); return; }
+
+    console.log(`[BridgeSync] syncing ${entries.length} entries, bridge has ${connected.size} accounts`);
+
     for (const entry of entries) {
+      const login    = String(entry.mt5_login);
+      const startBal = parseFloat(entry.starting_balance || DEFAULT_BALANCE);
+      if (!connected.has(login)) continue;
+
       try {
-        const login = String(entry.mt5_login);
-        const startBal = parseFloat(entry.starting_balance || STARTING_BALANCE);
-
-        // Fetch account info and trades in parallel
-        const [acc, openTrades, history] = await Promise.all([
-          bridgeFetch(`/account?login=${login}`).catch(() => null),
-          bridgeFetch(`/trades/open?login=${login}`).catch(() => []),
-          bridgeFetch(`/trades/history?login=${login}&days=1`).catch(() => []),
+        const [acc, open, hist] = await Promise.all([
+          bf(`/account?login=${login}`).catch(()=>null),
+          bf(`/trades/open?login=${login}`).catch(()=>[]),
+          bf(`/trades/history?login=${login}&days=90`).catch(()=>[]),
         ]);
-
         if (!acc || acc.error) continue;
 
         const balance   = parseFloat(acc.balance || startBal);
@@ -49,53 +54,47 @@ async function syncActiveEntries() {
         const profitAbs = Math.round((balance - startBal) * 100) / 100;
         const profitPct = Math.round((profitAbs / startBal) * 10000) / 100;
 
-        const closed   = Array.isArray(history) ? history : [];
-        const wins     = closed.filter(t => parseFloat(t.profit) > 0).length;
-        const total    = closed.length;
-        const winRate  = total > 0 ? Math.round(wins / total * 100) : 0;
+        // Real trades only — filter out Balance/deposit rows
+        const closed = (Array.isArray(hist) ? hist : [])
+          .filter(t => t.symbol && t.symbol.trim() !== "" && t.type !== "Balance");
+        const wins   = closed.filter(t => parseFloat(t.profit) > 0).length;
+        const total  = closed.length;
+        const winRate = total > 0 ? Math.round(wins/total*100) : 0;
 
-        // Max drawdown calculation
-        let maxDD = 0, peak = startBal, running = startBal;
-        const sorted = [...closed].sort((a,b) => new Date(a.close_time) - new Date(b.close_time));
-        for (const t of sorted) {
-          running += parseFloat(t.profit || 0);
-          if (running > peak) peak = running;
-          const dd = Math.round((peak - running) / peak * 10000) / 100;
-          if (dd > maxDD) maxDD = dd;
-        }
+        // Max drawdown
+        let maxDD=0, peak=startBal, running=startBal;
+        [...closed].sort((a,b)=>new Date(a.close_time||0)-new Date(b.close_time||0))
+          .forEach(t => {
+            running += parseFloat(t.profit||0);
+            if (running>peak) peak=running;
+            const dd = peak>0 ? Math.round((peak-running)/peak*10000)/100 : 0;
+            if (dd>maxDD) maxDD=dd;
+          });
 
         await db.query(`
           UPDATE entries SET
-            current_balance  = $1,
-            current_equity   = $2,
-            profit_abs       = $3,
-            profit_pct       = $4,
-            total_trades     = $5,
-            winning_trades   = $6,
-            max_drawdown_pct = $7
-          WHERE id = $8
-        `, [balance, equity, profitAbs, profitPct, total, wins, maxDD, entry.id]);
+            starting_balance = COALESCE(starting_balance, $1),
+            current_balance  = $2,
+            current_equity   = $3,
+            profit_abs       = $4,
+            profit_pct       = $5,
+            total_trades     = $6,
+            winning_trades   = $7,
+            max_drawdown_pct = $8
+          WHERE id = $9
+        `, [startBal, balance, equity, profitAbs, profitPct, total, wins, maxDD, entry.id]);
 
-      } catch (err) {
-        // Silent — individual entry errors shouldn't crash the loop
-        console.warn(`[BridgeSync] Entry ${entry.id} failed:`, err.message);
-      }
+        console.log(`[BridgeSync] ${login}: $${balance} (${profitPct>0?'+':''}${profitPct}%) ${total} trades wr=${winRate}%`);
+
+      } catch(err) { console.warn(`[BridgeSync] ${login}:`, err.message); }
     }
-  } catch (err) {
-    console.error("[BridgeSync] Sync loop error:", err.message);
-  }
+  } catch(err) { console.error("[BridgeSync] fatal:", err.message); }
 }
 
 function startBridgeSyncCron() {
-  // Run immediately on startup
   syncActiveEntries().catch(console.error);
-
-  // Then every 30 seconds
-  cron.schedule("*/30 * * * * *", () => {
-    syncActiveEntries().catch(console.error);
-  });
-
-  console.log("[BridgeSync] Bridge sync cron started (30s interval)");
+  cron.schedule("*/30 * * * * *", () => syncActiveEntries().catch(console.error));
+  console.log("[BridgeSync] started — all active entries every 30s");
 }
 
 module.exports = { startBridgeSyncCron, syncActiveEntries };

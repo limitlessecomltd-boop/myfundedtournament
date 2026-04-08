@@ -144,12 +144,12 @@ router.get('/:id/mt5', async (req, res) => {
   try {
     const { id } = req.params;
     // Get entry to find mt5_login
-    const { data: entry, error } = await supabase
-      .from('entries')
-      .select('mt5_login, mt5_password, starting_balance, status')
-      .eq('id', id)
-      .single();
-    if (error || !entry) return res.status(404).json({ error: 'Entry not found' });
+    const { rows } = await db.query(
+      `SELECT mt5_login, mt5_password, starting_balance, status FROM entries WHERE id = $1`,
+      [id]
+    );
+    const entry = rows[0];
+    if (!entry) return res.status(404).json({ error: 'Entry not found' });
     if (!entry.mt5_login) return res.status(404).json({ error: 'No MT5 account linked' });
 
     const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
@@ -188,6 +188,20 @@ router.get('/:id/mt5', async (req, res) => {
       const dd = Math.round((peak - running) / peak * 10000) / 100;
       if(dd > maxDD) maxDD = dd;
     }
+
+    // Write live stats back to DB so leaderboard + profile stay current
+    db.query(`
+      UPDATE entries SET
+        starting_balance = COALESCE(starting_balance, $1),
+        current_balance  = $2,
+        current_equity   = $3,
+        profit_abs       = $4,
+        profit_pct       = $5,
+        total_trades     = $6,
+        winning_trades   = $7,
+        max_drawdown_pct = $8
+      WHERE id = $9
+    `, [startBal, balance, equity, profitAbs, profitPct, closed.length, wins, maxDD, id]).catch(()=>{});
 
     res.json({
       login: accRes.login,
