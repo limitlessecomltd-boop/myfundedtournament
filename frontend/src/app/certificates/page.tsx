@@ -29,6 +29,7 @@ const PLACE_CONFIG = {
   3: { medal:"🥉", label:"Top Finisher",        headline:"Top Finisher",         typeLabel:"Certificate of Performance",color:"#CD7F32", border:"rgba(205,127,50,.45)",bg:"#090a0c", stripe:"rgba(205,127,50,.07)", corner:"rgba(205,127,50,.45)" },
 };
 
+// v2 — real data from API
 function CertificateCard({ cert }: { cert: Certificate }) {
   const cfg = PLACE_CONFIG[cert.place];
   return (
