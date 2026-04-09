@@ -19,7 +19,7 @@ const PLANS = [
       "Starts with $1,000 demo balance",
       "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
-      "Winner gets 90% funds in live account",
+      "Winner gets 90% funded account — no evaluation",
                   "Battle starts when all 25 spots fill",
     ],
   },
@@ -37,7 +37,7 @@ const PLANS = [
       "Starts with $1,000 demo balance",
       "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
-      "Winner gets 90% funds in live account",
+      "Winner gets 90% funded account — no evaluation",
                   "Battle starts when all 25 spots fill",
     ],
   },
@@ -45,14 +45,14 @@ const PLANS = [
 
 const PRIZES = [
   { place:"1st", medal:"🥇", color:"#FFD700", bg:"rgba(255,215,0,.06)", border:"rgba(255,215,0,.2)", label:"Tournament Champion", reward:"90% Funded Account", detail:"Live broker account — trade with real capital", cert:"Gold Certificate issued on-chain", featured:true },
-  { place:"1st", medal:"💵", color:"#22C55E", bg:"rgba(34,197,94,.05)", border:"rgba(34,197,94,.2)", label:"Instant Cashout Option", reward:"75% USDT Cashout", detail:"Prefer cash? Take 75% instantly in USDT", cert:"Gold Certificate issued on-chain", featured:false },
+  { place:"1st", medal:"💵", color:"#22C55E", bg:"rgba(34,197,94,.05)", border:"rgba(34,197,94,.2)", label:"Instant Cashout Option", reward:"80% USDT Cashout", detail:"Prefer cash? Take 80% instantly in USDT", cert:"Gold Certificate issued on-chain", featured:false },
 ];
 
 const STEPS = [
   { n:"01", title:"Register & pay entry", desc:"Pay USDT via crypto link or wallet. Works from Binance or any exchange — no personal wallet needed.", icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" },
   { n:"02", title:"Open your MT5 demo", desc:"Create a free demo at Exness, ICMarkets or Tickmill. Submit your investor (read-only) password.", icon:"M22 12h-4l-3 9L9 3l-3 9H2" },
   { n:"03", title:"Trade Actively till End", desc:"We track your % gain live via MetaApi every 60 seconds. Close all trades 3 minutes before the 90-minute mark.", icon:"M18 20V10M12 20V4M6 20v-6" },
-  { n:"04", title:"Win your funded account", desc:"Highest % gain wins! Choose: 90% as a live funded broker account, or take 75% as instant USDT cashout. Only the winner gets paid.", icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
+  { n:"04", title:"Win your funded account", desc:"Highest % gain wins the prize pool! Choose your reward: 90% as a live funded broker account with real capital, or 80% as instant USDT cashout. Only the champion is rewarded — no evaluation needed.", icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
 ];
 
 const RULES = [
@@ -84,7 +84,7 @@ const FAQS = [
   { q:"Do I need a real trading account?", a:"No. You open a free MT5 demo account at Exness, ICMarkets, or Tickmill. You only submit your investor (read-only) password — we never touch your real funds." },
   { q:"How is the winner decided?", a:"The trader with the highest percentage gain on their starting $1,000 demo balance wins. Purely performance-based — best trader in 90 minutes wins, period." },
   { q:"How do I pay the entry fee?", a:"Entry fees are paid in crypto via ForumPay. Choose from USDT, BTC, ETH, LTC and more. Pay directly from any wallet or exchange — no account required." },
-  { q:"What does the winner receive?", a:"The winner gets their choice: either 90% of the prize pool as a real funded trading account (live broker, real capital, daily withdrawals), OR 75% of the prize pool as an instant USDT cashout. Only the 1st place winner is rewarded. For a $25 entry with 25 traders: pool is $625, so winner gets $562 funded account or $468 instant USDT." },
+  { q:"What does the winner receive?", a:"The winner gets their choice: either 90% of the prize pool as a real funded trading account (live broker, real capital, daily withdrawals), OR 80% of the prize pool as an instant USDT cashout. Only the 1st place winner is rewarded. For a $25 entry with 25 traders: pool is $625, so winner gets $562.50 funded account or $500 instant USDT." },
   { q:"What is a Guild Battle?", a:"Guild Battle is our custom battle program for community organisers. You set the entry fee, player count (5–200), and winner payout percentage (50–90%). You earn an organiser share automatically when the battle ends. Platform always takes a flat 10%. Perfect for trading communities, Discord servers, or group challenges." },
   { q:"How much do I earn as a Guild Battle organiser?", a:"You keep whatever is left after the winner's share and the 10% platform fee. Example: if you set winner at 80%, you get 10% (platform gets 10%). On a $1,000 prize pool that means $800 to winner, $100 to you, $100 to platform. You can set winner % between 50% and 90% — giving you between 0% and 40% as organiser." },
   { q:"Who can create a Guild Battle?", a:"Any registered MFT user can create a Guild Battle. Simply go to the Guild Battle section, set your parameters, and share the link with your community. The battle auto-starts when all spots are filled, just like standard battles." },
@@ -193,19 +193,20 @@ export default function HomePage() {
             <span style={{ color:"rgba(255,255,255,.42)" }}>Win Real Funding.</span>
           </h1>
           <p style={{ fontSize:17, color:"rgba(255,255,255,.58)", lineHeight:1.75, maxWidth:500, marginBottom:28 }}>
-            Pay <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>$25 USDT</strong>, trade your MT5 demo for 90 minutes at <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>Exness, ICMarkets or Tickmill.</strong> Highest % gain wins a <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>real funded account.</strong>
+            Pay <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>$25–$100 USDT</strong>, connect your MT5 demo at <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>Exness, ICMarkets or Tickmill.</strong> Trade for 90 minutes — highest % gain wins a <strong style={{ color:"#FFD700", fontWeight:700 }}>real funded trading account.</strong> Or run your own <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>Guild Battle</strong> for your community.
           </p>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:32 }}>
             <span className="pill pill-gold">90 Min Battle</span>
-            <span className="pill pill-green">Winner takes 90% Funds</span>
+            <span className="pill pill-green">90% Funded · 80% Cashout</span>
             <span className="pill pill-blue">Zero Evaluation</span>
+            <span className="pill" style={{background:"rgba(139,92,246,.15)",border:"1px solid rgba(139,92,246,.35)",color:"#a78bfa"}}>⚔️ Guild Battles</span>
           </div>
           <div className="hero-actions" style={{ display:"flex", gap:14, marginBottom:36, flexWrap:"wrap" }}>
             <Link href="/tournaments" className="btn btn-primary btn-lg">Join a Battle Now</Link>
             <Link href="/how-it-works" className="btn btn-ghost btn-lg">How It Works</Link>
           </div>
           <div style={{ display:"flex", gap:28, flexWrap:"wrap" }}>
-            {["MT5 demo — zero risk","Transparent prize pool","No payout denial ever"].map(t=>(
+            {["MT5 demo — zero risk","Transparent prize pool","No payout denial ever","Run your own Guild Battle"].map(t=>(
               <div key={t} style={{ display:"flex", alignItems:"center", gap:7, fontSize:13, color:"rgba(255,255,255,.45)", fontWeight:500 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{t}
               </div>
@@ -311,7 +312,7 @@ export default function HomePage() {
           {[
             { val:"Transparent",  label:"Prize Money",                       color:"#FFD700" },
             { val:"90 Min",       label:"Trading Battle",                    color:"#22C55E" },
-            { val:"90%",          label:"Winner's Prize Share",              color:"#fff" },
+            { val:"90%",          label:"Funded Account Prize",              color:"#fff" },
             { val:"100%",         label:"Drawdown Limit on Funded Account",  color:"#60a5fa" },
           ].map(({ val, label, color })=>(
             <div key={label} style={{ padding:"26px 20px", borderRight:"1px solid rgba(255,255,255,.06)", textAlign:"center" }}>
@@ -327,7 +328,7 @@ export default function HomePage() {
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Prize Structure</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>What winners receive</h2>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:520, margin:"0 auto" }}>Winner takes all. Choose 90% as a live funded account or 75% as instant USDT cashout. Only the champion wins.</p>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:520, margin:"0 auto" }}>The champion takes all. Choose 90% as a real funded trading account with daily withdrawals, or 80% as instant USDT cashout — paid within 24 hours. No evaluation. No demo phase. Just win.</p>
         </div>
         <div className="grid-3-r" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:22, maxWidth:760, margin:"0 auto" }}>
           {PRIZES.map(p=>(
@@ -557,7 +558,7 @@ export default function HomePage() {
                 bg:"rgba(255,215,0,.05)", pool:625, sub:"25 traders × $25 USDT",
                 rows:[
                   { medal:"🥇", label:"Winner — Funded Account (90%)", val:562.5,  color:"#FFD700" },
-                  { medal:"💵", label:"Winner — Instant Cashout (75%)", val:468.75, color:"#22C55E" },
+                  { medal:"💵", label:"Winner — Instant Cashout (80%)", val:500, color:"#22C55E" },
                   { medal:"🏛️", label:"Platform Fee (10%)",             val:62.5,   color:"rgba(255,255,255,.3)" },
                 ]
               },
@@ -566,7 +567,7 @@ export default function HomePage() {
                 bg:"rgba(34,197,94,.05)", pool:1250, sub:"25 traders × $50 USDT",
                 rows:[
                   { medal:"🥇", label:"Winner — Funded Account (90%)", val:1125,   color:"#FFD700" },
-                  { medal:"💵", label:"Winner — Instant Cashout (75%)", val:937.5,  color:"#22C55E" },
+                  { medal:"💵", label:"Winner — Instant Cashout (80%)", val:1000,  color:"#22C55E" },
                   { medal:"🏛️", label:"Platform Fee (10%)",             val:125,    color:"rgba(255,255,255,.3)" },
                 ]
               },

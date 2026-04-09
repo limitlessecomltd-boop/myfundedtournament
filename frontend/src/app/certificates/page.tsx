@@ -267,7 +267,7 @@ export default function CertificatesPage() {
         <div style={{ background:"rgba(255,255,255,.02)", border:"1px solid var(--border)", borderRadius:14, padding:24, marginTop:20 }}>
           <div style={{ fontFamily:"var(--font-head)", fontSize:15, fontWeight:700, marginBottom:12 }}>About MFT Certificates</div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
-            {[["🥇 1st Place","Funded trading account worth 90% of the prize pool. Your trading career starts here.","var(--gold)"],
+            {[["🥇 1st Place","Real funded trading account worth 90% of the prize pool. Zero evaluation — trade live immediately.","var(--gold)"],
 ].map(([t,d,c])=>(
               <div key={t as string}>
                 <div style={{ fontSize:13, fontWeight:700, color:c as string, marginBottom:6 }}>{t}</div>

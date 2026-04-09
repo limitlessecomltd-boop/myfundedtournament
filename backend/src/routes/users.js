@@ -112,10 +112,10 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
     // For profit withdrawal from active account: trader gets their split
     let traderAmount, platformAmount;
     if (type === 'cashout') {
-      // account_size is the 90% of pool — 75% cashout = account_size * (75/90)
+      // account_size is the 90% of pool — 80% cashout = account_size * (80/90)
       const poolEquivalent = parseFloat(account.account_size) / 0.9;
-      traderAmount   = poolEquivalent * 0.75;
-      platformAmount = poolEquivalent * 0.15; // platform keeps difference
+      traderAmount   = poolEquivalent * 0.80;
+      platformAmount = poolEquivalent * 0.10; // platform keeps difference
     } else {
       const profit  = parseFloat(grossProfit || 0);
       const tSplit  = parseFloat(account.trader_split_pct || 90) / 100;

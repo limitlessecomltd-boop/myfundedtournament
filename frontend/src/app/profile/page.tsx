@@ -400,7 +400,7 @@ export default function ProfilePage() {
                 {won.map((t: any) => {
                   const pool = parseFloat(t.prize_pool || 0);
                   const funded = pool * 0.9;
-                  const cashout = pool * 0.75;
+                  const cashout = pool * 0.80;
                   return (
                     <div key={t.id} style={{ background: "rgba(255,215,0,.04)", border: "1px solid rgba(255,215,0,.2)", borderRadius: 12, padding: "20px 24px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
@@ -419,7 +419,7 @@ export default function ProfilePage() {
                               <div style={{ fontSize: 22, fontWeight: 900, color: "#22C55E", fontFamily: "'Space Grotesk',sans-serif" }}>${funded > 0 ? fmt(funded, 0) : "—"}</div>
                             </div>
                             <div style={{ background: "rgba(255,215,0,.06)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 10, padding: "10px 16px", textAlign: "center" }}>
-                              <div style={{ fontSize: 9, color: "rgba(255,255,255,.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 4 }}>USDT Cashout (75%)</div>
+                              <div style={{ fontSize: 9, color: "rgba(255,255,255,.35)", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 4 }}>USDT Cashout (80%)</div>
                               <div style={{ fontSize: 22, fontWeight: 900, color: "#FFD700", fontFamily: "'Space Grotesk',sans-serif" }}>${cashout > 0 ? fmt(cashout, 0) : "—"}</div>
                             </div>
                           </div>

@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <title>MyFundedTournament — Compete Demo. Win Real Funding.</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-        <meta name="description" content="90-minute MT5 demo trading battles. Winner gets a real funded account or 75% instant USDT cashout." />
+        <meta name="description" content="90-minute MT5 demo trading battles. Winner gets 90% as a real funded account or 80% instant USDT cashout. Guild Battles for communities." />
         <meta name="theme-color" content="#050810" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />

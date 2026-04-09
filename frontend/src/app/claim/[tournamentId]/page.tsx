@@ -80,7 +80,7 @@ export default function ClaimPage() {
   const tournament = data?.tournament;
   const wPct       = parseFloat(tournament?.winner_pct || 90);
   const pool       = fa?.account_size ? parseFloat(fa.account_size) / (wPct / 100) : 0;
-  const cashoutAmt = pool * 0.75;
+  const cashoutAmt = pool * 0.80;
   const fundedAmt  = parseFloat(fa?.account_size || 0);
 
   if (done) return (
@@ -117,7 +117,7 @@ export default function ClaimPage() {
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:24 }}>
           {[
             { key:"funded" as const, icon:"📈", title:"Funded Account", amount:`$${fundedAmt.toLocaleString(undefined,{maximumFractionDigits:0})}`, sub:"90% of prize pool", desc:"Real live trading account", points:["Real capital to trade","Daily profit withdrawals","Keep 90% of all profits"], color:"#FFD700", btnColor:"#FFD700", btnText:"#000" },
-            { key:"cashout" as const, icon:"💵", title:"Instant USDT", amount:`$${cashoutAmt.toFixed(2)}`, sub:"75% of prize pool", desc:"Instant USDT TRC-20", points:["Paid within 24 hours","No KYC required","Any TRC-20 wallet"], color:"#22C55E", btnColor:"#22C55E", btnText:"#fff" },
+            { key:"cashout" as const, icon:"💵", title:"Instant USDT", amount:`$${cashoutAmt.toFixed(2)}`, sub:"80% of prize pool", desc:"Instant USDT TRC-20", points:["Paid within 24 hours","No KYC required","Any TRC-20 wallet"], color:"#22C55E", btnColor:"#22C55E", btnText:"#fff" },
           ].map(opt => (
             <button key={opt.key} onClick={() => setChoice(opt.key)}
               style={{ background: choice===opt.key ? `${opt.color}10` : "rgba(13,18,29,.95)",

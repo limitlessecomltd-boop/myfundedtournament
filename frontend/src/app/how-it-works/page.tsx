@@ -82,10 +82,10 @@ const STEPS = [
     dim: "rgba(34,197,94,.08)",
     border: "rgba(34,197,94,.22)",
     tagline: "Real capital. Real withdrawals. No evaluation.",
-    desc: "The trader with the highest % gain wins! Choose your reward: take 90% of the prize pool as a real funded trading account with daily withdrawals, or take 75% as an instant USDT cashout. Only the 1st place winner is rewarded.",
+    desc: "The trader with the highest % gain wins! Choose your reward: take 90% of the prize pool as a real funded trading account with daily withdrawals, or take 80% as an instant USDT cashout. Only the 1st place winner is rewarded.",
     substeps: [
       { icon:"🥇", text:"Option A: Funded live account (90% of prize pool) — real capital, daily withdrawals" },
-      { icon:"💵", text:"Option B: Instant USDT cashout (75% of prize pool) — paid within 24 hours" },
+      { icon:"💵", text:"Option B: Instant USDT cashout (80% of prize pool) — paid within 24 hours" },
                   { icon:"🎖️", text:"Winner receives a Gold Certificate issued on-chain as proof of achievement" },
     ],
     why: "A $25 entry with 25 participants = $625 prize pool. Winner chooses: $562 funded account OR $468 instant USDT. A $50 entry with 25 participants = $1,250 pool. Winner chooses: $1,125 funded account OR $937 instant USDT.",
@@ -283,7 +283,7 @@ export default function HowItWorksPage() {
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {[
                     { label:"🥇 1st Place (Funded Account)", val:`$${first.toLocaleString()}`, color:p.color },
-{ label:"💵 Winner Cashout Option (75%)", val:`$${Math.floor(pool*0.75)}`, color:"#22C55E" },
+{ label:"💵 Winner Cashout Option (80%)", val:`$${Math.floor(pool*0.80)}`, color:"#22C55E" },
                     { label:"🏛️ Platform Fee (10%)", val:`$${platform}`, color:"rgba(255,255,255,.3)" },
                   ].map(r => (
                     <div key={r.label} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 0", borderBottom:"1px solid rgba(255,255,255,.04)" }}>
