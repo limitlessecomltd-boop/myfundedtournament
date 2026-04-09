@@ -342,7 +342,23 @@ export default function AdminTournaments() {
   const guildPast = guilds.filter(t => ["ended","cancelled"].includes(t.status));
 
   return (
-    <div style={{ padding:"32px 36px", background:"#030508", minHeight:"100vh" }}>
+    <div className="adm-content-pad" style={{ background:"#030508", minHeight:"100vh" }}>
+      <style>{`
+        .adm-content-pad{padding:clamp(14px,2.5vw,32px) clamp(14px,3vw,36px);}
+        .adm-kpi3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+        .adm-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+        .adm-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+        .adm-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .adm-header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+        @media(max-width:768px){
+          .adm-kpi3{grid-template-columns:1fr 1fr;gap:10px;}
+          .adm-2col{grid-template-columns:1fr;}
+          .adm-settings-grid{grid-template-columns:1fr;}
+          .adm-header-row{flex-direction:column;align-items:flex-start;}
+        }
+        @media(max-width:480px){.adm-kpi3{grid-template-columns:1fr;}}
+      `}</style>
+
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
         <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",

@@ -102,7 +102,14 @@ export default function ClaimPage() {
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
-      <div style={{ maxWidth:680, margin:"0 auto", padding:"48px 24px" }}>
+      <style>{`
+        .claim-wrap{max-width:680px;margin:0 auto;padding:48px 24px;}
+        .claim-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+        @media(max-width:768px){.claim-wrap{padding:28px 16px;}}
+        @media(max-width:560px){.claim-grid{grid-template-columns:1fr;}}
+        @media(max-width:480px){.claim-wrap{padding:20px 12px;}}
+      `}</style>
+      <div className="claim-wrap">
         <div style={{ textAlign:"center", marginBottom:40 }}>
           <div style={{ fontSize:64, marginBottom:12 }}>🏆</div>
           <div style={{ fontSize:12, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(255,215,0,.7)", marginBottom:10 }}>
@@ -114,7 +121,7 @@ export default function ClaimPage() {
           <p style={{ fontSize:14, color:"rgba(255,255,255,.4)" }}>{tournament?.name}</p>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:24 }}>
+        <div className="claim-grid">
           {[
             { key:"funded" as const, icon:"📈", title:"Funded Account", amount:`$${fundedAmt.toLocaleString(undefined,{maximumFractionDigits:0})}`, sub:"90% of prize pool", desc:"Real live trading account", points:["Real capital to trade","Daily profit withdrawals","Keep 90% of all profits"], color:"#FFD700", btnColor:"#FFD700", btnText:"#000" },
             { key:"cashout" as const, icon:"💵", title:"Instant USDT", amount:`$${cashoutAmt.toFixed(2)}`, sub:"80% of prize pool", desc:"Instant USDT TRC-20", points:["Paid within 24 hours","No KYC required","Any TRC-20 wallet"], color:"#22C55E", btnColor:"#22C55E", btnText:"#fff" },

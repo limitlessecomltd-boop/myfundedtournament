@@ -65,8 +65,20 @@ export default function BattleSlugPage() {
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 24px" }}>
-        <div style={{ display:"flex", gap:32, flexWrap:"wrap", alignItems:"flex-start" }}>
+      <style>{`
+        .battle-wrap{max-width:1100px;margin:0 auto;padding:36px 24px;}
+        .battle-layout{display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;}
+        .battle-stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+        .battle-leaderboard{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        @media(max-width:768px){
+          .battle-wrap{padding:20px 16px;}
+          .battle-layout{flex-direction:column;gap:20px;}
+          .battle-stats3{grid-template-columns:1fr 1fr;}
+        }
+        @media(max-width:480px){.battle-wrap{padding:16px 12px;}}
+      `}</style>
+      <div className="battle-wrap">
+        <div className="battle-layout">
 
           {/* ── LEFT: Battle Info ── */}
           <div style={{ flex:"1 1 520px" }}>
@@ -106,7 +118,7 @@ export default function BattleSlugPage() {
             </div>
 
             {/* Stats grid */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, marginBottom:20 }}>
+            <div className="battle-stats3">
               {[
                 ["Entry Fee", `$${battle.entry_fee} USDT`, "#FF6400"],
                 ["Prize Pool", `$${pool.toLocaleString()}`, "#FFD700"],

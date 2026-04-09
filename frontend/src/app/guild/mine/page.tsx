@@ -20,7 +20,12 @@ export default function MyGuildBattlesPage() {
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
-      <div style={{ maxWidth:900, margin:"0 auto", padding:"40px 24px" }}>
+      <style>{`
+        .mine-wrap{max-width:900px;margin:0 auto;padding:40px 24px;}
+        @media(max-width:768px){.mine-wrap{padding:20px 16px;}}
+        @media(max-width:480px){.mine-wrap{padding:16px 12px;}}
+      `}</style>
+      <div className="mine-wrap">
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32, flexWrap:"wrap", gap:14 }}>
           <div>
             <div style={{ fontSize:11, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase",

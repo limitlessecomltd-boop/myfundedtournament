@@ -24,7 +24,23 @@ function MigrationRunner() {
   }
 
   return (
-    <div>
+    <div style={{ background:"#030508", minHeight:"100vh" }}>
+      <style>{`
+        .adm-content-pad{padding:clamp(14px,2.5vw,32px) clamp(14px,3vw,36px);}
+        .adm-kpi3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+        .adm-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+        .adm-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+        .adm-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .adm-header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+        @media(max-width:768px){
+          .adm-kpi3{grid-template-columns:1fr 1fr;gap:10px;}
+          .adm-2col{grid-template-columns:1fr;}
+          .adm-settings-grid{grid-template-columns:1fr;}
+          .adm-header-row{flex-direction:column;align-items:flex-start;}
+        }
+        @media(max-width:480px){.adm-kpi3{grid-template-columns:1fr;}}
+      `}</style>
+
       <button onClick={runMigration} disabled={running}
         style={{ background: running ? "rgba(255,255,255,.06)" : "rgba(255,100,0,.15)",
           border:"1px solid rgba(255,100,0,.4)", borderRadius:9, padding:"10px 22px",
@@ -108,7 +124,7 @@ export default function AdminSettings() {
         </div>
       )}
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
+      <div className="adm-settings-grid">
         {/* Platform controls */}
         <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
           borderRadius:16, padding:"22px 24px" }}>

@@ -112,31 +112,36 @@ export default function HowItWorksPage() {
   return (
     <div style={{ background:"#050810", minHeight:"100vh", overflowX:"hidden" }}>
       <style>{`
-        @media(max-width:768px){
-          .step-grid{ grid-template-columns:1fr !important; }
-          .rules-grid{ grid-template-columns:1fr !important; }
-          .brokers-grid{ grid-template-columns:1fr !important; }
-          .prize-calc-grid{ grid-template-columns:1fr !important; }
-          .hiw-hero h1{ font-size:28px !important; }
-          .hiw-hero{ padding:40px 16px 32px !important; }
-          .step-content{ padding:20px 16px !important; }
-          .step-substeps{ grid-template-columns:1fr !important; }
-          .hiw-section{ padding-left:16px !important; padding-right:16px !important; }
+        .hiw-hero{text-align:center;padding:72px 40px 56px;max-width:800px;margin:0 auto;}
+        .hiw-section{max-width:900px;margin:0 auto;padding:72px 40px;}
+        .step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+        .rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+        .brokers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+        .prize-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+        .hiw-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .hiw-table-wrap table{min-width:480px;}
+        @media(max-width:900px){
+          .step-grid{grid-template-columns:1fr 1fr;}
+          .brokers-grid{grid-template-columns:1fr 1fr;}
         }
-      `}</style>
-
-      <style>{`
         @media(max-width:768px){
-          .hiw-hero h1{font-size:32px !important;}
-          .step-grid{flex-direction:column !important;}
-          .rules-grid{grid-template-columns:1fr !important;}
-          .brokers-grid{grid-template-columns:1fr !important;}
-          .page-pad{padding:48px 20px !important;}
+          .hiw-hero{padding:40px 16px 32px;}
+          .hiw-hero h1{font-size:28px !important;}
+          .hiw-section{padding:40px 16px;}
+          .step-grid{grid-template-columns:1fr;}
+          .rules-grid{grid-template-columns:1fr;}
+          .brokers-grid{grid-template-columns:1fr;}
+          .prize-calc-grid{grid-template-columns:1fr;}
+          .step-content{padding:20px 16px !important;}
+          .step-substeps{grid-template-columns:1fr !important;}
+        }
+        @media(max-width:480px){
+          .hiw-hero{padding:28px 12px 24px;}
         }
       `}</style>
 
       {/* ─── Hero ─── */}
-      <div className="hiw-hero" style={{ textAlign:"center", padding:"72px 40px 56px", maxWidth:800, margin:"0 auto" }}>
+      <div className="hiw-hero">
         <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.22)", borderRadius:100, padding:"6px 18px", fontSize:13, fontWeight:700, color:"#FFD700", marginBottom:28, letterSpacing:".04em" }}>
           ⚡ Simplest path to a funded account
         </div>

@@ -142,7 +142,7 @@ function Sidebar({ tournamentId, entry, profitPct }: any) {
     { href: "/tournaments",                       label: "Battles",     icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" },
   ];
   return (
-    <div style={{ width: 230, background: "#060810", borderRight: "1px solid rgba(255,255,255,.06)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+    <div className="trade-sidebar">
       <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(255,255,255,.05)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
           <MFTLogo size={30} />
@@ -415,12 +415,30 @@ export default function TradePage() {
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#04060d" }}>
+      <style>{`
+        .trade-sidebar{width:230px;background:#060810;border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;}
+        .trade-topbar{background:rgba(4,6,13,.97);border-bottom:1px solid rgba(255,255,255,.06);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0;}
+        .trade-topbar-right{display:flex;align-items:center;gap:8px;}
+        .trade-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;}
+        .trade-positions{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .trade-positions>div{min-width:480px;}
+        @media(max-width:900px){
+          .trade-sidebar{display:none;}
+          .trade-topbar{padding:0 16px;}
+          .trade-metrics{grid-template-columns:repeat(3,1fr);}
+        }
+        @media(max-width:600px){
+          .trade-topbar{height:48px;}
+          .trade-topbar-right .trade-hide-sm{display:none;}
+          .trade-metrics{grid-template-columns:1fr 1fr 1fr;}
+        }
+      `}</style>
       <Sidebar tournamentId={id} entry={entry} profitPct={profitPct} />
 
       <div style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
 
         {/* ── Top bar ── */}
-        <div style={{ background: "rgba(4,6,13,.97)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "0 28px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50, flexShrink: 0 }}>
+        <div className="trade-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-.3px" }}>

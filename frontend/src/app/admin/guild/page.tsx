@@ -22,7 +22,30 @@ export default function AdminGuild() {
   },0);
 
   return (
-    <div style={{ padding:"32px 36px", background:"#030508", minHeight:"100vh" }}>
+    <div className="adm-content-pad" style={{ background:"#030508", minHeight:"100vh" }}>
+      <style>{`
+        .adm-content-pad{padding:clamp(14px,2.5vw,32px) clamp(14px,3vw,36px);}
+        .adm-kpi3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+        .adm-kpi2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+        .adm-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+        .adm-finance-main{display:grid;grid-template-columns:1fr 320px;gap:24px;margin-bottom:24px;}
+        .adm-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .adm-header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+        @media(max-width:1024px){
+          .adm-kpi3{grid-template-columns:1fr 1fr;}
+          .adm-finance-main{grid-template-columns:1fr;}
+        }
+        @media(max-width:768px){
+          .adm-kpi3{grid-template-columns:1fr 1fr;gap:8px;}
+          .adm-kpi2{grid-template-columns:1fr;gap:10px;}
+          .adm-2col{grid-template-columns:1fr;gap:16px;}
+          .adm-header-row{flex-direction:column;align-items:flex-start;}
+        }
+        @media(max-width:480px){
+          .adm-kpi3{grid-template-columns:1fr;}
+        }
+      `}</style>
+
       <div style={{ marginBottom:28 }}>
         <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
           fontSize:28, fontWeight:900, color:"#fff", letterSpacing:"-1px", marginBottom:4 }}>
@@ -34,7 +57,7 @@ export default function AdminGuild() {
       </div>
 
       {/* Summary */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:28 }}>
+      <div className="adm-kpi3">
         {[
           { label:"Total Guild Battles", value:battles.length, color:"#FF6400", icon:"🔥" },
           { label:"Total Pool Collected", value:`$${totalPool.toFixed(2)}`, color:"#22C55E", icon:"💰" },

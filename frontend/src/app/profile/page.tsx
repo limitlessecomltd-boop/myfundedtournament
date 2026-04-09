@@ -133,11 +133,43 @@ export default function ProfilePage() {
 
   return (
     <div style={{ background: "#04060d", minHeight: "100vh" }}>
+      <style>{`
+        .p-hero-inner{max-width:1200px;margin:0 auto;padding:0 32px;}
+        .p-content{max-width:1200px;margin:0 auto;padding:28px 32px 60px;}
+        .p-nav{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .p-nav button{white-space:nowrap;}
+        .p-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:rgba(255,255,255,.04);border-radius:12px 12px 0 0;overflow:hidden;}
+        .p-overview-grid{display:grid;grid-template-columns:1fr 300px;gap:20px;}
+        .p-kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+        .p-kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+        .p-hero-top{display:flex;align-items:flex-end;gap:20px;margin-bottom:24px;}
+        .p-cta{display:flex;gap:8px;flex-shrink:0;}
+        @media(max-width:900px){
+          .p-strip{grid-template-columns:repeat(3,1fr);}
+          .p-overview-grid{grid-template-columns:1fr;}
+          .p-kpi4{grid-template-columns:1fr 1fr;}
+        }
+        @media(max-width:768px){
+          .p-hero-inner{padding:0 16px;}
+          .p-content{padding:16px 16px 48px;}
+          .p-nav{padding:0 12px;}
+          .p-nav button{padding:12px 10px !important;font-size:12px !important;}
+          .p-strip{grid-template-columns:repeat(3,1fr);}
+          .p-hero-top{flex-direction:column;align-items:flex-start;gap:12px;}
+          .p-cta{flex-wrap:wrap;}
+          .p-kpi4{grid-template-columns:1fr 1fr;}
+          .p-kpi5{grid-template-columns:1fr 1fr;}
+        }
+        @media(max-width:480px){
+          .p-strip{grid-template-columns:repeat(2,1fr);}
+          .p-kpi5{grid-template-columns:1fr 1fr;}
+        }
+      `}</style>
 
       {/* ── Hero banner ── */}
       <div style={{ background: "linear-gradient(135deg,rgba(255,215,0,.04) 0%,rgba(34,197,94,.03) 50%,rgba(96,165,250,.03) 100%)", borderBottom: "1px solid rgba(255,255,255,.06)", padding: "32px 0 0" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 20, marginBottom: 24 }}>
+        <div className="p-hero-inner">
+          <div className="p-hero-top">
             {/* Avatar */}
             <div style={{ width: 80, height: 80, borderRadius: 20, background: "linear-gradient(135deg,rgba(255,215,0,.2),rgba(34,197,94,.15))", border: "2px solid rgba(255,215,0,.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 900, color: "#FFD700", fontFamily: "'Space Grotesk',sans-serif", flexShrink: 0 }}>
               {initials}
@@ -157,14 +189,14 @@ export default function ProfilePage() {
               </div>
             </div>
             {/* CTA buttons */}
-            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <div className="p-cta">
               <Link href="/tournaments" className="btn btn-primary btn-sm">+ Join Battle</Link>
               <button onClick={() => setTab("settings")} className="btn btn-ghost btn-sm">Edit Profile</button>
             </div>
           </div>
 
           {/* Performance strip */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 1, background: "rgba(255,255,255,.04)", borderRadius: "12px 12px 0 0", overflow: "hidden" }}>
+          <div className="p-strip">
             {[
               { label: "Tournaments", value: tournaments.length, color: "#fff" },
               { label: "Active Now", value: active.length, color: active.length > 0 ? "#22C55E" : "rgba(255,255,255,.4)" },
@@ -184,7 +216,7 @@ export default function ProfilePage() {
 
       {/* ── Nav tabs ── */}
       <div style={{ background: "rgba(4,6,13,.97)", borderBottom: "1px solid rgba(255,255,255,.06)", position: "sticky", top: 0, zIndex: 40 }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 0 }}>
+        <div className="p-nav">
           {NAV.map(n => (
             <button key={n.id} onClick={() => setTab(n.id)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "14px 18px", background: "none", border: "none", borderBottom: `2px solid ${tab === n.id ? "#FFD700" : "transparent"}`, cursor: "pointer", color: tab === n.id ? "#FFD700" : "rgba(255,255,255,.4)", fontSize: 13, fontWeight: tab === n.id ? 700 : 500, transition: "all .15s", position: "relative", fontFamily: "var(--font-body)" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={n.icon} /></svg>
@@ -196,16 +228,16 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px 60px" }}>
+      <div className="p-content">
 
         {/* ══ OVERVIEW ══ */}
         {tab === "overview" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20 }}>
+          <div className="p-overview-grid">
             <div>
               {/* Performance summary */}
               <div style={{ background: "rgba(13,17,26,.9)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "20px 24px", marginBottom: 16 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 16 }}>Performance Summary</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+                <div className="p-kpi4">
                   <Pill label="Total Spent" value={`$${fmt(totalSpent)}`} color="#FFD700" />
                   <Pill label="Best Gain" value={`${bestPct >= 0 ? "+" : ""}${fmt(bestPct)}%`} color={col(bestPct)} />
                   <Pill label="Battles Won" value={won.length} color={won.length > 0 ? "#FFD700" : "rgba(255,255,255,.4)"} />
@@ -323,7 +355,7 @@ export default function ProfilePage() {
 
             {/* Stats row */}
             {tournaments.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, marginBottom: 20 }}>
+              <div className="p-kpi5">
                 <Pill label="Total Entered" value={tournaments.length} />
                 <Pill label="Active" value={active.length} color={active.length > 0 ? "#22C55E" : "rgba(255,255,255,.4)"} />
                 <Pill label="Won" value={won.length} color={won.length > 0 ? "#FFD700" : "rgba(255,255,255,.4)"} />

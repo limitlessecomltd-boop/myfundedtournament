@@ -31,13 +31,24 @@ export default function EarnPage() {
   return (
     <div style={{ background:"#050810", minHeight:"100vh", overflowX:"hidden" }}>
       <style>{`
+        .earn-wrap{max-width:960px;margin:0 auto;padding:72px 24px;}
+        .earn-wrap-sm{max-width:760px;margin:0 auto;}
+        @media(max-width:900px){
+          .earn-grid{grid-template-columns:1fr 1fr !important;}
+        }
         @media(max-width:768px){
-          .earn-hero{padding:48px 20px 36px !important;}
-          .earn-hero h1{font-size:30px !important;}
+          .earn-hero{padding:40px 16px 28px !important;}
+          .earn-hero h1{font-size:28px !important;}
+          .earn-wrap{padding:40px 16px;}
           .earn-grid{grid-template-columns:1fr !important;}
           .earn-steps{grid-template-columns:1fr !important;}
           .earn-calc{flex-direction:column !important;}
           .earn-faqs{grid-template-columns:1fr !important;}
+          .earn-cta-btns{flex-direction:column !important;align-items:stretch !important;}
+        }
+        @media(max-width:480px){
+          .earn-hero{padding:28px 12px 20px !important;}
+          .earn-wrap{padding:28px 12px;}
         }
       `}</style>
 

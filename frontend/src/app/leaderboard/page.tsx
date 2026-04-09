@@ -89,10 +89,23 @@ function LeaderboardContent() {
 
   return (
     <div style={{ background:"#04060d", minHeight:"100vh" }}>
+      <style>{`
+        .lb-pad{padding:0 28px;}
+        .lb-content{max-width:1100px;margin:0 auto;padding:24px 28px 60px;}
+        .lb-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px;}
+        .lb-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .lb-table-wrap table{min-width:540px;}
+        @media(max-width:768px){
+          .lb-pad{padding:0 16px;}
+          .lb-content{padding:16px 16px 40px;}
+          .lb-filters button{font-size:12px !important;padding:6px 10px !important;}
+        }
+        @media(max-width:480px){.lb-pad{padding:0 12px;}.lb-content{padding:14px 12px 40px;}}
+      `}</style>
 
       {/* ── Hero ── */}
       <div style={{ background:"linear-gradient(135deg,rgba(255,215,0,.04),rgba(34,197,94,.02))", borderBottom:"1px solid rgba(255,255,255,.06)", padding:"28px 0 0" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto", padding:"0 28px" }}>
+        <div className="lb-pad" style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20, gap:16, flexWrap:"wrap" }}>
             <div>
               <div style={{ fontSize:9, fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:8 }}>Live Rankings</div>
@@ -140,7 +153,7 @@ function LeaderboardContent() {
         </div>
       </div>
 
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"24px 28px 60px" }}>
+      <div className="lb-content">
 
         {/* ── Leader spotlight ── */}
         {!loading && leader && (

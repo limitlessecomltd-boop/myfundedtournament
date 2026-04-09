@@ -67,7 +67,18 @@ export default function GuildBattlePage() {
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
-      <div style={{ maxWidth:860, margin:"0 auto", padding:"40px 24px" }}>
+      <style>{`
+        .guild-wrap{max-width:860px;margin:0 auto;padding:40px 24px;}
+        .guild-main-grid{display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
+        .guild-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+        @media(max-width:900px){.guild-main-grid{grid-template-columns:1fr;}}
+        @media(max-width:768px){
+          .guild-wrap{padding:20px 16px;}
+          .guild-form-grid{grid-template-columns:1fr;}
+        }
+        @media(max-width:480px){.guild-wrap{padding:16px 12px;}}
+      `}</style>
+      <div className="guild-wrap">
 
         {/* Header */}
         <div style={{ marginBottom:36 }}>
@@ -118,7 +129,7 @@ export default function GuildBattlePage() {
             </div>
           </div>
         ) : (
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 340px", gap:28, alignItems:"start" }}>
+          <div className="guild-main-grid">
 
             {/* ── FORM ── */}
             <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,100,0,.2)",
@@ -134,7 +145,7 @@ export default function GuildBattlePage() {
                   maxLength={80} style={{ borderColor: form.name.length >= 3 ? "rgba(255,100,0,.4)" : undefined }}/>
               </Field>
 
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+              <div className="guild-form-grid">
                 <Field label="Entry Fee (USDT)" hint="$1 – $10,000 per trader">
                   <input className="input" type="number" min="1" max="10000" step="1"
                     value={form.entryFee} onChange={e => setForm(f=>({...f, entryFee:e.target.value}))} onKeyDown={e => e.stopPropagation()}/>

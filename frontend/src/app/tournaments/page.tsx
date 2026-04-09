@@ -75,7 +75,7 @@ function RegistrationCard({ t }: { t: Tournament & { tier_type?: string; organis
         Are you good enough to beat only {max} traders?
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:16 }}>
+      <div className="t-card-stats">
         {[
           ["Entry Fee", `$${t.entry_fee} USDT`],
           ["Max Traders", String(max)],
@@ -264,11 +264,28 @@ export default function TournamentsPage() {
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"40px 24px" }}>
+      <style>{`
+        .t-wrap{max-width:1100px;margin:0 auto;padding:40px 24px;}
+        .t-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:16px;}
+        .t-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+        .t-guild-promo{display:flex;gap:32px;align-items:center;flex-wrap:wrap;padding:32px 36px;}
+        .t-guild-features{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
+        @media(max-width:768px){
+          .t-wrap{padding:20px 16px;}
+          .t-header{margin-bottom:24px;}
+          .t-card-stats{grid-template-columns:1fr 1fr;}
+          .t-guild-promo{flex-direction:column;gap:20px;padding:20px 16px;}
+          .t-guild-features{gap:12px;}
+        }
+        @media(max-width:480px){
+          .t-wrap{padding:16px 12px;}
+          .t-card-stats{grid-template-columns:1fr 1fr;}
+        }
+      `}</style>
+      <div className="t-wrap">
 
         {/* Header */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end",
-          marginBottom:40, flexWrap:"wrap", gap:16 }}>
+        <div className="t-header">
           <div>
             <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em",
               textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:10 }}>
@@ -345,9 +362,9 @@ export default function TournamentsPage() {
             )}
 
             {/* ── RUN YOUR OWN BATTLE — Promo Section ── */}
-            <div style={{ marginBottom:48, background:"linear-gradient(135deg,rgba(255,100,0,.07) 0%,rgba(255,215,0,.04) 100%)",
-              border:"1px solid rgba(255,100,0,.25)", borderRadius:20, padding:"32px 36px",
-              display:"flex", gap:32, alignItems:"center", flexWrap:"wrap", position:"relative", overflow:"hidden" }}>
+            <div className="t-guild-promo" style={{ marginBottom:48, background:"linear-gradient(135deg,rgba(255,100,0,.07) 0%,rgba(255,215,0,.04) 100%)",
+              border:"1px solid rgba(255,100,0,.25)", borderRadius:20,
+              position:"relative", overflow:"hidden" }}>
               {/* Background glow */}
               <div style={{ position:"absolute", right:-40, top:-40, width:220, height:220,
                 background:"radial-gradient(circle,rgba(255,100,0,.15) 0%,transparent 70%)", pointerEvents:"none" }}/>

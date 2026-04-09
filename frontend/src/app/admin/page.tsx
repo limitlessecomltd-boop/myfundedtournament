@@ -126,7 +126,7 @@ export default function AdminDashboard() {
     <div style={{padding:"0",background:"#03050a",minHeight:"100vh"}}>
 
       {/* Header */}
-      <div style={{background:"rgba(3,5,10,.97)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,.06)",padding:"0 28px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50}}>
+      <div className="adm-header" style={{background:"rgba(3,5,10,.97)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(255,255,255,.06)",position:"sticky",top:0,zIndex:50}}>
         <div>
           <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"rgba(255,255,255,.28)"}}>Overview</div>
           <div style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:18,fontWeight:900,color:"#fff",letterSpacing:"-0.5px"}}>Dashboard</div>
@@ -144,10 +144,33 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div style={{padding:"20px 28px 40px"}}>
+      <style>{`
+        .adm-pad{padding:16px 20px 40px;}
+        .adm-kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+        .adm-main3{display:grid;grid-template-columns:1fr 1fr 280px;gap:14px;margin-bottom:14px;}
+        .adm-2col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+        .adm-header{padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+        @media(max-width:1200px){
+          .adm-kpi{grid-template-columns:repeat(3,1fr);}
+          .adm-main3{grid-template-columns:1fr 1fr;}
+          .adm-main3>*:last-child{grid-column:1/-1;}
+        }
+        @media(max-width:768px){
+          .adm-pad{padding:12px 14px 32px;}
+          .adm-kpi{grid-template-columns:1fr 1fr;gap:8px;}
+          .adm-main3{grid-template-columns:1fr;}
+          .adm-main3>*:last-child{grid-column:auto;}
+          .adm-2col{grid-template-columns:1fr;}
+          .adm-header{padding:0 14px;height:48px;}
+        }
+        @media(max-width:480px){
+          .adm-kpi{grid-template-columns:1fr;}
+        }
+      `}</style>
+      <div className="adm-pad">
 
         {/* KPI row */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:16}}>
+        <div className="adm-kpi">
           <KpiCard label="Total Revenue" value={`$${fmt(totalRev)}`} sub={`$${fmt(pendRev)} pending`} color="#FFD700" icon="💰" spark={fin?.daily} href="/admin/finance"/>
           <KpiCard label="Active Battles" value={active.length} sub={`${reg.length} in registration`} color="#22C55E" icon="⚔️" href="/admin/tournaments"/>
           <KpiCard label="Live Traders" value={totalLive} sub="In active battles" color="#60a5fa" icon="👤"/>
@@ -156,7 +179,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main 3-col */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 280px",gap:14,marginBottom:14}}>
+        <div className="adm-main3">
 
           {/* Revenue chart */}
           <div style={{background:"rgba(13,17,26,.9)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,overflow:"hidden"}}>
@@ -263,7 +286,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Bottom row */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}}>
+        <div className="adm-2col">
 
           {/* Battle status */}
           <div style={{background:"rgba(13,17,26,.9)",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,overflow:"hidden"}}>

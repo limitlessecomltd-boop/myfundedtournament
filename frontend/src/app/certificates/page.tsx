@@ -189,6 +189,14 @@ export default function CertificatesPage() {
 
   return (
     <div className="page" style={{ maxWidth:900 }}>
+      <style>{`
+        .cert-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:32px;}
+        .cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:24px;}
+        @media(max-width:768px){
+          .cert-filters button{font-size:12px !important;padding:6px 12px !important;}
+          .cert-grid{grid-template-columns:1fr;}
+        }
+      `}</style>
       {/* Header */}
       <div style={{ textAlign:"center", marginBottom:52 }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:16 }}>

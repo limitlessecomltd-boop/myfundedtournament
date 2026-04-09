@@ -369,13 +369,17 @@ export default function TournamentDetailPage() {
 
   return (
     <div style={{ background:"#050810", minHeight:"100vh" }}>
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 40px" }}>
+      <div style={{ maxWidth:1100, margin:"0 auto", padding:"clamp(20px,3vw,36px) clamp(16px,4vw,40px)" }}>
               <style>{`
+        .detail-wrap{padding:clamp(20px,3vw,36px) clamp(16px,4vw,40px);}
+        .detail-leaderboard{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        .detail-leaderboard>div{min-width:420px;}
         @media(max-width:768px){
           .detail-layout{ flex-direction:column !important; }
           .detail-sidebar{ width:100% !important; flex:none !important; }
           .detail-stats{ grid-template-columns:1fr 1fr !important; }
           .detail-timing{ grid-template-columns:1fr 1fr !important; }
+          .detail-header-flex{ flex-direction:column !important; gap:12px !important; }
         }
         @media(max-width:480px){
           .detail-stats{ grid-template-columns:1fr 1fr !important; }
