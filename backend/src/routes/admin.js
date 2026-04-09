@@ -205,20 +205,6 @@ router.delete("/tournaments/:id", async (req, res, next) => {
 });
 
 
-
-    if (result.skipped) {
-      return res.json({ success: false, message: 'RESEND_API_KEY not set — email skipped' });
-    }
-    if (result.error) {
-      return res.status(400).json({ success: false, error: result.error });
-    }
-
-    res.json({ success: true, message: `Test email sent to ${recipient}`, id: result.id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // POST /api/admin/run-migration — run the full DB migration
 router.post('/run-migration', async (req, res) => {
   const steps = [];
