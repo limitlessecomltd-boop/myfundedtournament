@@ -82,8 +82,9 @@ export default function AdminUsers() {
       )}
 
       {/* Table */}
+      <div className="adm-table-scroll">
       <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
-        borderRadius:14, overflow:"hidden" }}>
+        borderRadius:14, overflow:"hidden", minWidth:580 }}>
         {/* Header */}
         <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 100px",
           padding:"10px 20px", borderBottom:"1px solid rgba(255,255,255,.06)",
@@ -154,6 +155,7 @@ export default function AdminUsers() {
           </div>
         ))}
       </div>
+      </div>{/* end adm-table-scroll */}
 
       {/* Pagination */}
       {total > PER && (

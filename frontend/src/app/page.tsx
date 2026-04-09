@@ -327,7 +327,7 @@ export default function HomePage() {
       </div>
 
       {/* ═══ PRIZE STRUCTURE ═══ */}
-      <section className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px" }}>
+      <section className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Prize Structure</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>What winners receive</h2>
@@ -349,7 +349,7 @@ export default function HomePage() {
 
       {/* ═══ HOW IT WORKS ═══ */}
       <section style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.6)" }}>
-        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px" }}>
+        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:52, flexWrap:"wrap", gap:14 }}>
             <div>
               <div className="section-eyebrow">Simple as 4 steps</div>
@@ -374,7 +374,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══ THE TWO PLANS ═══ */}
-      <section className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px" }}>
+      <section className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Choose your battle</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>Two plans. 90 minutes. One winner takes it all.</h2>
@@ -641,7 +641,7 @@ export default function HomePage() {
 
       {/* ═══ RULES ═══ */}
       <section style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.5)" }}>
-        <div className="page-pad rules-2col" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"start" }}>
+        <div className="page-pad rules-2col" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"start" }}>
           <div>
             <div className="section-eyebrow">Fair play</div>
             <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:18 }}>Simple rules, auto-enforced</h2>
@@ -664,7 +664,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══ COMPARISON ═══ */}
-      <section className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px" }}>
+      <section className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Why MFT wins</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>MFT vs FTMO vs Traditional Brokers</h2>
@@ -706,7 +706,7 @@ export default function HomePage() {
 
       {/* ═══ PRIZE BREAKDOWN ═══ */}
       <section style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.5)" }}>
-        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px" }}>
+        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
           <div style={{ textAlign:"center", marginBottom:52 }}>
             <div className="section-eyebrow">Prize Breakdown</div>
             <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>How the Prize Pool Works</h2>
@@ -766,7 +766,7 @@ export default function HomePage() {
 
       {/* ═══ FAQ ═══ */}
       <section style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.5)" }}>
-        <div className="faq-pad" style={{ maxWidth:860, margin:"0 auto", padding:"80px 48px" }}>
+        <div className="faq-pad" style={{ maxWidth:860, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)" }}>
           <div style={{ textAlign:"center", marginBottom:52 }}>
             <div className="section-eyebrow">Got questions?</div>
             <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>Frequently Asked Questions</h2>
@@ -788,7 +788,7 @@ export default function HomePage() {
 
       {/* ═══ CTA ═══ */}
       <section style={{ borderTop:"1px solid rgba(255,255,255,.06)" }}>
-        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"80px 48px", textAlign:"center" }}>
+        <div className="page-pad" style={{ maxWidth:1280, margin:"0 auto", padding:"clamp(40px,6vw,80px) clamp(16px,4vw,48px)", textAlign:"center" }}>
           <div style={{ maxWidth:580, margin:"0 auto" }}>
             <div className="section-eyebrow" style={{ marginBottom:18 }}>Ready to battle?</div>
             <h2 className="cta-h" style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:38, fontWeight:800, letterSpacing:"-1.2px", color:"#fff", marginBottom:16, lineHeight:1.1 }}>

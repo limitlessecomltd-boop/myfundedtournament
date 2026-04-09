@@ -216,7 +216,7 @@ export default function HowItWorksPage() {
       </div>
 
       {/* ─── Rules ─── */}
-      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"clamp(40px,5vw,72px) clamp(16px,4vw,40px)" }}>
         <div style={{ textAlign:"center", marginBottom:48 }}>
           <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>Fair Play</div>
           <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>Battle Rules</h2>
@@ -237,7 +237,7 @@ export default function HowItWorksPage() {
 
       {/* ─── Supported Brokers ─── */}
       <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.6)" }}>
-        <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+        <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"clamp(40px,5vw,72px) clamp(16px,4vw,40px)" }}>
           <div style={{ textAlign:"center", marginBottom:48 }}>
             <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>Supported Platforms</div>
             <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>3 Supported Brokers</h2>
@@ -264,7 +264,7 @@ export default function HowItWorksPage() {
       </div>
 
       {/* ─── Prize Structure ─── */}
-      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"clamp(40px,5vw,72px) clamp(16px,4vw,40px)" }}>
         <div style={{ textAlign:"center", marginBottom:48 }}>
           <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:12 }}>Prize Breakdown</div>
           <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:32, fontWeight:800, color:"#fff", letterSpacing:"-1px", marginBottom:12 }}>How the Prize Pool Works</h2>
@@ -305,7 +305,7 @@ export default function HowItWorksPage() {
 
       {/* ─── Guild Battle Section ─── */}
       <div style={{ background:"rgba(255,100,0,.03)", borderTop:"1px solid rgba(255,100,0,.15)", borderBottom:"1px solid rgba(255,100,0,.15)" }}>
-        <div style={{ maxWidth:900, margin:"0 auto", padding:"72px 40px" }}>
+        <div style={{ maxWidth:900, margin:"0 auto", padding:"clamp(40px,5vw,72px) clamp(16px,4vw,40px)" }}>
           <div style={{ display:"flex", gap:40, alignItems:"center", flexWrap:"wrap" }}>
             <div style={{ flex:1, minWidth:280 }}>
               <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase",
@@ -376,7 +376,7 @@ export default function HowItWorksPage() {
 
       {/* ─── CTA ─── */}
       <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.6)" }}>
-        <div style={{ maxWidth:700, margin:"0 auto", padding:"72px 40px", textAlign:"center" }}>
+        <div style={{ maxWidth:700, margin:"0 auto", padding:"clamp(40px,5vw,72px) clamp(16px,4vw,40px)", textAlign:"center" }}>
           <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:18 }}>Ready?</div>
           <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:36, fontWeight:900, color:"#fff", letterSpacing:"-1.2px", marginBottom:16, lineHeight:1.1 }}>
             90 minutes to prove your skill.<br/><span style={{ color:"#FFD700" }}>Win a funded account.</span>

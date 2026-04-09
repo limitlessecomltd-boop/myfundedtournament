@@ -118,8 +118,9 @@ export default function AdminPayments() {
       </div>
 
       {/* Table */}
+      <div className="adm-table-scroll">
       <div style={{ background:"rgba(13,18,29,.95)", border:"1px solid rgba(255,255,255,.07)",
-        borderRadius:14, overflow:"hidden" }}>
+        borderRadius:14, overflow:"hidden", minWidth:600 }}>
         <div style={{ display:"grid",
           gridTemplateColumns:"2fr 1.5fr 1fr 1fr 1fr 120px",
           padding:"10px 20px", borderBottom:"1px solid rgba(255,255,255,.06)",
@@ -184,6 +185,7 @@ export default function AdminPayments() {
           </div>
         ))}
       </div>
+      </div>{/* end adm-table-scroll */}
     </div>
   );
 }

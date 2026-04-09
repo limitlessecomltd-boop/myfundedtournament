@@ -94,7 +94,7 @@ function LeaderboardContent() {
         .lb-content{max-width:1100px;margin:0 auto;padding:24px 28px 60px;}
         .lb-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px;}
         .lb-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-        .lb-table-wrap table{min-width:540px;}
+        .lb-table-wrap>div{min-width:620px;}
         @media(max-width:768px){
           .lb-pad{padding:0 16px;}
           .lb-content{padding:16px 16px 40px;}
@@ -183,7 +183,8 @@ function LeaderboardContent() {
         )}
 
         {/* ── Table ── */}
-        <div style={{ background:"rgba(13,17,26,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:12, overflow:"hidden" }}>
+        <div className="lb-table-wrap">
+        <div style={{ background:"rgba(13,17,26,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:12, overflow:"hidden", minWidth:620 }}>
           {/* Table header */}
           <div style={{ display:"grid", gridTemplateColumns:"44px 1fr 110px 100px 80px 80px 80px 80px", gap:0, padding:"10px 20px", borderBottom:"1px solid rgba(255,255,255,.05)", background:"rgba(255,255,255,.02)" }}>
             {["#","Trader","% Gain","Net Profit","Balance","Win Rate","Trades","Status"].map(h=>(
@@ -264,6 +265,7 @@ function LeaderboardContent() {
             );
           })}
         </div>
+        </div>{/* end lb-table-wrap */}
 
         {/* Footer */}
         {leaders.length > 0 && (

@@ -108,7 +108,7 @@ export default function AdminSettings() {
   );
 
   return (
-    <div style={{ padding:"32px 36px", background:"#030508", minHeight:"100vh" }}>
+    <div className="adm-content-pad" style={{ background:"#030508", minHeight:"100vh" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
         <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
           fontSize:28, fontWeight:900, color:"#fff", letterSpacing:"-1px" }}>Settings</h1>
