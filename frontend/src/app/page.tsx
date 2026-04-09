@@ -193,20 +193,19 @@ export default function HomePage() {
             <span style={{ color:"rgba(255,255,255,.42)" }}>Win Real Funding.</span>
           </h1>
           <p style={{ fontSize:17, color:"rgba(255,255,255,.58)", lineHeight:1.75, maxWidth:500, marginBottom:28 }}>
-            Pay <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>$25–$100 USDT</strong>, connect your MT5 demo at <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>Exness, ICMarkets or Tickmill.</strong> Trade for 90 minutes — highest % gain wins a <strong style={{ color:"#FFD700", fontWeight:700 }}>real funded trading account.</strong> Or run your own <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>Guild Battle</strong> for your community.
+            Join a public battle or launch your own <strong style={{ color:"#FFD700", fontWeight:700 }}>Guild Battle</strong> for your trading community. Entry fees build the prize pool — the best trader wins a <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>real funded account</strong> or <strong style={{ color:"#22C55E", fontWeight:600 }}>instant USDT cashout.</strong>
           </p>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:32 }}>
-            <span className="pill pill-gold">90 Min Battle</span>
-            <span className="pill pill-green">90% Funded · 80% Cashout</span>
-            <span className="pill pill-blue">Zero Evaluation</span>
             <span className="pill" style={{background:"rgba(139,92,246,.15)",border:"1px solid rgba(139,92,246,.35)",color:"#a78bfa"}}>⚔️ Guild Battles</span>
+            <span className="pill pill-gold">Public Battles</span>
+            <span className="pill pill-blue">90 Min · Zero Evaluation</span>
           </div>
           <div className="hero-actions" style={{ display:"flex", gap:14, marginBottom:36, flexWrap:"wrap" }}>
             <Link href="/tournaments" className="btn btn-primary btn-lg">Join a Battle Now</Link>
             <Link href="/how-it-works" className="btn btn-ghost btn-lg">How It Works</Link>
           </div>
           <div style={{ display:"flex", gap:28, flexWrap:"wrap" }}>
-            {["MT5 demo — zero risk","Transparent prize pool","No payout denial ever","Run your own Guild Battle"].map(t=>(
+            {["Set your own entry fee","Earn as organiser","No payout denial ever"].map(t=>(
               <div key={t} style={{ display:"flex", alignItems:"center", gap:7, fontSize:13, color:"rgba(255,255,255,.45)", fontWeight:500 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{t}
               </div>
