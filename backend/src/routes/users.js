@@ -1,5 +1,5 @@
 const express = require("express");
-const email = require('../services/emailService');
+const emailService = require('../services/emailService');
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -20,7 +20,7 @@ router.post("/register", async (req, res, next) => {
 
     const token = jwt.sign({ id: rows[0].id }, process.env.JWT_SECRET, { expiresIn: "30d" });
     // Send welcome email (non-blocking)
-    email.sendWelcome({ email: rows[0].email, username: rows[0].username }).catch(() => {});
+    emailService.sendWelcome({ email: rows[0].email, username: rows[0].username }).catch(() => {});
     res.status(201).json({ success: true, token, user: rows[0] });
   } catch (err) {
     if (err.code === "23505") return res.status(409).json({ error: "Email already registered" });
