@@ -586,3 +586,25 @@ router.post("/finalize-all", async (req, res, next) => {
     res.json({ success: true, message: 'Finalization run complete' });
   } catch (err) { next(err); }
 });
+
+// Recovery: create funded_account for a tournament winner if missing
+router.post("/tournaments/:id/create-prize", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rows: t } = await db.query(`SELECT * FROM tournaments WHERE id=$1 AND status='ended' AND winner_entry_id IS NOT NULL`, [id]);
+    if (!t.length) return res.status(404).json({ error: 'Tournament not ended or no winner' });
+    const tour = t[0];
+    const { rows: e } = await db.query(`SELECT e.*, u.username, u.email FROM entries e JOIN users u ON u.id=e.user_id WHERE e.id=$1`, [tour.winner_entry_id]);
+    if (!e.length) return res.status(404).json({ error: 'Winner entry not found' });
+    const winner = e[0];
+    const pool = parseFloat(tour.prize_pool || 0);
+    const wPct = parseFloat(tour.winner_pct || 90);
+    const fundedSize = pool > 0 ? pool * (wPct / 100) : 0;
+    const { rows: fa } = await db.query(`
+      INSERT INTO funded_accounts (entry_id, user_id, tournament_id, account_size, status)
+      VALUES ($1, $2, $3, $4, 'pending_kyc')
+      ON CONFLICT DO NOTHING RETURNING *
+    `, [winner.id, winner.user_id, id, fundedSize]);
+    res.json({ success: true, created: fa.length > 0, fundedSize, winner: winner.username });
+  } catch (err) { next(err); }
+});

@@ -175,14 +175,12 @@ async function finalizeDueTournaments() {
         [t.id]
       );
 
-      // Create funded account record for winner
-      if (fundedSize > 0) {
-        await db.query(`
-          INSERT INTO funded_accounts (entry_id, user_id, tournament_id, account_size, status)
-          VALUES ($1, $2, $3, $4, 'pending_kyc')
-          ON CONFLICT DO NOTHING
-        `, [winner.id, winner.user_id, t.id, fundedSize]);
-      }
+      // Create funded account record for winner (always — even if prize_pool=0)
+      await db.query(`
+        INSERT INTO funded_accounts (entry_id, user_id, tournament_id, account_size, status)
+        VALUES ($1, $2, $3, $4, 'pending_kyc')
+        ON CONFLICT DO NOTHING
+      `, [winner.id, winner.user_id, t.id, fundedSize]);
 
       // For guild battles — record organiser payout amount
       if ((t.tier_type === 'guild' || t.tier === 'guild') && t.organiser_id && oPct > 0) {
