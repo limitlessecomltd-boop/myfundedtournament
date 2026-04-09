@@ -14,7 +14,7 @@ interface Certificate {
   profitPct: number;
   profitAbs: number;
   winRate: number;
-  tradingDays: number;
+  totalTrades: number;
   prizeAmount: number;
   prizeDesc: string;
   issueDate: string;
@@ -95,7 +95,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
               <div style={{ fontFamily:"var(--font-head)", fontSize:16, fontWeight:900, color:cfg.color, letterSpacing:"-.2px", marginBottom:2 }}>{cert.winnerName}</div>
               <div style={{ fontSize:9, fontFamily:"var(--font-mono)", color:"rgba(255,255,255,.3)", marginBottom:8 }}>{cert.walletId} · {cert.tournamentName}</div>
               <div style={{ display:"flex", gap:12 }}>
-                {[["% Gain", `+${cert.profitPct}%`, "#22C55E"],[`Profit`, `$${cert.profitAbs.toLocaleString()}`, cfg.color],["Win Rate", `${cert.winRate}%`, "rgba(255,255,255,.7)"],[`Duration`, `${cert.tradingDays}d`, "rgba(255,255,255,.7)"]].map(([l,v,c])=>(
+                {[["% Gain", `${cert.profitPct >= 0 ? "+" : ""}${cert.profitPct}%`, "#22C55E"],[`Profit`, `$${cert.profitAbs.toLocaleString()}`, cfg.color],["Win Rate", `${cert.winRate}%`, "rgba(255,255,255,.7)"],["Total Trades", `${cert.totalTrades}`, "rgba(255,255,255,.7)"]].map(([l,v,c])=>(
                   <div key={l as string}>
                     <div style={{ fontFamily:"var(--font-head)", fontSize:11, fontWeight:700, color:c as string }}>{v}</div>
                     <div style={{ fontSize:7.5, textTransform:"uppercase", letterSpacing:".09em", color:"rgba(255,255,255,.3)" }}>{l}</div>
