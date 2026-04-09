@@ -220,7 +220,7 @@ namespace MftBridge {
                             if (api2 == null) { code=503; resp="{\"error\":\"account not connected\"}"; }
                             else { var op2 = api2.GetOpenedOrders(); int closed2=0; int failed2=0;
                                 if (op2 != null) { foreach (var o in op2) { try { api2.CloseOrder(o.Ticket); closed2++; } catch { failed2++; } } }
-                                resp="{"closed":"+closed2+","failed":"+failed2+","login":"+lg2+"}";
+                                resp="{\"closed\":"+closed2+",\"failed\":"+failed2+",\"login\":"+lg2+"}";
                                 Console.WriteLine("[Close-All] "+lg2+" closed="+closed2+" failed="+failed2); } }
                     } else { code = 404; resp = "{\"error\":\"not found\"}"; }
                 } catch (Exception ex) { code = 500; resp = "{\"error\":\"" + Esc(ex.Message) + "\"}"; Console.WriteLine("[ERR] " + ex.Message); }
