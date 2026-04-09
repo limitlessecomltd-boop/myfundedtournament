@@ -103,6 +103,32 @@ router.post('/verify-mt5', async (req, res) => {
     const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
     const SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
 
+    // ── Resolve server name → IP so any valid server connects automatically ──
+    let serverIp = mt5Server;
+    try {
+      const serverMap = {
+        'exness-mt5trial':  '47.91.105.29',  // matches Trial, Trial2..Trial99
+        'exness-mt5real8':  '196.191.218.8',
+        'exness-mt5real7':  '196.191.218.7',
+        'exness-mt5real6':  '196.191.218.6',
+        'exness-mt5real5':  '196.191.218.5',
+        'exness-mt5real4':  '196.191.218.4',
+        'exness-mt5real3':  '196.191.218.3',
+        'exness-mt5real2':  '196.191.218.2',
+        'exness-mt5real':   '196.191.218.1',
+        'icmarkets-mt5':    '18.141.205.68',
+        'tickmill':         '52.220.128.77',
+      };
+      const lower = mt5Server.toLowerCase();
+      const match = Object.keys(serverMap).find(k => lower.startsWith(k));
+      if (match) {
+        serverIp = serverMap[match];
+      } else {
+        const { address } = await require('dns').promises.lookup(mt5Server).catch(() => ({ address: mt5Server }));
+        serverIp = address;
+      }
+    } catch (_) { /* use server name as fallback */ }
+
     const r = await fetch(BRIDGE + '/verify-account', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -110,6 +136,7 @@ router.post('/verify-mt5', async (req, res) => {
         login:    String(mt5Login),
         password: mt5Password,
         server:   mt5Server,
+        serverIp: serverIp,
         broker,
         secret:   SECRET
       })

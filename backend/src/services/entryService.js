@@ -1,6 +1,28 @@
 const db = require("../config/db");
 const { startPayment, CURRENCIES } = require("./forumPayService");
 
+// ── Resolve broker server name → IP for bridge connections ──────────────────
+// Handles all numbered variants: Exness-MT5Trial2 through Trial99, etc.
+function resolveServerIp(serverName) {
+  if (!serverName) return serverName;
+  const lower = serverName.toLowerCase();
+  const map = {
+    'exness-mt5trial':  '47.91.105.29',
+    'exness-mt5real8':  '196.191.218.8',
+    'exness-mt5real7':  '196.191.218.7',
+    'exness-mt5real6':  '196.191.218.6',
+    'exness-mt5real5':  '196.191.218.5',
+    'exness-mt5real4':  '196.191.218.4',
+    'exness-mt5real3':  '196.191.218.3',
+    'exness-mt5real2':  '196.191.218.2',
+    'exness-mt5real':   '196.191.218.1',
+    'icmarkets-mt5':    '18.141.205.68',
+    'tickmill':         '52.220.128.77',
+  };
+  const match = Object.keys(map).find(k => lower.startsWith(k));
+  return match ? map[match] : serverName;
+}
+
 const MAX_ACTIVE_PER_TRADER  = 1;
 const MAX_TOTAL_PER_TRADER   = 2;
 
@@ -110,6 +132,10 @@ async function activateEntryMetaApi(entryId) {
   const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
   const SECRET = process.env.BRIDGE_SECRET   || 'mft_bridge_secret_2024';
 
+  // Resolve server name → IP
+  const serverName = entry.mt5_server || 'Exness-MT5Trial15';
+  const serverIp   = resolveServerIp(serverName);
+
   try {
     const r = await fetch(`${BRIDGE}/connect-account`, {
       method: 'POST',
@@ -117,7 +143,8 @@ async function activateEntryMetaApi(entryId) {
       body: JSON.stringify({
         login:    String(entry.mt5_login),
         password: entry.mt5_password,
-        server:   entry.mt5_server || 'Exness-MT5Trial15',
+        server:   serverName,
+        serverIp: serverIp,
         secret:   SECRET,
       }),
     });
