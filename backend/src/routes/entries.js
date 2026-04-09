@@ -91,60 +91,36 @@ router.get("/:id", authenticate, async (req, res, next) => {
 
 router.post('/verify-mt5', async (req, res) => {
   try {
-    const mt5_login = req.body.mt5_login || req.body.mt5Login;
-    const mt5_password = req.body.mt5_password || req.body.mt5Password;
-    const mt5_server = req.body.mt5_server || req.body.mt5Server || '';
-    if (!mt5_login || !mt5_password) return res.status(400).json({ valid: false, error: 'Login and password required', received: Object.keys(req.body) });
+    const mt5Login    = req.body.mt5Login    || req.body.mt5_login;
+    const mt5Password = req.body.mt5Password || req.body.mt5_password;
+    const mt5Server   = req.body.mt5Server   || req.body.mt5_server || '';
+    const broker      = req.body.broker || 'Exness';
+
+    if (!mt5Login || !mt5Password) {
+      return res.status(400).json({ valid: false, error: 'Login and password required' });
+    }
+
     const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
-    const SECRET = process.env.BRIDGE_SECRET || 'mft_bridge_secret_2024';
+    const SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
+
     const r = await fetch(BRIDGE + '/verify-account', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ login: String(mt5_login), password: mt5_password, server: mt5_server || '', secret: SECRET })
-    });
-    const d = await r.json();
-    return res.json(d);
-  } catch (e) {
-    console.error('[verify-mt5]', e.message);
-    return res.status(500).json({ valid: false, error: 'Bridge connection failed: ' + e.message });
-  }
-});
-
-
-router.post('/verify-mt5', authenticate, async (req, res) => {
-  try {
-    const { mt5Login, mt5Password, mt5Server } = req.body;
-    if (!mt5Login || !mt5Password || !mt5Server) {
-      return res.status(400).json({ error: 'All MT5 fields required' });
-    }
-
-    const bridgeUrl    = process.env.BRIDGE_URL;
-    const bridgeSecret = process.env.BRIDGE_SECRET;
-
-    if (!bridgeUrl || !bridgeSecret) {
-      return res.status(503).json({ error: 'Verification service unavailable' });
-    }
-
-    const r = await fetch(`${bridgeUrl}/api/verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Bridge-Secret': bridgeSecret
-      },
       body: JSON.stringify({
-        mt5_login:    mt5Login,
-        mt5_password: mt5Password,
-        mt5_server:   mt5Server
-      }),
-      timeout: 15000
+        login:    String(mt5Login),
+        password: mt5Password,
+        server:   mt5Server,
+        broker,
+        secret:   SECRET
+      })
     });
 
     const data = await r.json();
     return res.json(data);
 
   } catch (err) {
-    console.error('[Verify MT5]', err.message);
-    return res.status(500).json({ error: 'Verification failed: ' + err.message });
+    console.error('[verify-mt5]', err.message);
+    return res.status(500).json({ valid: false, error: 'Bridge connection failed: ' + err.message });
   }
 });
 
@@ -154,7 +130,12 @@ router.post('/resolve-server', (req, res) => {
   const { server } = req.body;
   if (!server) return res.status(400).json({ error: 'server required' });
   const map = {
-    'Exness-MT5Trial': '47.91.105.29',
+    'Exness-MT5Trial6': '47.91.105.29',
+    'Exness-MT5Trial5': '47.91.105.29',
+    'Exness-MT5Trial4': '47.91.105.29',
+    'Exness-MT5Trial3': '47.91.105.29',
+    'Exness-MT5Trial2': '47.91.105.29',
+    'Exness-MT5Trial':  '47.91.105.29',
     'Exness-MT5Real8': '196.191.218.8',
     'Exness-MT5Real7': '196.191.218.7',
     'Exness-MT5Real6': '196.191.218.6',
