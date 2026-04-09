@@ -412,88 +412,93 @@ export default function HomePage() {
         </div>
 
         {/* ── Guild Battle Section ── */}
-        <div style={{ marginTop:24 }}>
-          {/* Top row: Create card + Example calc */}
-          <div style={{ background:"rgba(255,100,0,.05)", border:"2px solid rgba(255,100,0,.3)",
-            borderRadius:20, padding:"28px 32px", display:"flex", gap:32, alignItems:"center",
-            flexWrap:"wrap", position:"relative", overflow:"hidden", marginBottom: guildBattles.length > 0 ? 20 : 0 }}>
-            <div style={{ position:"absolute", top:0, right:0, width:200, height:200,
-              background:"radial-gradient(circle, rgba(255,100,0,.12) 0%, transparent 70%)", pointerEvents:"none" }}/>
-            <div style={{ flex:1, minWidth:260, position:"relative", zIndex:1 }}>
+        <div style={{ marginTop:32 }}>
+
+          {/* ─ Header row ─ */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:20 }}>
+            <div>
               <div style={{ display:"inline-flex", alignItems:"center", gap:6,
-                background:"rgba(255,100,0,.12)", border:"1px solid rgba(255,100,0,.3)",
+                background:"rgba(255,100,0,.1)", border:"1px solid rgba(255,100,0,.25)",
                 borderRadius:20, padding:"3px 12px", fontSize:11, fontWeight:700,
-                color:"#FF6400", marginBottom:12 }}>
+                color:"#FF6400", letterSpacing:".06em", textTransform:"uppercase", marginBottom:8 }}>
                 ⚔️ Guild Battles
               </div>
-              <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif",
-                fontSize:24, fontWeight:900, color:"#fff", marginBottom:8, letterSpacing:"-0.5px" }}>
-                Run Your Own Battle
-              </h3>
-              <p style={{ fontSize:14, color:"rgba(255,255,255,.5)", lineHeight:1.7, marginBottom:16, maxWidth:440 }}>
-                You're the organiser. Set your own entry fee, player count and winner payout.
-                You collect <strong style={{ color:"#FF6400" }}>your share automatically</strong> when the battle ends.
-              </p>
-              <div style={{ display:"flex", gap:16, flexWrap:"wrap", marginBottom:20 }}>
-                {[
-                  { icon:"⚙️", text:"Custom entry fee & players" },
-                  { icon:"💰", text:"You earn organiser %" },
-                  { icon:"🏆", text:"You set winner payout %" },
-                  { icon:"🏛", text:"Platform takes flat 10%" },
-                ].map(f => (
-                  <div key={f.text} style={{ display:"flex", alignItems:"center", gap:7,
-                    fontSize:13, color:"rgba(255,255,255,.55)" }}>
-                    <span>{f.icon}</span>{f.text}
-                  </div>
-                ))}
+              <div style={{ fontSize:22, fontWeight:800, color:"#fff", letterSpacing:"-.4px" }}>
+                Run your own battle. Earn as organiser.
               </div>
-              <Link href="/guild" className="btn" style={{ background:"#FF6400", color:"#fff",
-                fontWeight:800, fontSize:15, padding:"12px 28px", border:"none" }}>
-                🔥 Create Guild Battle →
-              </Link>
             </div>
-            {/* Example calc */}
-            <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,100,0,.2)",
-              borderRadius:14, padding:"20px 22px", minWidth:220, position:"relative", zIndex:1 }}>
-              <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,100,0,.7)",
-                letterSpacing:".08em", textTransform:"uppercase", marginBottom:12 }}>
-                Example Payout
-              </div>
-              {[
-                { label:"50 traders × $20", value:"$1,000 pool", color:"rgba(255,255,255,.7)" },
-                { label:"🥇 Winner (80%)", value:"$800", color:"#FFD700" },
-                { label:"🏆 You (10%)", value:"$100", color:"#FF6400" },
-                { label:"🏛 Platform (10%)", value:"$100", color:"rgba(255,255,255,.35)" },
-              ].map(r => (
-                <div key={r.label} style={{ display:"flex", justifyContent:"space-between",
-                  alignItems:"center", padding:"7px 0", borderBottom:"1px solid rgba(255,255,255,.05)" }}>
-                  <span style={{ fontSize:12, color:"rgba(255,255,255,.45)" }}>{r.label}</span>
-                  <span style={{ fontSize:13, fontWeight:800, color:r.color }}>{r.value}</span>
-                </div>
-              ))}
-            </div>
+            <Link href="/guild" style={{ fontSize:13, color:"#FF6400", textDecoration:"none",
+              fontWeight:700, display:"flex", alignItems:"center", gap:4,
+              background:"rgba(255,100,0,.08)", border:"1px solid rgba(255,100,0,.2)",
+              borderRadius:20, padding:"6px 16px", whiteSpace:"nowrap" }}>
+              View All Guild Battles →
+            </Link>
           </div>
 
-          {/* Active Guild Battles — always shown, up to 3 */}
-          <div style={{ marginTop:4 }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <div style={{ width:8, height:8, borderRadius:"50%",
-                  background: guildBattles.length > 0 ? "#FF6400" : "rgba(255,255,255,.2)",
-                  boxShadow: guildBattles.length > 0 ? "0 0 8px #FF6400" : "none" }}/>
-                <span style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.6)",
-                  textTransform:"uppercase", letterSpacing:".1em" }}>
-                  Community Guild Battles
-                </span>
+          {/* ─ Main grid: Create card (left) + Battle cards / empty state (right) ─ */}
+          <div style={{ display:"grid", gridTemplateColumns:"340px 1fr", gap:16, alignItems:"start" }}>
+
+            {/* Create card */}
+            <div style={{ background:"linear-gradient(135deg, rgba(255,100,0,.1) 0%, rgba(255,60,0,.04) 100%)",
+              border:"1px solid rgba(255,100,0,.3)", borderRadius:18, padding:"24px",
+              position:"relative", overflow:"hidden" }}>
+              {/* Corner glow */}
+              <div style={{ position:"absolute", top:-40, right:-40, width:140, height:140,
+                background:"radial-gradient(circle, rgba(255,100,0,.2) 0%, transparent 70%)", pointerEvents:"none" }}/>
+              <div style={{ position:"relative", zIndex:1 }}>
+                <h3 style={{ fontSize:19, fontWeight:800, color:"#fff", marginBottom:6, letterSpacing:"-.3px" }}>
+                  Create Your Battle
+                </h3>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,.45)", lineHeight:1.65, marginBottom:18 }}>
+                  You set the rules. Entry fee, player count, winner payout.
+                  Your community competes — you earn automatically.
+                </p>
+                {/* Feature list */}
+                <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:20 }}>
+                  {[
+                    { icon:"⚙️", label:"Custom entry fee", val:"$1 – $10,000" },
+                    { icon:"👥", label:"Player count",      val:"5 – 200 traders" },
+                    { icon:"💰", label:"Your cut",          val:"Up to 40%" },
+                    { icon:"🏛", label:"Platform fee",      val:"Flat 10%" },
+                  ].map(f=>(
+                    <div key={f.label} style={{ display:"flex", justifyContent:"space-between",
+                      alignItems:"center", fontSize:13 }}>
+                      <span style={{ color:"rgba(255,255,255,.4)", display:"flex", gap:6, alignItems:"center" }}>
+                        <span>{f.icon}</span>{f.label}
+                      </span>
+                      <span style={{ color:"rgba(255,255,255,.7)", fontWeight:700 }}>{f.val}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Example payout mini calc */}
+                <div style={{ background:"rgba(0,0,0,.3)", borderRadius:12, padding:"12px 14px", marginBottom:20 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,100,0,.6)",
+                    letterSpacing:".1em", textTransform:"uppercase", marginBottom:8 }}>
+                    Example · 50 traders × $20
+                  </div>
+                  {[
+                    { l:"🥇 Winner (80%)", v:"$800", c:"#FFD700" },
+                    { l:"🏆 You (10%)",    v:"$100", c:"#FF6400" },
+                    { l:"🏛 Platform",     v:"$100", c:"rgba(255,255,255,.3)" },
+                  ].map(r=>(
+                    <div key={r.l} style={{ display:"flex", justifyContent:"space-between",
+                      fontSize:12, padding:"4px 0", borderBottom:"1px solid rgba(255,255,255,.04)" }}>
+                      <span style={{ color:"rgba(255,255,255,.4)" }}>{r.l}</span>
+                      <span style={{ fontWeight:800, color:r.c }}>{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/guild" style={{ display:"flex", alignItems:"center", justifyContent:"center",
+                  gap:8, background:"#FF6400", color:"#fff", fontWeight:800, fontSize:14,
+                  padding:"12px", borderRadius:11, textDecoration:"none", letterSpacing:".01em" }}>
+                  🔥 Create Guild Battle
+                </Link>
               </div>
-              <Link href="/guild" style={{ fontSize:13, color:"#FF6400", textDecoration:"none",
-                fontWeight:700 }}>
-                View All →
-              </Link>
             </div>
 
+            {/* Right side: live battles OR empty state */}
             {guildBattles.length > 0 ? (
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(280px,1fr))", gap:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(240px,1fr))", gap:12 }}>
                 {guildBattles.map((g:any) => {
                   const filled   = parseInt(g.active_entries)||0;
                   const max      = g.max_entries||0;
@@ -504,53 +509,78 @@ export default function HomePage() {
                   return (
                     <Link key={g.id} href={`/battle/${g.slug||g.id}`}
                       style={{ textDecoration:"none", display:"block",
-                        background:"rgba(13,18,29,.9)",
-                        border:`1px solid ${isActive ? 'rgba(255,100,0,.35)' : 'rgba(255,255,255,.08)'}`,
-                        borderRadius:14, padding:"18px 20px", cursor:"pointer" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-                        <div>
-                          <div style={{ fontSize:15, fontWeight:800, color:"#fff", marginBottom:3, letterSpacing:"-.2px" }}>{g.name}</div>
-                          <div style={{ fontSize:12, color:"rgba(255,255,255,.35)" }}>${fee.toFixed(0)} entry · {g.winner_pct||90}% to winner</div>
+                        background:"rgba(13,18,29,.95)",
+                        border:`1px solid ${isActive ? 'rgba(255,100,0,.4)' : 'rgba(255,255,255,.07)'}`,
+                        borderRadius:16, padding:"20px", cursor:"pointer",
+                        boxShadow: isActive ? '0 0 20px rgba(255,100,0,.08)' : 'none' }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:14 }}>
+                        <div style={{ fontSize:16, fontWeight:800, color:"#fff", letterSpacing:"-.3px", lineHeight:1.2 }}>
+                          {g.name}
                         </div>
-                        <div style={{ background: isActive ? 'rgba(239,68,68,.12)' : 'rgba(255,215,0,.1)',
-                          border:`1px solid ${isActive ? 'rgba(239,68,68,.3)' : 'rgba(255,215,0,.2)'}`,
-                          borderRadius:20, padding:"2px 10px", fontSize:11, fontWeight:700,
-                          color: isActive ? '#EF4444' : '#FFD700', whiteSpace:"nowrap" }}>
-                          {isActive ? '🔴 Live' : '🟡 Open'}
-                        </div>
-                      </div>
-                      <div style={{ marginBottom:8 }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-                          <span style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>Spots filled</span>
-                          <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.6)" }}>{filled} / {max}</span>
-                        </div>
-                        <div style={{ background:"rgba(255,255,255,.07)", borderRadius:99, height:5, overflow:"hidden" }}>
-                          <div style={{ width:`${pct}%`, height:"100%", background:"linear-gradient(90deg,#FF6400,#FFD700)", borderRadius:99 }}/>
+                        <div style={{ background: isActive ? 'rgba(239,68,68,.15)' : 'rgba(255,215,0,.08)',
+                          border:`1px solid ${isActive ? 'rgba(239,68,68,.4)' : 'rgba(255,215,0,.2)'}`,
+                          borderRadius:20, padding:"3px 10px", fontSize:10, fontWeight:800,
+                          color: isActive ? '#EF4444' : '#FFD700',
+                          letterSpacing:".04em", textTransform:"uppercase", whiteSpace:"nowrap" }}>
+                          {isActive ? '● Live' : '● Open'}
                         </div>
                       </div>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                        <span style={{ fontSize:12, color:"rgba(255,255,255,.4)" }}>Prize pool</span>
-                        <span style={{ fontSize:14, fontWeight:800, color:"#FF6400" }}>${pool > 0 ? pool.toFixed(0) : (fee * filled).toFixed(0)} USDT</span>
+                      <div style={{ display:"flex", gap:12, marginBottom:16 }}>
+                        <div style={{ flex:1, background:"rgba(255,255,255,.03)", borderRadius:8, padding:"8px 10px" }}>
+                          <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:3, textTransform:"uppercase", letterSpacing:".08em" }}>Entry</div>
+                          <div style={{ fontSize:15, fontWeight:800, color:"#fff" }}>${fee.toFixed(0)}</div>
+                        </div>
+                        <div style={{ flex:1, background:"rgba(255,255,255,.03)", borderRadius:8, padding:"8px 10px" }}>
+                          <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:3, textTransform:"uppercase", letterSpacing:".08em" }}>Prize</div>
+                          <div style={{ fontSize:15, fontWeight:800, color:"#FF6400" }}>
+                            ${pool > 0 ? pool.toFixed(0) : (fee*filled).toFixed(0)}
+                          </div>
+                        </div>
+                        <div style={{ flex:1, background:"rgba(255,255,255,.03)", borderRadius:8, padding:"8px 10px" }}>
+                          <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:3, textTransform:"uppercase", letterSpacing:".08em" }}>Winner</div>
+                          <div style={{ fontSize:15, fontWeight:800, color:"#FFD700" }}>{g.winner_pct||90}%</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                          <span style={{ fontSize:11, color:"rgba(255,255,255,.3)" }}>Spots filled</span>
+                          <span style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.5)" }}>{filled} / {max}</span>
+                        </div>
+                        <div style={{ background:"rgba(255,255,255,.06)", borderRadius:99, height:4 }}>
+                          <div style={{ width:`${pct}%`, height:"100%",
+                            background:"linear-gradient(90deg,#FF6400,#FFD700)", borderRadius:99,
+                            transition:"width .4s ease" }}/>
+                        </div>
                       </div>
                     </Link>
                   );
                 })}
               </div>
             ) : (
-              /* Empty state */
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
-                {[
-                  { label:"No active battles yet", sub:"Be the first to create one" },
-                  { label:"Your community awaits", sub:"Set your own rules & entry fee" },
-                  { label:"Earn as organiser", sub:"Collect your share automatically" },
-                ].map((item,i) => (
-                  <div key={i} style={{ background:"rgba(255,100,0,.03)",
-                    border:"1px dashed rgba(255,100,0,.2)", borderRadius:14,
-                    padding:"22px 20px", textAlign:"center" }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"rgba(255,255,255,.35)", marginBottom:6 }}>{item.label}</div>
-                    <div style={{ fontSize:12, color:"rgba(255,255,255,.2)" }}>{item.sub}</div>
+              /* Empty state — polished */
+              <div style={{ display:"flex", flexDirection:"column", justifyContent:"center",
+                height:"100%", minHeight:240,
+                background:"rgba(255,100,0,.02)", border:"1px dashed rgba(255,100,0,.15)",
+                borderRadius:18, padding:"32px" }}>
+                <div style={{ marginBottom:24 }}>
+                  <div style={{ fontSize:32, marginBottom:12 }}>⚔️</div>
+                  <div style={{ fontSize:17, fontWeight:700, color:"rgba(255,255,255,.5)", marginBottom:6 }}>
+                    No active Guild Battles right now
                   </div>
-                ))}
+                  <div style={{ fontSize:14, color:"rgba(255,255,255,.25)", lineHeight:1.6 }}>
+                    Be the first to create one for your trading community.<br/>
+                    Set the rules, share the link — battle starts when full.
+                  </div>
+                </div>
+                {/* Mini feature pills */}
+                <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                  {["⚙️ Custom rules","💰 Earn as organiser","🏆 You set payouts","⚡ Auto-starts when full"].map(t=>(
+                    <div key={t} style={{ background:"rgba(255,100,0,.07)", border:"1px solid rgba(255,100,0,.15)",
+                      borderRadius:20, padding:"5px 12px", fontSize:12, color:"rgba(255,255,255,.4)", fontWeight:600 }}>
+                      {t}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
