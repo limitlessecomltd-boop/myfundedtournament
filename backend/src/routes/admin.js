@@ -574,6 +574,8 @@ router.post("/test-email", async (req, res, next) => {
       result = await email.sendBattleStarting({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', tournamentId:'test', endTime: new Date(Date.now()+90*60000) });
     } else if (type === 'results') {
       result = await email.sendBattleResults({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', position:2, profitPct:8.5, winnerName:'TopTrader', winnerPct:14.2, tournamentId:'test' });
+    } else if (type === 'welcome') {
+      result = await email.sendWelcome({ email:to, username:to.split('@')[0] });
     } else {
       // Default: winner notification
       result = await email.sendWinnerNotification({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', profitPct:14.2, prizeAmount:562.50, tournamentId:'test' });

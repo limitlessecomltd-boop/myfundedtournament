@@ -276,7 +276,63 @@ async function sendOrganiserPayout({ email: to, username, tournamentName, payout
   });
 }
 
+
+// ─── 7. Welcome / Signup ─────────────────────────────────────────────────────
+async function sendWelcome({ email: to, username }) {
+  const name = username || to.split('@')[0];
+  return sendEmail({
+    to,
+    subject: `Welcome to MyFundedTournament, ${name}! 🏆`,
+    html: base(`
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:52px;line-height:1;">🏆</div>
+      </div>
+      <h2 style="font-size:24px;font-weight:800;text-align:center;margin:0 0 6px;color:#FFD700;">Welcome, ${name}!</h2>
+      <p style="text-align:center;color:rgba(255,255,255,.5);margin:0 0 24px;font-size:13px;">Your account is ready</p>
+      <p style="color:rgba(255,255,255,.7);line-height:1.7;margin:0 0 20px;">
+        You've joined the most competitive 90-minute trading battle platform. 
+        Enter a battle, trade your MT5 demo, and if you have the highest % gain — 
+        you win a <strong style="color:#FFD700;">real funded trading account</strong>. No evaluation. No demo phase. Just win.
+      </p>
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:4px 16px;margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+          <span style="color:rgba(255,255,255,.4);font-size:13px;">Battle Duration</span>
+          <span style="font-weight:700;color:#fff;font-size:14px;">90 Minutes</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+          <span style="color:rgba(255,255,255,.4);font-size:13px;">1st Prize — Funded Account</span>
+          <span style="font-weight:700;color:#FFD700;font-size:14px;">90% of prize pool</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);">
+          <span style="color:rgba(255,255,255,.4);font-size:13px;">1st Prize — Instant USDT</span>
+          <span style="font-weight:700;color:#22C55E;font-size:14px;">80% of prize pool</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+          <span style="color:rgba(255,255,255,.4);font-size:13px;">Entry Fee</span>
+          <span style="font-weight:700;color:#fff;font-size:14px;">From $25 USDT</span>
+        </div>
+      </div>
+      <div style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,215,0,.6);margin-bottom:10px;">How to get started</div>
+        <ol style="margin:0;padding-left:18px;color:rgba(255,255,255,.65);font-size:14px;line-height:2;">
+          <li>Connect your MT5 demo at Exness, ICMarkets or Tickmill</li>
+          <li>Pay the entry fee in USDT via ForumPay</li>
+          <li>Trade for 90 minutes — highest % gain wins</li>
+          <li>Choose your prize: funded account or instant USDT</li>
+        </ol>
+      </div>
+      <div style="text-align:center;">
+        ${btn('Browse Battles →', `${SITE_URL}/tournaments`)}
+      </div>
+      <p style="text-align:center;color:rgba(255,255,255,.25);font-size:12px;margin-top:20px;">
+        Want to run your own battle for your community? Check out <a href="${SITE_URL}/guild" style="color:rgba(255,215,0,.5);text-decoration:none;">Guild Battles ⚔️</a>
+      </p>
+    `),
+  });
+}
+
 module.exports = {
+  sendWelcome,
   sendPaymentConfirmed,
   sendBattleStarting,
   sendWinnerNotification,
