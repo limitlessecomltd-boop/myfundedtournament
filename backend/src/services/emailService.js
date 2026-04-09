@@ -189,12 +189,12 @@ async function sendBattleResults({ email: to, username, tournamentName, position
   const wPct = parseFloat(winnerPct || 0);
   return sendEmail({
     to,
-    subject: `📊 ${tournamentName} results — you finished #${position}`,
+    subject: position === 1 ? `🏆 You won ${tournamentName}!` : `📊 ${tournamentName} ended — you finished #${position}`,
     html: base(`
       <h2 style="margin:0 0 6px;font-size:22px;font-weight:800;color:#fff;">Battle Results</h2>
       <p style="margin:0 0 20px;color:rgba(255,255,255,.5);font-size:13px;">${tournamentName} has ended</p>
       <p style="color:rgba(255,255,255,.7);line-height:1.7;margin:0 0 20px;">
-        Hey <strong style="color:#fff;">${name}</strong> — the battle is over. Here's how you did:
+        Hey <strong style="color:#fff;">${name}</strong>, the <strong style="color:#fff;">${tournamentName}</strong> battle has ended. Here's your final result:
       </p>
       <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:4px 16px;margin-bottom:20px;">
         ${row('Your position', `#${position}`, position === 1 ? '#FFD700' : '#fff')}

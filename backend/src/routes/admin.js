@@ -573,7 +573,24 @@ router.post("/test-email", async (req, res, next) => {
     } else if (type === 'starting') {
       result = await email.sendBattleStarting({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', tournamentId:'test', endTime: new Date(Date.now()+90*60000) });
     } else if (type === 'results') {
-      result = await email.sendBattleResults({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', position:2, profitPct:8.5, winnerName:'TopTrader', winnerPct:14.2, tournamentId:'test' });
+      // Use real winner data from DB if available, otherwise fallback to demo
+      let winnerName = 'Champion', winnerPct = 14.2, tournamentName = 'Pro Bullet';
+      try {
+        const { rows } = await db.query(`
+          SELECT u.username, e.profit_pct, t.name
+          FROM tournaments t
+          JOIN entries e ON e.id = t.winner_entry_id
+          JOIN users u ON u.id = e.user_id
+          WHERE t.status = 'ended' AND t.winner_entry_id IS NOT NULL
+          ORDER BY t.end_time DESC LIMIT 1
+        `);
+        if (rows.length) { winnerName = rows[0].username; winnerPct = parseFloat(rows[0].profit_pct); tournamentName = rows[0].name; }
+      } catch(_) {}
+      result = await email.sendBattleResults({
+        email: to, username: to.split('@')[0], tournamentName,
+        position: 2, profitPct: -1.23,
+        winnerName, winnerPct, tournamentId: 'test'
+      });
     } else if (type === 'welcome') {
       result = await email.sendWelcome({ email:to, username:to.split('@')[0] });
     } else {
