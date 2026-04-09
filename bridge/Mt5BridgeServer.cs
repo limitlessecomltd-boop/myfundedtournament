@@ -182,7 +182,9 @@ namespace MftBridge {
                         if (sec != SECRET) { code = 403; resp = "{\"error\":\"Unauthorized\"}"; }
                         else { string ls = GetJV(body, "login") ?? ""; string pw = GetJV(body, "password") ?? ""; string sv = GetJV(body, "server") ?? "";
                             if (string.IsNullOrEmpty(ls) || string.IsNullOrEmpty(pw)) { code = 400; resp = "{\"error\":\"login and password required\"}"; }
-                            else { ulong lg = ulong.Parse(ls); string ip = ServerToIP(sv);
+                            else { ulong lg = ulong.Parse(ls);
+                                string sip2 = GetJV(body, "serverIp") ?? "";
+                                string ip = !string.IsNullOrEmpty(sip2) ? sip2 : ServerToIP(sv);
                                 // SAVE to accounts.json FIRST (so it persists across reboots)
                                 SaveAccountToFile(lg, pw, string.IsNullOrEmpty(sv) ? "Exness-MT5Trial15" : sv);
                                 if (GetApi(lg) != null) { resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"already connected\"}"; }
@@ -195,7 +197,12 @@ namespace MftBridge {
                             else { ulong lg = ulong.Parse(ls);
                                 MT5API api = GetApi(lg); MT5API tmp = null; bool existing = (api != null);
                                 try {
-                                    if (!existing) { string ip = ServerToIP(sv); tmp = new MT5API(lg, pw, ip, MPORT); tmp.Connect(); int w=0; while(tmp.Account==null&&w<10000){Thread.Sleep(200);w+=200;} api=tmp; }
+                                    if (!existing) {
+                                        // Use serverIp if provided (pre-resolved by Node), else resolve ourselves
+                                        string sip = GetJV(body, "serverIp") ?? "";
+                                        string ip = !string.IsNullOrEmpty(sip) ? sip : ServerToIP(sv);
+                                        tmp = new MT5API(lg, pw, ip, MPORT); tmp.Connect(); int w=0; while(tmp.Account==null&&w<10000){Thread.Sleep(200);w+=200;} api=tmp;
+                                    }
                                     if (api == null || api.Account == null) { code = 400; resp = "{\"valid\":false,\"error\":\"Cannot connect - check credentials\"}"; }
                                     else { double bal = api.Account.Balance; bool balOk = bal >= 990.0 && bal <= 1010.0;
                                         var op = api.GetOpenedOrders(); bool noT = op == null || op.Length == 0;
@@ -206,16 +213,16 @@ namespace MftBridge {
                                 finally { try { if (!existing && tmp != null) tmp.Disconnect(); } catch {} } } }
                     } else if (path == "/close-all" && mth == "POST") {
                         // Force-close all open positions for a login
-                        string ls2 = body.ContainsKey("login") ? body["login"] : qs.ContainsKey("login") ? qs["login"] : "";
-                        if (string.IsNullOrEmpty(ls2)) { code=400; resp="{"error":"login required"}"; }
+                        string ls2 = GetJV(body, "login") ?? (qs.ContainsKey("login") ? qs["login"] : "");
+                        if (string.IsNullOrEmpty(ls2)) { code=400; resp="{\"error\":\"login required\"}"; }
                         else { ulong lg2 = ulong.Parse(ls2);
                             MT5API api2 = GetApi(lg2);
-                            if (api2 == null) { code=503; resp="{"error":"account not connected"}"; }
+                            if (api2 == null) { code=503; resp="{\"error\":\"account not connected\"}"; }
                             else { var op2 = api2.GetOpenedOrders(); int closed2=0; int failed2=0;
                                 if (op2 != null) { foreach (var o in op2) { try { api2.CloseOrder(o.Ticket); closed2++; } catch { failed2++; } } }
                                 resp="{"closed":"+closed2+","failed":"+failed2+","login":"+lg2+"}";
                                 Console.WriteLine("[Close-All] "+lg2+" closed="+closed2+" failed="+failed2); } }
-                    } else { code = 404; resp = "{"error":"not found"}"; }
+                    } else { code = 404; resp = "{\"error\":\"not found\"}"; }
                 } catch (Exception ex) { code = 500; resp = "{\"error\":\"" + Esc(ex.Message) + "\"}"; Console.WriteLine("[ERR] " + ex.Message); }
                 var bb = Encoding.UTF8.GetBytes(resp);
                 var hdr = "HTTP/1.1 " + code + " OK\r\nContent-Type: application/json\r\nAccess-Control-Allow-Origin: *\r\nContent-Length: " + bb.Length + "\r\nConnection: close\r\n\r\n";

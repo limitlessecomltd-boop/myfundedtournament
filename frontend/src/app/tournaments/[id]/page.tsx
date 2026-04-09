@@ -213,7 +213,7 @@ export default function TournamentDetailPage() {
   const [selectedCurrency, setSelectedCurrency] = useState("USDT_TRC20");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", broker:"Exness" });
+  const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", mt5ServerIp:"", broker:"Exness" });
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [verifyResult, setVerifyResult] = useState<any>(null);
@@ -290,16 +290,31 @@ export default function TournamentDetailPage() {
     setError("");
     try {
       const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
-      const token = localStorage.getItem("fc_token") || "";
+      const token = localStorage.getItem("mft_token") || localStorage.getItem("fc_token") || "";
       const r = await fetch(`${API}/api/entries/verify-mt5`, {
         method: "POST",
         headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-        body: JSON.stringify({ mt5Login: form.mt5Login, mt5Password: form.mt5Password, mt5Server: form.mt5Server })
+        body: JSON.stringify({ mt5Login: form.mt5Login, mt5Password: form.mt5Password, mt5Server: form.mt5Server, broker: form.broker })
       });
       const data = await r.json();
-      setVerifyResult(data);
-      setVerified(data.valid === true || data.ok === true);
-      if (!data.valid && !data.ok && data.error) setError(data.error);
+      const isValid = data.valid === true || data.ok === true;
+
+      // Map bridge response to UI-friendly result
+      let friendlyError = data.error || "";
+      if (!isValid && friendlyError) {
+        if (friendlyError === "INVALID_ACCOUNT")
+          friendlyError = `Account not found on server "${form.mt5Server}". Make sure your MT5 account number and server name are correct. Check your broker dashboard for the exact server name.`;
+        else if (friendlyError.toLowerCase().includes("invalid password") || friendlyError.toLowerCase().includes("auth"))
+          friendlyError = "Wrong password. Use the Master password from your MT5 broker account.";
+        else if (friendlyError.toLowerCase().includes("balance"))
+          friendlyError = data.error; // already has balance info
+        else if (friendlyError.toLowerCase().includes("connect") || friendlyError.toLowerCase().includes("bridge"))
+          friendlyError = "Could not reach the MT5 server. Try clicking Resolve to check your server IP, then try again.";
+      }
+
+      setVerifyResult({ ...data, ok: isValid, friendlyError });
+      setVerified(isValid);
+      if (!isValid) setError(friendlyError);
     } catch(e: any) {
       setError("Verification failed — " + e.message);
     } finally {
@@ -609,9 +624,9 @@ export default function TournamentDetailPage() {
                     <label className="input-label">Server IP <span style={{fontSize:10,color:"rgba(255,255,255,.3)"}}>(auto-resolved)</span></label>
                     <div style={{display:"flex",gap:8}}>
                       <input className="input" type="text" placeholder="Click Resolve to auto-fill"
-                        value={form.mt5Server||""}
-                        onChange={e => setForm(f => ({...f,mt5ServerIp:e.target.value}))}
-                        style={{flex:1,color:form.mt5Server&&!form.mt5Server.includes("...")?"#4ade80":"inherit"}}
+                        value={form.mt5ServerIp||""}
+                        onChange={e => setForm(f => ({...f, mt5ServerIp: e.target.value}))}
+                        style={{flex:1,color:form.mt5ServerIp&&!form.mt5ServerIp.includes("...")&&form.mt5ServerIp!=="resolve failed"?"#4ade80":"inherit"}}
                         readOnly={false}/>
                       <button type="button"
                         style={{padding:"0 14px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,.2)",borderRadius:8,color:"#fff",cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}
@@ -654,17 +669,19 @@ export default function TournamentDetailPage() {
                         color: verifyResult.ok ? "var(--green)" : "var(--red)" }}>
                         {verifyResult.ok ? "✅ Account verified — ready to join!" : "❌ Account check failed"}
                       </div>
-                      {Object.entries(verifyResult.checks || {}).map(([key, check]: [string, any]) => (
-                        <div key={key} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:5 }}>
-                          <span style={{ fontSize:13 }}>{check.pass ? "✅" : "❌"}</span>
-                          <span style={{ fontSize:12, color: check.pass ? "rgba(255,255,255,.7)" : "var(--red)", lineHeight:1.4 }}>
-                            {check.message}
-                          </span>
+                      {verifyResult.ok ? (
+                        <div style={{fontSize:12,color:"rgba(255,255,255,.6)",lineHeight:1.5}}>
+                          <div>✅ Balance: <span style={{color:"#fff",fontWeight:600}}>${verifyResult.balance}</span> — correct</div>
+                          <div>✅ No open trades — ready to battle</div>
                         </div>
-                      ))}
+                      ) : (
+                        <div style={{fontSize:12,color:"var(--red)",lineHeight:1.6}}>
+                          {verifyResult.friendlyError || verifyResult.error || "Verification failed"}
+                        </div>
+                      )}
                       {!verifyResult.ok && (
-                        <button type="button" onClick={()=>{setVerifyResult(null);setVerified(false);}}
-                          style={{ marginTop:6, fontSize:11, color:"rgba(255,255,255,.4)", background:"none", border:"none", cursor:"pointer", padding:0 }}>
+                        <button type="button" onClick={()=>{setVerifyResult(null);setVerified(false);setError("");}}
+                          style={{ marginTop:8, fontSize:11, color:"rgba(255,255,255,.4)", background:"none", border:"none", cursor:"pointer", padding:0 }}>
                           ↺ Try again
                         </button>
                       )}
