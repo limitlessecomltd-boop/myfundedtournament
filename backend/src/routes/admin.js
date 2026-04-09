@@ -204,19 +204,7 @@ router.delete("/tournaments/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// POST /api/admin/test-email — send a test email to verify Resend is working
-router.post('/test-email', async (req, res) => {
-  try {
-    const { to } = req.body;
-    const recipient = to || req.user.email;
 
-    const result = await email.sendPaymentConfirmed({
-      email:          recipient,
-      username:       'Admin Test',
-      tournamentName: 'Test Battle',
-      entryFee:       25,
-      tournamentId:   'test-123',
-    });
 
     if (result.skipped) {
       return res.json({ success: false, message: 'RESEND_API_KEY not set — email skipped' });
@@ -587,20 +575,26 @@ router.post("/finalize-all", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Test email sending
+// Test email — sends one of each template to verify Resend config
 router.post("/test-email", async (req, res, next) => {
   try {
-    const { to } = req.body;
+    const { to, type = 'winner' } = req.body;
     if (!to) return res.status(400).json({ error: 'to email required' });
-    const emailService = require('../services/emailService');
-    // Send a sample winner notification
-    const result = await emailService.sendWinnerNotification({
-      email: to, username: to.split('@')[0],
-      tournamentName: 'Test Battle',
-      profitPct: 12.34, prizeAmount: 562.50,
-      tournamentId: 'test',
-    });
-    res.json({ success: true, result });
+
+    let result;
+    if (type === 'payment') {
+      result = await email.sendPaymentConfirmed({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', entryFee:50, tournamentId:'test' });
+    } else if (type === 'starting') {
+      result = await email.sendBattleStarting({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', tournamentId:'test', endTime: new Date(Date.now()+90*60000) });
+    } else if (type === 'results') {
+      result = await email.sendBattleResults({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', position:2, profitPct:8.5, winnerName:'TopTrader', winnerPct:14.2, tournamentId:'test' });
+    } else {
+      // Default: winner notification
+      result = await email.sendWinnerNotification({ email:to, username:to.split('@')[0], tournamentName:'Pro Bullet', profitPct:14.2, prizeAmount:562.50, tournamentId:'test' });
+    }
+
+    if (result?.skipped) return res.json({ success: false, message: 'RESEND_API_KEY not set — email skipped' });
+    res.json({ success: true, message: `Test email (${type}) sent to ${to}`, id: result?.id });
   } catch (err) { next(err); }
 });
 
