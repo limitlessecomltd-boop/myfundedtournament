@@ -1,3 +1,4 @@
+const db = require('../config/db');
 const express = require("express");
 const router = express.Router();
 const { authenticate } = require("../middleware/auth");
@@ -18,6 +19,31 @@ router.post("/", authenticate, async (req, res, next) => {
       req.user.id, tournamentId,
       mt5Login, mt5Password, mt5Server, broker, payerIp
     );
+    // Notify guild organiser when someone joins their battle
+    try {
+      if (result?.entry?.tournament_id) {
+        const { rows: tour } = await db.query(
+          `SELECT t.*, u.email AS org_email, u.username AS org_username,
+            COUNT(e.id) FILTER (WHERE e.status != 'pending_payment') AS joined_count
+           FROM tournaments t
+           LEFT JOIN users u ON u.id = t.organiser_id
+           LEFT JOIN entries e ON e.tournament_id = t.id
+           WHERE t.id = $1 AND t.tier = 'guild' AND t.organiser_id IS NOT NULL
+           GROUP BY t.id, u.email, u.username`,
+          [result.entry.tournament_id]
+        );
+        if (tour.length && tour[0].org_email) {
+          const { sendOrganiserJoinNotification } = require('../services/emailService');
+          sendOrganiserJoinNotification({
+            email: tour[0].org_email, username: tour[0].org_username,
+            tournamentName: tour[0].name,
+            joinedCount: parseInt(tour[0].joined_count),
+            maxCount: tour[0].max_entries,
+            tournamentId: tour[0].id,
+          }).catch(() => {});
+        }
+      }
+    } catch(_) {}
     res.status(201).json({ success: true, data: result });
   } catch (err) { next(err); }
 });

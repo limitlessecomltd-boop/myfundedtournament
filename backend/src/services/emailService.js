@@ -65,7 +65,7 @@ function baseTemplate(content) {
     </div>
     <!-- Footer -->
     <div style="margin-top:24px;text-align:center;font-size:12px;color:rgba(255,255,255,.25);">
-      <p>MyFundedTournament · 90-Minute Trading Battles</p>
+      <p>MyFundedTournament · 90-Minute Trading Battles · myfundedtournament.com</p>
       <p><a href="${SITE_URL}" style="color:rgba(255,215,0,.6);text-decoration:none;">${SITE_URL}</a></p>
     </div>
   </div>
@@ -150,7 +150,7 @@ async function sendWinnerNotification({ email, username, tournamentName, profitP
       <div style="background:rgba(255,215,0,.08);border:2px solid rgba(255,215,0,.3);border-radius:14px;padding:24px;text-align:center;margin:20px 0;">
         <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:8px;">YOUR PRIZE</div>
         <div style="font-size:42px;font-weight:900;color:#FFD700;">$${parseFloat(prizeAmount).toFixed(0)}</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:6px;">Choose: Funded Account (90%) or Instant USDT (75%)</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:6px;">Choose: Funded Account (90%) or Instant USDT (80%)</div>
       </div>
       <div style="text-align:center;">
         ${btn('🏆 Claim Your Prize →', `${SITE_URL}/claim/${tournamentId}`, '#FFD700', '#000')}

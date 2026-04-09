@@ -114,6 +114,22 @@ async function checkAndStartFullBattles() {
     `, [startTime.toISOString(), endTime.toISOString(), t.id]);
 
     await lockTournamentEntries(t.id);
+
+    // Send battle-starting emails to all active participants
+    try {
+      const { rows: participants } = await db.query(
+        `SELECT e.id, u.email, u.username FROM entries e JOIN users u ON u.id=e.user_id
+         WHERE e.tournament_id=$1 AND e.status='active'`, [t.id]
+      );
+      for (const p of participants) {
+        email.sendBattleStarting({
+          email:p.email, username:p.username,
+          tournamentName:t.name, tournamentId:t.id, endTime:endTime,
+        }).catch(()=>{});
+      }
+      if (participants.length) console.log(`[Email] Battle-starting sent to ${participants.length} traders`);
+    } catch(e) { console.warn('[Email] sendBattleStarting error:', e.message); }
+
     console.log(`[AutoStart] Battle full → Started: ${t.name} (${t.active_entries}/${t.max_entries})`);
 
     // Immediately create 2 replacement registration slots

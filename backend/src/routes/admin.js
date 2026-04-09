@@ -587,6 +587,23 @@ router.post("/finalize-all", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Test email sending
+router.post("/test-email", async (req, res, next) => {
+  try {
+    const { to } = req.body;
+    if (!to) return res.status(400).json({ error: 'to email required' });
+    const emailService = require('../services/emailService');
+    // Send a sample winner notification
+    const result = await emailService.sendWinnerNotification({
+      email: to, username: to.split('@')[0],
+      tournamentName: 'Test Battle',
+      profitPct: 12.34, prizeAmount: 562.50,
+      tournamentId: 'test',
+    });
+    res.json({ success: true, result });
+  } catch (err) { next(err); }
+});
+
 // Recovery: create funded_account for a tournament winner if missing
 router.post("/tournaments/:id/create-prize", async (req, res, next) => {
   try {
