@@ -6,7 +6,7 @@
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM     = process.env.EMAIL_FROM || 'MyFundedTournament <noreply@myfundedtournament.com>';
-const SITE_URL = process.env.FRONTEND_URL || 'https://myfundedtournament.vercel.app';
+const SITE_URL = process.env.FRONTEND_URL || 'https://www.myfundedtournament.com';
 
 async function sendEmail({ to, subject, html }) {
   if (!RESEND_API_KEY) {

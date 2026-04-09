@@ -32,7 +32,21 @@ const { startBridgeSyncCron } = require("./services/bridgeSyncService");
 const app = express();
 const httpServer = createServer(app);
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL || "http://localhost:3000",
+  "https://myfundedtournament.vercel.app",
+  "https://www.myfundedtournament.com",
+  "https://myfundedtournament.com",
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use("/api/tournaments",  tournamentRoutes);
