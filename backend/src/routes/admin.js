@@ -277,6 +277,34 @@ router.post('/entries/:id/connect-metaapi', async (req, res) => {
   }
 });
 
+// POST /api/admin/bridge-deploy — trigger bridge server redeploy
+router.post('/bridge-deploy', async (req, res) => {
+  try {
+    const DEPLOY_URL = 'http://38.60.196.145:9090/deploy';
+    const DEPLOY_SECRET = 'mft_deploy_secret_2024';
+    const r = await fetch(DEPLOY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: DEPLOY_SECRET })
+    });
+    const d = await r.json();
+    res.json({ success: true, bridge: d });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/admin/bridge-deploy/status — check deploy progress
+router.get('/bridge-deploy/status', async (req, res) => {
+  try {
+    const r = await fetch('http://38.60.196.145:9090/deploy/status');
+    const d = await r.json();
+    res.json(d);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
