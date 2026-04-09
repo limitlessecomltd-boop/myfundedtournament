@@ -110,6 +110,9 @@ export default function HomePage() {
           // Total unique traders across all open battles
           const total = open.reduce((s:number,t:any) => s + parseInt(String(t.unique_traders||0)), 0);
           setTraderCount(total);
+          // Guild battles for homepage — max 3
+          const gOpen = open.filter((t:any) => t.tier === 'guild' || t.tier_type === 'guild').slice(0,3);
+          setGuildBattles(gOpen);
         })
         .catch(() => {});
     };
