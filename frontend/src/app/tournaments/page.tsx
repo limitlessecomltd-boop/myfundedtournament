@@ -268,7 +268,7 @@ export default function TournamentsPage() {
         .t-wrap{max-width:1100px;margin:0 auto;padding:40px 24px;}
         .t-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:16px;}
         .t-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
-        .t-guild-promo{display:flex;gap:32px;align-items:center;flex-wrap:wrap;padding:32px 36px;}
+        .t-guild-promo{display:flex;gap:32px;align-items:center;flex-wrap:wrap;padding:32px 36px;justify-content:center;}
         .t-guild-features{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;}
         @media(max-width:768px){
           .t-wrap{padding:20px 16px;}
@@ -370,7 +370,7 @@ export default function TournamentsPage() {
                 background:"radial-gradient(circle,rgba(255,100,0,.15) 0%,transparent 70%)", pointerEvents:"none" }}/>
 
               {/* Left — text */}
-              <div style={{ flex:1, minWidth:240, position:"relative", zIndex:1 }}>
+              <div style={{ flex:1, minWidth:240, maxWidth:520, position:"relative", zIndex:1 }}>
                 <div style={{ display:"inline-flex", alignItems:"center", gap:6,
                   background:"rgba(255,100,0,.12)", border:"1px solid rgba(255,100,0,.3)",
                   borderRadius:20, padding:"3px 12px", fontSize:11, fontWeight:700,
