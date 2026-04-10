@@ -402,7 +402,7 @@ export default function TournamentsPage() {
               </div>
 
               {/* Right — example + CTA */}
-              <div style={{ display:"flex", flexDirection:"column", gap:12, alignItems:"flex-end",
+              <div style={{ display:"flex", flexDirection:"column", gap:12, alignItems:"center",
                 flexShrink:0, position:"relative", zIndex:1 }}>
                 {/* Quick example */}
                 <div style={{ background:"rgba(13,18,29,.9)", border:"1px solid rgba(255,100,0,.2)",
