@@ -170,47 +170,46 @@ export default function HowItWorksPage() {
       {/* ─── Timeline Steps ─── */}
       <div className="page-pad hiw-steps" style={{ maxWidth:900, margin:"0 auto", paddingTop:0, paddingBottom:80 }}>
         {STEPS.map((step, i) => (
-          <div key={step.n} style={{ position:"relative", marginBottom:i < STEPS.length-1 ? 0 : 0 }}>
-            {/* Connector line */}
+          <div key={step.n} style={{ marginBottom:24, position:"relative" }}>
+            {/* Connector line between cards */}
             {i < STEPS.length - 1 && (
-              <div className="step-connector" style={{ position:"absolute", left:31, top:72, bottom:-32, width:2, background:"linear-gradient(180deg,rgba(255,215,0,.3),rgba(255,255,255,.04))", zIndex:0 }}/>
+              <div style={{ position:"absolute", left:"50%", bottom:-24, width:2, height:24,
+                background:"linear-gradient(180deg,rgba(255,215,0,.25),transparent)", transform:"translateX(-50%)", zIndex:0 }}/>
             )}
-
-            <div className="step-row" style={{ display:"flex", gap:24, marginBottom:32, position:"relative", zIndex:1 }}>
-              {/* Step number circle */}
-              <div className="step-circle" style={{ flexShrink:0, width:64, height:64, borderRadius:"50%", background:step.dim, border:`2px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>
-                {step.emoji}
+            {/* Full-width card — icon lives inside */}
+            <div className="step-content" style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${step.border}`, borderRadius:18, padding:"24px 32px", position:"relative", zIndex:1 }}>
+              {/* Header: emoji circle + step label + tagline */}
+              <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:14, flexWrap:"wrap" }}>
+                <div style={{ width:48, height:48, borderRadius:"50%", background:step.dim, border:`2px solid ${step.border}`,
+                  display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>
+                  {step.emoji}
+                </div>
+                <div>
+                  <div style={{ fontSize:10, fontWeight:800, letterSpacing:".16em", color:step.color, textTransform:"uppercase", marginBottom:2 }}>STEP {step.n}</div>
+                  <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", fontStyle:"italic" }}>{step.tagline}</div>
+                </div>
               </div>
-
-              {/* Content */}
-              <div className="step-content" style={{ flex:1, background:"rgba(13,18,29,.95)", border:`1px solid ${step.border}`, borderRadius:18, padding:"28px 32px" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8, flexWrap:"wrap" }}>
-                  <span style={{ fontSize:11, fontWeight:800, letterSpacing:".14em", color:step.color, textTransform:"uppercase" }}>STEP {step.n}</span>
-                  <span style={{ fontSize:12, color:"rgba(255,255,255,.35)", fontStyle:"italic" }}>{step.tagline}</span>
-                </div>
-                <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:22, fontWeight:800, color:"#fff", marginBottom:12, letterSpacing:"-.5px" }}>{step.title}</h3>
-                <p style={{ fontSize:14.5, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:22 }}>{step.desc}</p>
-
-                {/* Sub-steps */}
-                <div className="step-substeps" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:22 }}>
-                  {step.substeps.map((sub, j) => (
-                    <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, padding:"10px 14px" }}>
-                      <span style={{ fontSize:18, flexShrink:0 }}>{sub.icon}</span>
-                      <span style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.5 }}>{sub.text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Why box */}
-                <div style={{ display:"flex", gap:12, background:step.dim, border:`1px solid ${step.border}`, borderRadius:12, padding:"14px 18px" }}>
-                  <span style={{ fontSize:20, flexShrink:0 }}>{step.whyIcon}</span>
-                  <p style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.65, margin:0 }}>{step.why}</p>
-                </div>
+              <h3 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:22, fontWeight:800, color:"#fff", marginBottom:10, letterSpacing:"-.5px" }}>{step.title}</h3>
+              <p style={{ fontSize:14.5, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:20 }}>{step.desc}</p>
+              {/* Sub-steps */}
+              <div className="step-substeps" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
+                {step.substeps.map((sub, j) => (
+                  <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, padding:"10px 14px" }}>
+                    <span style={{ fontSize:18, flexShrink:0 }}>{sub.icon}</span>
+                    <span style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.5 }}>{sub.text}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Why box */}
+              <div style={{ display:"flex", gap:12, background:step.dim, border:`1px solid ${step.border}`, borderRadius:12, padding:"14px 18px" }}>
+                <span style={{ fontSize:20, flexShrink:0 }}>{step.whyIcon}</span>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,.55)", lineHeight:1.65, margin:0 }}>{step.why}</p>
               </div>
             </div>
           </div>
         ))}
       </div>
+
 
       {/* ─── The 3-Minute Rule Callout ─── */}
       <div style={{ background:"rgba(239,68,68,.06)", borderTop:"1px solid rgba(239,68,68,.2)", borderBottom:"1px solid rgba(239,68,68,.2)" }}>
