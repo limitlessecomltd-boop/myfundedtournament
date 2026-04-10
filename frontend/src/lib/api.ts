@@ -71,7 +71,7 @@ export const userApi = {
 
 export const guildApi = {
   getAll:      () => api.get("/api/guild").then(r => r.data.data),
-  getMine:     () => api.get("/api/guild/mine").then(r => r.data.data),
+  getMine:     () => api.get("/api/guild/mine").then(r => r.data),   // returns {data, summary}
   getById:     (id: string) => api.get(`/api/guild/${id}`).then(r => r.data.data),
   getBySlug:   (slug: string) => api.get(`/api/guild/slug/${slug}`).then(r => r.data.data),
   create:      (data: any) => api.post("/api/guild", data).then(r => r.data.data),
@@ -91,7 +91,7 @@ export const adminApi = {
   getPayments:  (status?: string) => api.get(`/api/admin/payments${status?`?status=${status}`:''}`).then(r => r.data.data),
   confirmPayment:(id: string) => api.patch(`/api/admin/payments/${id}/confirm`).then(r => r.data),
   // guild
-  getGuildBattles: () => api.get("/api/admin/guild").then(r => r.data.data),
+  getGuildBattles: () => api.get("/api/admin/guild").then(r => r.data),   // returns {data, summary}
   // tournament controls
   forceStart:   (id: string) => api.post(`/api/admin/tournaments/${id}/force-start`).then(r => r.data),
   forceEnd:     (id: string) => api.post(`/api/admin/tournaments/${id}/force-end`).then(r => r.data),

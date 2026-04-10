@@ -528,7 +528,9 @@ router.get("/guild", async (req, res, next) => {
         u.email AS organiser_email,
         COUNT(DISTINCT e.id) FILTER (WHERE e.status != 'pending_payment') AS active_entries,
         COUNT(DISTINCT e.user_id) AS unique_traders,
-        COALESCE(SUM(p.amount_usd) FILTER (WHERE p.status='confirmed'), 0) AS pool_collected
+        COALESCE(SUM(p.amount_usd) FILTER (WHERE p.status='confirmed'), 0) AS pool_collected,
+        ROUND(COALESCE(t.prize_pool, 0) * COALESCE(t.organiser_pct, 0) / 100, 2) AS commission_earned,
+        CASE WHEN t.status = 'ended' THEN true ELSE false END AS commission_paid_out
       FROM tournaments t
       LEFT JOIN users u ON u.id = t.organiser_id
       LEFT JOIN entries e ON e.tournament_id = t.id
@@ -537,7 +539,25 @@ router.get("/guild", async (req, res, next) => {
       GROUP BY t.id, u.username, u.email
       ORDER BY t.created_at DESC
     `).catch(() => ({ rows: [] }));
-    res.json({ success: true, data: rows });
+
+    // Aggregate commission summary across all guild battles
+    const { rows: summary } = await db.query(`
+      SELECT
+        COUNT(*) AS total_battles,
+        COUNT(*) FILTER (WHERE status = 'ended') AS completed_battles,
+        COALESCE(SUM(CASE WHEN status='ended'
+          THEN ROUND(COALESCE(prize_pool,0) * COALESCE(organiser_pct,0) / 100, 2)
+          ELSE 0 END), 0) AS total_commissions_paid,
+        COALESCE(SUM(CASE WHEN status IN ('registration','active')
+          THEN ROUND(COALESCE(prize_pool,0) * COALESCE(organiser_pct,0) / 100, 2)
+          ELSE 0 END), 0) AS commissions_pending,
+        COALESCE(SUM(COALESCE(prize_pool,0)), 0) AS total_prize_volume,
+        COUNT(DISTINCT organiser_id) AS unique_organisers
+      FROM tournaments
+      WHERE tier_type = 'guild' OR tier = 'guild'
+    `).catch(() => ({ rows: [{}] }));
+
+    res.json({ success: true, data: rows, summary: summary[0] || {} });
   } catch (err) { next(err); }
 });
 

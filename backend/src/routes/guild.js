@@ -1,7 +1,7 @@
 const express = require("express");
 const router  = express.Router();
 const { authenticate } = require("../middleware/auth");
-const { createGuildBattle, getMyGuildBattles } = require("../services/tournamentService");
+const { createGuildBattle, getMyGuildBattles, getOrganiserCommissionSummary } = require("../services/tournamentService");
 const db = require("../config/db");
 
 // Generate URL-safe slug from name
@@ -47,7 +47,8 @@ router.post("/", authenticate, async (req, res, next) => {
 router.get("/mine", authenticate, async (req, res, next) => {
   try {
     const battles = await getMyGuildBattles(req.user.id);
-    res.json({ success: true, data: battles });
+    const summary = await getOrganiserCommissionSummary(req.user.id);
+    res.json({ success: true, data: battles, summary });
   } catch (err) { next(err); }
 });
 

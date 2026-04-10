@@ -392,7 +392,7 @@ async function finalizeOneTournament(tournamentId) {
 module.exports = {
   getAllTournaments, getTournamentById,
   createTournament, startTournamentCron,
-  createGuildBattle, getMyGuildBattles,
+  createGuildBattle, getMyGuildBattles, getOrganiserCommissionSummary,
   finalizeDueTournaments,
   finalizeOneTournament,
 };
@@ -432,7 +432,15 @@ async function getMyGuildBattles(organiserId) {
   const { rows } = await db.query(`
     SELECT t.*,
       COUNT(DISTINCT e.id) FILTER (WHERE e.status != 'pending_payment') AS active_entries,
-      COUNT(DISTINCT e.user_id) AS unique_traders
+      COUNT(DISTINCT e.user_id) AS unique_traders,
+      COALESCE(t.prize_pool, 0) AS prize_pool,
+      ROUND(COALESCE(t.prize_pool, 0) * COALESCE(t.organiser_pct, 0) / 100, 2) AS commission_earned,
+      CASE WHEN t.status = 'ended' THEN
+        ROUND(COALESCE(t.prize_pool, 0) * COALESCE(t.organiser_pct, 0) / 100, 2)
+      ELSE 0 END AS commission_paid,
+      CASE WHEN t.status != 'ended' THEN
+        ROUND(COALESCE(t.prize_pool, 0) * COALESCE(t.organiser_pct, 0) / 100, 2)
+      ELSE 0 END AS commission_pending
     FROM tournaments t
     LEFT JOIN entries e ON e.tournament_id = t.id
     WHERE t.organiser_id = $1
@@ -441,3 +449,24 @@ async function getMyGuildBattles(organiserId) {
   `, [organiserId]);
   return rows;
 }
+
+// Get commission summary for a guild organiser
+async function getOrganiserCommissionSummary(organiserId) {
+  const { rows } = await db.query(`
+    SELECT
+      COUNT(*) FILTER (WHERE tier_type='guild' OR tier='guild') AS total_battles,
+      COUNT(*) FILTER (WHERE (tier_type='guild' OR tier='guild') AND status='ended') AS completed_battles,
+      COUNT(*) FILTER (WHERE (tier_type='guild' OR tier='guild') AND status IN ('registration','active')) AS active_battles,
+      COALESCE(SUM(CASE WHEN status='ended'
+        THEN ROUND(COALESCE(prize_pool,0) * COALESCE(organiser_pct,0) / 100, 2)
+        ELSE 0 END), 0) AS total_earned,
+      COALESCE(SUM(CASE WHEN status IN ('registration','active')
+        THEN ROUND(COALESCE(prize_pool,0) * COALESCE(organiser_pct,0) / 100, 2)
+        ELSE 0 END), 0) AS pending_earnings,
+      COALESCE(SUM(COALESCE(prize_pool,0)), 0) AS total_prize_volume
+    FROM tournaments
+    WHERE organiser_id = $1
+  `, [organiserId]);
+  return rows[0];
+}
+
