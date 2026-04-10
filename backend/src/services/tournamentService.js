@@ -137,7 +137,54 @@ async function checkAndStartFullBattles() {
   }
 }
 
-// ─── Finalize ended battles ───────────────────────────────────────────────────
+// ─── Hard-close all open positions at 87 min (3 min before battle end) ────────
+// Runs server-side so positions are closed even if trader closed their browser.
+// Only fires once per entry (tracked via hard_closed_at column).
+async function hardClosePositionsAt87Min() {
+  const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+  const SECRET = process.env.BRIDGE_SECRET   || 'mft_bridge_secret_2024';
+
+  // Find active tournaments in their final 3 minutes (between 87–90 min mark)
+  const { rows: tournaments } = await db.query(`
+    SELECT id, name, end_time FROM tournaments
+    WHERE status = 'active'
+      AND end_time > NOW()
+      AND end_time <= NOW() + INTERVAL '3 minutes'
+  `);
+
+  for (const t of tournaments) {
+    // Get all active entries that haven't been hard-closed yet
+    const { rows: entries } = await db.query(`
+      SELECT id, mt5_login FROM entries
+      WHERE tournament_id = $1
+        AND status = 'active'
+        AND mt5_login IS NOT NULL
+        AND (hard_closed_at IS NULL)
+    `, [t.id]);
+
+    if (!entries.length) continue;
+    console.log(`[HardClose] ${t.name} — closing ${entries.length} entries at 87 min`);
+
+    for (const entry of entries) {
+      try {
+        const r = await fetch(`${BRIDGE}/close-all`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login: String(entry.mt5_login), secret: SECRET }),
+          signal: AbortSignal.timeout(8000)
+        });
+        const result = await r.json();
+        console.log(`[HardClose] Entry ${entry.id} login ${entry.mt5_login}: closed=${result.closed} failed=${result.failed}`);
+        // Mark as hard-closed so we don't try again
+        await db.query(`UPDATE entries SET hard_closed_at = NOW() WHERE id = $1`, [entry.id]);
+      } catch (e) {
+        console.error(`[HardClose] Failed for entry ${entry.id}:`, e.message);
+      }
+    }
+  }
+}
+
+
 async function finalizeDueTournaments() {
   const { rows } = await db.query(`
     SELECT * FROM tournaments
@@ -273,6 +320,7 @@ function startTournamentCron() {
   cron.schedule("*/30 * * * * *", async () => {
     try {
       await checkAndStartFullBattles();
+      await hardClosePositionsAt87Min();   // force-close all open positions at 87 min
       await finalizeDueTournaments();
       await ensureRegistrationSlots();
     } catch (err) {

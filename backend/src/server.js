@@ -12,6 +12,11 @@ db.query(`
 `).then(() => console.log('[DB] ForumPay columns ready'))
   .catch(e => console.warn('[DB] Migration note:', e.message));
 
+// Add hard_closed_at column for server-side 87-min position close tracking
+db.query(`ALTER TABLE entries ADD COLUMN IF NOT EXISTS hard_closed_at TIMESTAMPTZ`)
+  .then(() => console.log('[DB] hard_closed_at column ready'))
+  .catch(e => console.warn('[DB] hard_closed_at migration:', e.message));
+
 // Add missing enum values
 db.query(`ALTER TYPE entry_status ADD VALUE IF NOT EXISTS 'cancelled'`)
   .then(() => console.log('[DB] entry_status cancelled value ready'))
