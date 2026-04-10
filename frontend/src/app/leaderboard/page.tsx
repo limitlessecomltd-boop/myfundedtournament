@@ -133,33 +133,36 @@ function LeaderboardContent() {
             </div>
           </div>
 
-          {/* Stats strip */}
+          {/* Stats strip — horizontally scrollable on mobile */}
           {tournament && (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:1, background:"rgba(255,255,255,.04)", borderRadius:"10px 10px 0 0", overflow:"hidden" }}>
-              {[
-                { l:"Prize Pool",  v:`$${fmt(totalPrize,0)}`,                                   c:"#FFD700" },
-                { l:"1st Prize",   v:`$${fmt(winner90,0)}`,                                     c:"#22C55E" },
-                { l:"Entry Fee",   v:`$${fmt(parseFloat(tournament.entry_fee||0),0)}`,           c:"rgba(255,255,255,.7)" },
-                { l:"Traders",     v:`${active_entries}/${max_entries}`,                        c:tournament.status==="active"?"#22C55E":"rgba(255,255,255,.5)" },
-              ].map((s,i)=>(
-                <div key={i} style={{ background:"rgba(13,17,26,.9)", padding:"14px 16px", minWidth:0, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:6 }}>{s.l}</div>
-                  <div style={{ fontSize:17, fontWeight:900, color:s.c, fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px", lineHeight:1 }}>{s.v}</div>
-                </div>
-              ))}
-              {/* Status cell — pill badge */}
-              <div style={{ background:"rgba(13,17,26,.9)", padding:"14px 16px", minWidth:0, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:6 }}>Status</div>
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <span style={{
-                    fontSize:11, fontWeight:800, letterSpacing:".08em", textTransform:"uppercase",
-                    color: STATUS_COLORS[tournament.status] || "#fff",
-                    background: `${STATUS_COLORS[tournament.status] || "#fff"}18`,
-                    border: `1px solid ${STATUS_COLORS[tournament.status] || "#fff"}40`,
-                    borderRadius:6, padding:"4px 10px", whiteSpace:"nowrap"
-                  }}>
-                    {tournament.status}
-                  </span>
+            <div style={{ overflowX:"auto", borderRadius:"10px 10px 0 0", WebkitOverflowScrolling:"touch" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(5,minmax(130px,1fr))", gap:1, background:"rgba(255,255,255,.04)", minWidth:500 }}>
+                {[
+                  { l:"Prize Pool",  v:`$${fmt(totalPrize,0)}`,                                 c:"#FFD700" },
+                  { l:"1st Prize",   v:`$${fmt(winner90,0)}`,                                   c:"#22C55E" },
+                  { l:"Entry Fee",   v:`$${fmt(parseFloat(tournament.entry_fee||0),0)}`,         c:"rgba(255,255,255,.7)" },
+                  { l:"Traders",     v:`${active_entries}/${max_entries}`,                      c:tournament.status==="active"?"#22C55E":"rgba(255,255,255,.5)" },
+                ].map((s,i)=>(
+                  <div key={i} style={{ background:"rgba(13,17,26,.9)", padding:"14px 16px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                    <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:6 }}>{s.l}</div>
+                    <div style={{ fontSize:17, fontWeight:900, color:s.c, fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px", lineHeight:1 }}>{s.v}</div>
+                  </div>
+                ))}
+                {/* Status cell — pill badge */}
+                <div style={{ background:"rgba(13,17,26,.9)", padding:"14px 16px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:6 }}>Status</div>
+                  <div style={{ display:"flex", alignItems:"center" }}>
+                    <span style={{
+                      fontSize:11, fontWeight:800, letterSpacing:".08em", textTransform:"uppercase",
+                      color: STATUS_COLORS[tournament.status] || "#fff",
+                      background: `${STATUS_COLORS[tournament.status] || "#fff"}18`,
+                      border: `1px solid ${STATUS_COLORS[tournament.status] || "#fff"}40`,
+                      borderRadius:6, padding:"4px 10px", whiteSpace:"nowrap",
+                      display:"inline-block"
+                    }}>
+                      {tournament.status}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
