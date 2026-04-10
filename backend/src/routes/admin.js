@@ -277,7 +277,38 @@ router.post('/entries/:id/connect-metaapi', async (req, res) => {
   }
 });
 
-// POST /api/admin/bridge-deploy — trigger bridge server redeploy
+// POST /api/admin/resend-entry-email — resend payment confirmed email for a specific entry
+router.post('/resend-entry-email', async (req, res, next) => {
+  try {
+    const { entryId } = req.body;
+    if (!entryId) return res.status(400).json({ error: 'entryId required' });
+
+    const { rows } = await db.query(`
+      SELECT u.email, u.username, t.name AS tournament_name, t.entry_fee, t.id AS tournament_id, e.status
+      FROM entries e
+      JOIN users u ON u.id = e.user_id
+      JOIN tournaments t ON t.id = e.tournament_id
+      WHERE e.id = $1
+    `, [entryId]);
+
+    if (!rows.length) return res.status(404).json({ error: 'Entry not found' });
+    const info = rows[0];
+
+    const { sendPaymentConfirmed } = require('../services/emailService');
+    const result = await sendPaymentConfirmed({
+      email: info.email,
+      username: info.username,
+      tournamentName: info.tournament_name,
+      entryFee: parseFloat(info.entry_fee),
+      tournamentId: info.tournament_id
+    });
+
+    if (result?.skipped) return res.json({ success: false, message: 'RESEND_API_KEY not set' });
+    res.json({ success: true, message: `Payment confirmed email resent to ${info.email}`, id: result?.id });
+  } catch (err) { next(err); }
+});
+
+
 router.post('/bridge-deploy', async (req, res) => {
   try {
     const DEPLOY_URL = 'http://38.60.196.145:9090/deploy';
