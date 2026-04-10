@@ -154,11 +154,13 @@ export default function HomePage() {
           .sec-title{ font-size:24px !important; }
           .section-title{ font-size:22px !important; }
           .cta-h{ font-size:28px !important; }
+          .guild-grid{ grid-template-columns:1fr !important; }
         }
         @media(max-width:480px){
           .stats-bar{ grid-template-columns:1fr !important; }
           .steps-grid{ grid-template-columns:1fr !important; }
           .prize-grid{ grid-template-columns:1fr !important; }
+          .guild-grid{ grid-template-columns:1fr !important; }
         }
       `}</style>
       <style>{`
@@ -175,6 +177,7 @@ export default function HomePage() {
           .faq-pad{padding:48px 20px !important;}
           .cta-h{font-size:28px !important;}
           .sec-title{font-size:26px !important;}
+          .guild-grid{grid-template-columns:1fr !important;}
         }
         @media(max-width:560px){
           .grid-4-r{grid-template-columns:1fr !important;}
@@ -415,7 +418,7 @@ export default function HomePage() {
         </div>
 
         {/* ── Guild Battle Section ── */}
-        <div style={{ marginTop:32, display:"grid", gridTemplateColumns:"320px 1fr", gap:16, alignItems:"stretch" }}>
+        <div className="guild-grid" style={{ marginTop:32, display:"grid", gridTemplateColumns:"320px 1fr", gap:16, alignItems:"stretch" }}>
 
           {/* ═══ LEFT — Create Your Battle (compact) ═══ */}
           <div style={{ background:"linear-gradient(145deg, rgba(255,100,0,.12) 0%, rgba(255,40,0,.03) 100%)",
