@@ -6,7 +6,7 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../config/db');
 const { authenticate } = require('../middleware/auth');
-const email   = require('../services/emailService');
+const emailService = require('../services/emailService');
 const { CURRENCIES, ping, getRate, startPayment, checkPayment, cancelPayment, mapStatus } = require('../services/forumPayService');
 const { activateEntryMetaApi } = require('../services/entryService');
 
@@ -251,13 +251,24 @@ async function activateEntry(entryId, tournamentId, userId) {
     const tId = rows[0].tournament_id || tournamentId;
     await db.query(`UPDATE tournaments SET prize_pool=COALESCE(prize_pool,0)+(SELECT entry_fee FROM tournaments WHERE id=$1) WHERE id=$1`, [tId]);
     console.log('[ForumPay] Entry activated:', entryId);
-    try {
-      const { rows: info } = await db.query(`
+    // Send payment confirmed email (non-blocking)
+    db.query(`
         SELECT u.email, u.username, t.name AS tournament_name, t.entry_fee, t.id AS tournament_id
         FROM entries e JOIN users u ON u.id=e.user_id JOIN tournaments t ON t.id=e.tournament_id WHERE e.id=$1
-      `, [entryId]);
-      if (info.length) await email.sendPaymentConfirmed({ email:info[0].email, username:info[0].username, tournamentName:info[0].tournament_name, entryFee:parseFloat(info[0].entry_fee), tournamentId:info[0].tournament_id });
-    } catch {}
+      `, [entryId])
+      .then(({ rows: info }) => {
+        if (info.length) {
+          return emailService.sendPaymentConfirmed({
+            email: info[0].email,
+            username: info[0].username,
+            tournamentName: info[0].tournament_name,
+            entryFee: parseFloat(info[0].entry_fee),
+            tournamentId: info[0].tournament_id
+          });
+        }
+      })
+      .then(() => console.log('[Email] Payment confirmed email sent for entry:', entryId))
+      .catch(e => console.error('[Email] Failed to send payment confirmed email:', e.message));
     activateEntryMetaApi(entryId).catch(e => console.warn('[Bridge/MetaApi]', e.message));
   } catch (e) { console.error('[ForumPay] activateEntry:', e.message); }
 }
