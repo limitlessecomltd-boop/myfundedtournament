@@ -137,6 +137,16 @@ export default function HowItWorksPage() {
         }
         @media(max-width:480px){
           .hiw-hero{padding:28px 12px 24px;}
+          .hiw-steps{padding:0 12px 48px !important;}
+          .step-row{gap:12px !important;}
+          .step-circle{width:44px !important;height:44px !important;font-size:20px !important;flex-shrink:0;}
+          .step-connector{left:21px !important;}
+        }
+        @media(max-width:768px){
+          .hiw-steps{padding:0 16px 56px !important;}
+          .step-row{gap:14px !important;}
+          .step-circle{width:52px !important;height:52px !important;font-size:24px !important;}
+          .step-connector{left:25px !important;}
         }
       `}</style>
 
@@ -158,22 +168,22 @@ export default function HowItWorksPage() {
       </div>
 
       {/* ─── Timeline Steps ─── */}
-      <div className="page-pad" style={{ maxWidth:900, margin:"0 auto", padding:"0 40px 80px" }}>
+      <div className="page-pad hiw-steps" style={{ maxWidth:900, margin:"0 auto", paddingTop:0, paddingBottom:80 }}>
         {STEPS.map((step, i) => (
           <div key={step.n} style={{ position:"relative", marginBottom:i < STEPS.length-1 ? 0 : 0 }}>
             {/* Connector line */}
             {i < STEPS.length - 1 && (
-              <div style={{ position:"absolute", left:31, top:72, bottom:-32, width:2, background:"linear-gradient(180deg,rgba(255,215,0,.3),rgba(255,255,255,.04))", zIndex:0 }}/>
+              <div className="step-connector" style={{ position:"absolute", left:31, top:72, bottom:-32, width:2, background:"linear-gradient(180deg,rgba(255,215,0,.3),rgba(255,255,255,.04))", zIndex:0 }}/>
             )}
 
-            <div style={{ display:"flex", gap:24, marginBottom:32, position:"relative", zIndex:1 }}>
+            <div className="step-row" style={{ display:"flex", gap:24, marginBottom:32, position:"relative", zIndex:1 }}>
               {/* Step number circle */}
-              <div style={{ flexShrink:0, width:64, height:64, borderRadius:"50%", background:step.dim, border:`2px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>
+              <div className="step-circle" style={{ flexShrink:0, width:64, height:64, borderRadius:"50%", background:step.dim, border:`2px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>
                 {step.emoji}
               </div>
 
               {/* Content */}
-              <div style={{ flex:1, background:"rgba(13,18,29,.95)", border:`1px solid ${step.border}`, borderRadius:18, padding:"28px 32px" }}>
+              <div className="step-content" style={{ flex:1, background:"rgba(13,18,29,.95)", border:`1px solid ${step.border}`, borderRadius:18, padding:"28px 32px" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:8, flexWrap:"wrap" }}>
                   <span style={{ fontSize:11, fontWeight:800, letterSpacing:".14em", color:step.color, textTransform:"uppercase" }}>STEP {step.n}</span>
                   <span style={{ fontSize:12, color:"rgba(255,255,255,.35)", fontStyle:"italic" }}>{step.tagline}</span>
@@ -182,7 +192,7 @@ export default function HowItWorksPage() {
                 <p style={{ fontSize:14.5, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:22 }}>{step.desc}</p>
 
                 {/* Sub-steps */}
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:22 }}>
+                <div className="step-substeps" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:22 }}>
                   {step.substeps.map((sub, j) => (
                     <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:10, background:"rgba(255,255,255,.03)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, padding:"10px 14px" }}>
                       <span style={{ fontSize:18, flexShrink:0 }}>{sub.icon}</span>
