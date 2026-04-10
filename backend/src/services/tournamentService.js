@@ -125,7 +125,7 @@ async function checkAndStartFullBattles() {
         email.sendBattleStarting({
           email:p.email, username:p.username,
           tournamentName:t.name, tournamentId:t.id, endTime:endTime,
-        }).catch(()=>{});
+        }).catch(e => console.error('[Email] sendBattleStarting failed for', p.email, ':', e.message));
       }
       if (participants.length) console.log(`[Email] Battle-starting sent to ${participants.length} traders`);
     } catch(e) { console.warn('[Email] sendBattleStarting error:', e.message); }
