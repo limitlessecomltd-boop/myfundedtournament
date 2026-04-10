@@ -143,9 +143,9 @@ function LeaderboardContent() {
                 { l:"Traders",      v:`${active_entries}/${max_entries}`,  c:tournament.status==="active"?"#22C55E":"rgba(255,255,255,.5)" },
                 { l:"Status",       v:tournament.status?.toUpperCase(),    c:STATUS_COLORS[tournament.status]||"#fff" },
               ].map((s,i)=>(
-                <div key={i} style={{ background:"rgba(13,17,26,.9)", padding:"12px 16px" }}>
+                <div key={i} style={{ background:"rgba(13,17,26,.9)", padding:"12px 16px", minWidth:0 }}>
                   <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:4 }}>{s.l}</div>
-                  <div style={{ fontSize:17, fontWeight:900, color:s.c, fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px" }}>{s.v}</div>
+                  <div style={{ fontSize: s.l==="Status" ? "clamp(11px,1.2vw,17px)" : 17, fontWeight:900, color:s.c, fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.v}</div>
                 </div>
               ))}
             </div>
