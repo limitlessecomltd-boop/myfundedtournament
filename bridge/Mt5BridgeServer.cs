@@ -187,8 +187,11 @@ namespace MftBridge {
                                 string ip = !string.IsNullOrEmpty(sip2) ? sip2 : ServerToIP(sv);
                                 // SAVE to accounts.json FIRST (so it persists across reboots)
                                 SaveAccountToFile(lg, pw, string.IsNullOrEmpty(sv) ? "Exness-MT5Trial15" : sv);
-                                if (GetApi(lg) != null) { resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"already connected\"}"; }
-                                else { ThreadPool.QueueUserWorkItem(_ => ConnectAccount(lg, pw, ip, "User-" + lg)); resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"connecting\"}"; } } }
+                                // Always force fresh reconnect — kills old cached MT5API instance
+                                MT5API old_api = null;
+                                lock (Lock) { if (Accounts.ContainsKey(lg)) { old_api = Accounts[lg]; Accounts.Remove(lg); } }
+                                try { if (old_api != null) old_api.Disconnect(); } catch {}
+                                ThreadPool.QueueUserWorkItem(_ => ConnectAccount(lg, pw, ip, "User-" + lg)); resp = "{\"connected\":true,\"login\":" + lg + ",\"msg\":\"reconnecting fresh\"}"; } }
                     } else if (path == "/verify-account" && mth == "POST") {
                         string sec = GetJV(body, "secret") ?? "";
                         if (sec != SECRET) { code = 403; resp = "{\"error\":\"Unauthorized\"}"; }
