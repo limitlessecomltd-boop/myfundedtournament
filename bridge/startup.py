@@ -146,6 +146,7 @@ print("[Startup] Done")
 print("[Startup] Setting up watchdog...")
 try:
     WATCHDOG_FILE = "C:\\mft-bridge\\watchdog.py"
+    WD_PYTHON = "C:\\Program Files\\Python313\\python.exe"
     urllib.request.urlretrieve(
         "https://raw.githubusercontent.com/limitlessecomltd-boop/myfundedtournament/main/bridge/watchdog.py",
         WATCHDOG_FILE
@@ -153,7 +154,7 @@ try:
     print("[Startup] watchdog.py downloaded")
     wcheck = subprocess.run([NSSM, "status", "MftWatchdog"], capture_output=True, text=True, timeout=10)
     if "No such service" in wcheck.stdout or "No such service" in wcheck.stderr or wcheck.returncode != 0:
-        subprocess.run([NSSM, "install", "MftWatchdog", PYTHON, WATCHDOG_FILE], capture_output=True, timeout=15)
+        subprocess.run([NSSM, "install", "MftWatchdog", WD_PYTHON, WATCHDOG_FILE], capture_output=True, timeout=15)
         subprocess.run([NSSM, "set", "MftWatchdog", "AppStdout", "C:\\mft-bridge\\watchdog-stdout.log"], capture_output=True, timeout=10)
         subprocess.run([NSSM, "set", "MftWatchdog", "AppStderr", "C:\\mft-bridge\\watchdog-stderr.log"], capture_output=True, timeout=10)
         subprocess.run([NSSM, "start", "MftWatchdog"], capture_output=True, timeout=15)
