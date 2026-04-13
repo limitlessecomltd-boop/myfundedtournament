@@ -211,6 +211,23 @@ namespace MftBridge {
                                         else { resp = "{\"valid\":true,\"login\":" + lg + ",\"balance\":" + bal.ToString("F2") + ",\"open_trades\":0}"; Console.WriteLine("[Verify] OK " + lg); } }
                                 } catch (Exception ex) { code = 400; resp = "{\"valid\":false,\"error\":\"" + Esc(ex.Message) + "\"}"; }
                                 finally { try { if (!existing && tmp != null) tmp.Disconnect(); } catch {} } } }
+                    } else if (path == "/disconnect-account" && mth == "POST") {
+                        string sec = GetJV(body, "secret") ?? "";
+                        if (sec != SECRET) { code = 403; resp = "{\"error\":\"Unauthorized\"}"; }
+                        else {
+                            string ls = GetJV(body, "login") ?? "";
+                            if (string.IsNullOrEmpty(ls)) { code = 400; resp = "{\"error\":\"login required\"}"; }
+                            else {
+                                ulong lg = ulong.Parse(ls);
+                                MT5API old_api = null;
+                                lock (Lock) {
+                                    if (Accounts.ContainsKey(lg)) { old_api = Accounts[lg]; Accounts.Remove(lg); }
+                                }
+                                try { if (old_api != null) old_api.Disconnect(); } catch {}
+                                Console.WriteLine("[Disconnect] Removed account " + lg + " from memory");
+                                resp = "{\"disconnected\":true,\"login\":" + lg + "}";
+                            }
+                        }
                     } else if (path == "/close-all" && mth == "POST") {
                         // Force-close all open positions for a login
                         string ls2 = GetJV(body, "login") ?? (qs.ContainsKey("login") ? qs["login"] : "");
