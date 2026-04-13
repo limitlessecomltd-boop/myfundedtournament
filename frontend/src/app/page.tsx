@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import HeroAnimation from "@/components/ui/HeroAnimation";
 import { useState, useEffect } from "react";
 import { BulletTrain } from "@/components/ui/BulletTrain";
 import { tournamentApi } from "@/lib/api";
@@ -221,96 +222,10 @@ export default function HomePage() {
         </div>
 
         {/* Hero Visual — clean SVG, no competitor branding */}
-        <div className="hero-photo" style={{ position:"relative", zIndex:1 }}>
-          <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"radial-gradient(circle at 50% 60%, rgba(255,215,0,.13) 0%, rgba(34,197,94,.07) 45%, transparent 70%)", transform:"scale(1.05)" }}/>
-          <div style={{ position:"absolute", inset:"-4%", borderRadius:"50%", border:"1px solid rgba(255,215,0,.14)" }}/>
-          <div style={{ position:"absolute", inset:"-10%", borderRadius:"50%", border:"1px solid rgba(255,215,0,.07)" }}/>
-          <div style={{ position:"relative" }}>
-            <svg width="480" height="480" viewBox="0 0 480 500" xmlns="http://www.w3.org/2000/svg" style={{ width:"100%", height:"auto", display:"block" }}>
-              {/* Dark background circle */}
-              <circle cx="240" cy="240" r="220" fill="#0a0f1e" opacity="0.8"/>
-              <circle cx="240" cy="240" r="200" fill="none" stroke="rgba(255,215,0,0.08)" strokeWidth="1"/>
-
-              {/* Chart candlestick visualization */}
-              {/* Bullish candles - green */}
-              <rect x="80" y="280" width="18" height="80" rx="3" fill="rgba(34,197,94,0.15)" stroke="#22C55E" strokeWidth="1.5"/>
-              <rect x="88" y="260" width="2" height="22" fill="#22C55E"/>
-              <rect x="88" y="358" width="2" height="20" fill="#22C55E"/>
-
-              <rect x="110" y="240" width="18" height="100" rx="3" fill="rgba(34,197,94,0.2)" stroke="#22C55E" strokeWidth="1.5"/>
-              <rect x="118" y="220" width="2" height="22" fill="#22C55E"/>
-              <rect x="118" y="338" width="2" height="22" fill="#22C55E"/>
-
-              <rect x="140" y="200" width="18" height="110" rx="3" fill="rgba(34,197,94,0.25)" stroke="#22C55E" strokeWidth="1.5"/>
-              <rect x="148" y="180" width="2" height="22" fill="#22C55E"/>
-              <rect x="148" y="308" width="2" height="22" fill="#22C55E"/>
-
-              {/* Bearish candle - red */}
-              <rect x="170" y="220" width="18" height="70" rx="3" fill="rgba(239,68,68,0.15)" stroke="#EF4444" strokeWidth="1.5"/>
-              <rect x="178" y="200" width="2" height="22" fill="#EF4444"/>
-              <rect x="178" y="288" width="2" height="22" fill="#EF4444"/>
-
-              {/* Strong bullish run */}
-              <rect x="200" y="170" width="18" height="120" rx="3" fill="rgba(34,197,94,0.3)" stroke="#22C55E" strokeWidth="1.5"/>
-              <rect x="208" y="148" width="2" height="24" fill="#22C55E"/>
-              <rect x="208" y="288" width="2" height="20" fill="#22C55E"/>
-
-              <rect x="230" y="130" width="18" height="130" rx="3" fill="rgba(34,197,94,0.35)" stroke="#22C55E" strokeWidth="1.5"/>
-              <rect x="238" y="108" width="2" height="24" fill="#22C55E"/>
-              <rect x="238" y="258" width="2" height="22" fill="#22C55E"/>
-
-              <rect x="260" y="100" width="18" height="140" rx="3" fill="rgba(34,197,94,0.4)" stroke="#22C55E" strokeWidth="1.5"/>
-              <rect x="268" y="78" width="2" height="24" fill="#22C55E"/>
-              <rect x="268" y="238" width="2" height="22" fill="#22C55E"/>
-
-              {/* Small dip */}
-              <rect x="290" y="130" width="18" height="80" rx="3" fill="rgba(239,68,68,0.15)" stroke="#EF4444" strokeWidth="1.5"/>
-              <rect x="298" y="110" width="2" height="22" fill="#EF4444"/>
-              <rect x="298" y="208" width="2" height="22" fill="#EF4444"/>
-
-              {/* Final big bull candle */}
-              <rect x="320" y="80" width="18" height="160" rx="3" fill="rgba(34,197,94,0.5)" stroke="#22C55E" strokeWidth="2"/>
-              <rect x="328" y="58" width="2" height="24" fill="#22C55E"/>
-              <rect x="328" y="238" width="2" height="24" fill="#22C55E"/>
-
-              <rect x="350" y="60" width="18" height="170" rx="3" fill="rgba(34,197,94,0.6)" stroke="#22C55E" strokeWidth="2"/>
-              <rect x="358" y="38" width="2" height="24" fill="#22C55E"/>
-              <rect x="358" y="228" width="2" height="24" fill="#22C55E"/>
-
-              {/* Trend line */}
-              <polyline points="89,360 119,320 149,290 179,270 209,230 239,195 269,160 299,180 329,140 359,110"
-                fill="none" stroke="rgba(255,215,0,0.6)" strokeWidth="2" strokeDasharray="none" strokeLinecap="round"/>
-
-              {/* +% gain badge — top center, clear of candles */}
-              <rect x="158" y="22" width="164" height="46" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.5)" strokeWidth="1.5"/>
-              <text x="240" y="41" textAnchor="middle" fill="#22C55E" fontSize="14" fontWeight="800" fontFamily="'Space Grotesk',system-ui,sans-serif">+47.3% gain</text>
-              <text x="240" y="58" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="10" fontFamily="system-ui,sans-serif">XAUUSD · 90 min battle</text>
-
-              {/* Bottom axis line */}
-              <line x1="70" y1="390" x2="410" y2="390" stroke="rgba(255,255,255,0.08)" strokeWidth="1"/>
-
-              {/* Glow effect behind chart */}
-              <ellipse cx="240" cy="240" rx="150" ry="120" fill="rgba(34,197,94,0.04)"/>
-            </svg>
-            <div style={{ position:"absolute", bottom:"30%", left:"50%", transform:"translateX(-50%)", background:"rgba(5,8,16,.82)", border:"1.5px solid rgba(255,215,0,.55)", borderRadius:10, padding:"6px 18px", backdropFilter:"blur(10px)", textAlign:"center", whiteSpace:"nowrap" }}>
-              <div style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontWeight:900, fontSize:15, color:"#FFD700", letterSpacing:"2px" }}>MFT</div>
-              <div style={{ fontSize:9.5, color:"rgba(255,255,255,.6)", letterSpacing:"0.6px", marginTop:1 }}>MyFundedTournament</div>
-            </div>
-            <div style={{ position:"absolute", top:"10%", left:"-8%", background:"rgba(10,14,24,.95)", border:"1px solid rgba(34,197,94,.4)", borderRadius:14, padding:"10px 16px" }}>
-              <div style={{ fontSize:22, fontWeight:900, color:"#22C55E", lineHeight:1 }}>90%</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,.45)", marginTop:3 }}>Winner Prize</div>
-            </div>
-            <div style={{ position:"absolute", top:"14%", right:"-8%", background:"rgba(10,14,24,.95)", border:"1px solid rgba(255,215,0,.4)", borderRadius:14, padding:"10px 16px" }}>
-              <div style={{ fontSize:22, fontWeight:900, color:"#FFD700", lineHeight:1 }}>$25</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,.45)", marginTop:3 }}>Start from</div>
-            </div>
-            <div style={{ position:"absolute", bottom:"10%", left:"-8%", background:"rgba(10,14,24,.95)", border:"1px solid rgba(255,215,0,.4)", borderRadius:14, padding:"10px 16px" }}>
-              <div style={{ fontSize:22, fontWeight:900, color:"#FFD700", lineHeight:1 }}>90m</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,.45)", marginTop:3 }}>Battle Time</div>
-            </div>
-          </div>
+        <div className="hero-photo" style={{ position:"relative", zIndex:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <HeroAnimation />
         </div>
-      </section>
+            </section>
 
       {/* ═══ STATS BAR ═══ */}
       <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", borderBottom:"1px solid rgba(255,255,255,.06)", background:"rgba(7,9,15,.85)", marginTop:16 }}>
