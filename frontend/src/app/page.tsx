@@ -19,7 +19,7 @@ const PLANS = [
       "Starts with $1,000 demo balance",
       "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
-      "Winner gets 90% funded account — no evaluation",
+      "Win 80% instant USDT cashout or 90% funded account",
                   "Battle starts when all 25 spots fill",
     ],
   },
@@ -37,7 +37,7 @@ const PLANS = [
       "Starts with $1,000 demo balance",
       "1 re-entry allowed per battle",
       "Track total collection live in dashboard",
-      "Winner gets 90% funded account — no evaluation",
+      "Win 80% instant USDT cashout or 90% funded account",
                   "Battle starts when all 25 spots fill",
     ],
   },
@@ -195,12 +195,12 @@ export default function HomePage() {
             <span className="live-dot"/>{liveCount} Live Battle{liveCount !== 1 ? "s" : ""} &middot; {traderCount} Active Trader{traderCount !== 1 ? "s" : ""}
           </div>
           <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:"clamp(40px,4.8vw,64px)", fontWeight:800, lineHeight:1.08, letterSpacing:"-2px", marginBottom:22, color:"#fff" }}>
-            Your Community.<br/>
-            <span style={{ color:"#FFD700" }}>Your Battle.</span>{" "}
-            <span style={{ color:"rgba(255,255,255,.42)" }}>Real Funding on the Line.</span>
+            Dive into the exciting<br/>
+            <span style={{ color:"#FFD700" }}>era of trading.</span>{" "}
+            <span style={{ color:"rgba(255,255,255,.42)" }}>Get funds in just 90 minutes.</span>
           </h1>
           <p style={{ fontSize:17, color:"rgba(255,255,255,.58)", lineHeight:1.75, maxWidth:500, marginBottom:28 }}>
-            Join a public battle or launch your own <strong style={{ color:"#FFD700", fontWeight:700 }}>Guild Battle</strong> for your trading community. Entry fees build the prize pool — the best trader wins a <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>real funded account</strong> or <strong style={{ color:"#22C55E", fontWeight:600 }}>instant USDT cashout.</strong>
+            Join a public battle or launch your own <strong style={{ color:"#FFD700", fontWeight:700 }}>Guild Battle</strong> as an organiser. Entry fees build the prize pool — the best trader wins <strong style={{ color:"#22C55E", fontWeight:600 }}>instant USDT cashout</strong> or a <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>real funded broker account</strong> within 90 minutes.
           </p>
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:32 }}>
             <span className="pill" style={{background:"rgba(139,92,246,.15)",border:"1px solid rgba(139,92,246,.35)",color:"#a78bfa"}}>⚔️ Guild Battles</span>
@@ -334,7 +334,7 @@ export default function HomePage() {
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Prize Structure</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>What winners receive</h2>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:520, margin:"0 auto" }}>The champion takes all. Choose 90% as a real funded trading account with daily withdrawals, or 80% as instant USDT cashout — paid within 24 hours. No evaluation. No demo phase. Just win.</p>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", maxWidth:520, margin:"0 auto" }}>The champion takes all. Choose <strong style={{color:"#22C55E"}}>80% as instant USDT cashout</strong> — paid within 24 hours — or <strong style={{color:"#FFD700"}}>90% as a real funded trading account</strong> with daily withdrawals. No evaluation. No demo phase. Just win.</p>
         </div>
         <div className="grid-3-r" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:22, maxWidth:760, margin:"0 auto" }}>
           {PRIZES.map(p=>(
@@ -381,7 +381,7 @@ export default function HomePage() {
         <div style={{ textAlign:"center", marginBottom:52 }}>
           <div className="section-eyebrow">Choose your battle</div>
           <h2 className="sec-title section-title" style={{ fontSize:34, marginBottom:14 }}>Two plans. 90 minutes. One winner takes it all.</h2>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)" }}>Pick your entry. Open your MT5 demo. Trade for 90 minutes. Highest % gain wins the funded account.</p>
+          <p style={{ fontSize:15, color:"rgba(255,255,255,.4)" }}>Pick your entry. Open your MT5 demo. Trade for 90 minutes. Highest % gain wins — instant USDT cashout or a funded account.</p>
         </div>
         <div className="plans-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:28, maxWidth:900, margin:"0 auto" }}>
           {PLANS.map(p=>(
@@ -795,7 +795,7 @@ export default function HomePage() {
           <div style={{ maxWidth:580, margin:"0 auto" }}>
             <div className="section-eyebrow" style={{ marginBottom:18 }}>Ready to battle?</div>
             <h2 className="cta-h" style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:38, fontWeight:800, letterSpacing:"-1.2px", color:"#fff", marginBottom:16, lineHeight:1.1 }}>
-              90 minutes to prove your skill.<br/><span style={{ color:"#FFD700" }}>Win a funded account.</span>
+              90 minutes to prove your skill.<br/><span style={{ color:"#22C55E" }}>Win instant USDT</span> <span style={{ color:"rgba(255,255,255,.4)" }}>or a</span> <span style={{ color:"#FFD700" }}>funded account.</span>
             </h2>
             <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", marginBottom:36, lineHeight:1.7 }}>No evaluation. No minimum target. Just trade your MT5 demo, beat the competition in 90 minutes, and win real capital.</p>
             <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>

@@ -62,7 +62,7 @@ export default function Footer() {
             </div>
             <div className="tagline-shine-wrap">
               <span className="tagline-shine" style={{ fontSize: 9, letterSpacing: ".04em" }}>
-                Compete Demo. Win Real Funding.
+                Dive into the world of exciting trading battles
               </span>
             </div>
           </div>

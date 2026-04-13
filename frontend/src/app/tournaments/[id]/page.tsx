@@ -578,7 +578,7 @@ export default function TournamentDetailPage() {
                   ["Entry fee",      `$${tournament.entry_fee} USDT`],
                   ["Demo balance",   "$1,000"],
                   ["Duration",       "90 Minutes"],
-                  ["If you win",     "Funded account (90%) or 80% USDT cashout"],
+                  ["If you win",     "Instant USDT cashout (80%) or funded account (90%)"],
                   ["Profit share",   "90% to you"],
                 ].map(([l,v]) => (
                   <div key={l} style={{ display:"flex", justifyContent:"space-between", fontSize:13 }}>

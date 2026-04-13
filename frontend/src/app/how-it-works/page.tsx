@@ -84,11 +84,11 @@ const STEPS = [
     tagline: "Real capital. Real withdrawals. No evaluation.",
     desc: "The trader with the highest % gain wins! Choose your reward: take 90% of the prize pool as a real funded trading account with daily withdrawals, or take 80% as an instant USDT cashout. Only the 1st place winner is rewarded.",
     substeps: [
-      { icon:"🥇", text:"Option A: Funded live account (90% of prize pool) — real capital, daily withdrawals" },
-      { icon:"💵", text:"Option B: Instant USDT cashout (80% of prize pool) — paid within 24 hours" },
+      { icon:"🥇", text:"Option A: Instant USDT cashout (80% of pool) — paid within 24 hours" },
+      { icon:"💵", text:"Option B: Funded live account (90% of pool) — real capital, daily withdrawals" },
                   { icon:"🎖️", text:"Winner receives a Gold Certificate issued on-chain as proof of achievement" },
     ],
-    why: "A $25 entry with 25 participants = $625 prize pool. Winner chooses: $562 funded account OR $468 instant USDT. A $50 entry with 25 participants = $1,250 pool. Winner chooses: $1,125 funded account OR $937 instant USDT.",
+    why: "A $25 entry × 25 traders = $625 pool. Winner chooses: $500 instant USDT cashout OR $562 funded account. A $50 entry × 25 traders = $1,250 pool. Winner chooses: $1,000 USDT OR $1,125 funded account.",
     whyIcon: "💰",
   },
 ];
@@ -153,13 +153,13 @@ export default function HowItWorksPage() {
       {/* ─── Hero ─── */}
       <div className="hiw-hero">
         <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.22)", borderRadius:100, padding:"6px 18px", fontSize:13, fontWeight:700, color:"#FFD700", marginBottom:28, letterSpacing:".04em" }}>
-          ⚡ Simplest path to a funded account
+          ⚡ Win instant USDT or a funded account in 90 minutes
         </div>
         <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:48, fontWeight:900, color:"#fff", letterSpacing:"-2px", lineHeight:1.05, marginBottom:20 }}>
           How <span style={{ color:"#FFD700" }}>MyFundedTournament</span> Works
         </h1>
         <p style={{ fontSize:17, color:"rgba(255,255,255,.5)", lineHeight:1.75, marginBottom:36, maxWidth:620, margin:"0 auto 36px" }}>
-          From zero to a funded account in <strong style={{ color:"rgba(255,255,255,.85)" }}>90 minutes</strong>. No evaluation. No minimum target. Just trade your MT5 demo and beat the competition.
+          From zero to <strong style={{ color:"#22C55E" }}>instant USDT cashout</strong> or a <strong style={{ color:"#FFD700" }}>funded account</strong> in <strong style={{ color:"rgba(255,255,255,.85)" }}>90 minutes</strong>. No evaluation. No minimum target. Just trade your MT5 demo and beat the competition.
         </p>
         <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
           <Link href="/register" className="btn btn-primary btn-lg">Start for $25</Link>
@@ -388,7 +388,7 @@ export default function HowItWorksPage() {
         <div style={{ maxWidth:700, margin:"0 auto", padding:"clamp(40px,5vw,72px) clamp(16px,4vw,40px)", textAlign:"center" }}>
           <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:18 }}>Ready?</div>
           <h2 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:36, fontWeight:900, color:"#fff", letterSpacing:"-1.2px", marginBottom:16, lineHeight:1.1 }}>
-            90 minutes to prove your skill.<br/><span style={{ color:"#FFD700" }}>Win a funded account.</span>
+            90 minutes to prove your skill.<br/><span style={{ color:"#22C55E" }}>Win instant USDT</span> <span style={{ color:"rgba(255,255,255,.4)" }}>or a</span> <span style={{ color:"#FFD700" }}>funded account.</span>
           </h2>
           <p style={{ fontSize:15, color:"rgba(255,255,255,.4)", marginBottom:36, lineHeight:1.75 }}>
             Start for just $25 USDT. Trade your MT5 demo for 90 minutes. If you have the best % gain — you win real funded capital. No evaluation. No minimum balance. Just results.
