@@ -113,6 +113,15 @@ namespace MftBridge {
             try {
                 var api = new MT5API(login, pass, ip, MPORT);
                 api.Connect();
+                // Warm up history cache — DownloadOrderHistory on first connect
+                // ensures subsequent calls return fresh data including today's trades
+                try {
+                    var warmup = api.DownloadOrderHistory(DateTime.Now.AddDays(-90), DateTime.Now.AddDays(1));
+                    int cnt = warmup != null ? warmup.Orders.Length : 0;
+                    Console.WriteLine("[" + label + "] History warmed up: " + cnt + " orders");
+                } catch (Exception he) {
+                    Console.WriteLine("[" + label + "] History warmup warning: " + he.Message);
+                }
                 lock (Lock) { Accounts[login] = api; }
                 Console.WriteLine("[" + label + "] OK bal=" + api.Account.Balance);
             } catch (Exception e) { Console.WriteLine("[" + label + "] FAIL: " + e.Message); }
