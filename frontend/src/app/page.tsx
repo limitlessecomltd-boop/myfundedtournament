@@ -195,9 +195,9 @@ export default function HomePage() {
             <span className="live-dot"/>{liveCount} Live Battle{liveCount !== 1 ? "s" : ""} &middot; {traderCount} Active Trader{traderCount !== 1 ? "s" : ""}
           </div>
           <h1 style={{ fontFamily:"'Space Grotesk','Inter',system-ui,sans-serif", fontSize:"clamp(40px,4.8vw,64px)", fontWeight:800, lineHeight:1.08, letterSpacing:"-2px", marginBottom:22, color:"#fff" }}>
-            Dive into the exciting<br/>
-            <span style={{ color:"#FFD700" }}>era of trading.</span>{" "}
-            <span style={{ color:"rgba(255,255,255,.42)" }}>Get funds in just 90 minutes.</span>
+            World first trading<br/>
+            <span style={{ color:"#FFD700" }}>battle platform.</span>{" "}
+            <span style={{ color:"rgba(255,255,255,.42)" }}>Get rewarded in just 90 Minutes.</span>
           </h1>
           <p style={{ fontSize:17, color:"rgba(255,255,255,.58)", lineHeight:1.75, maxWidth:500, marginBottom:28 }}>
             Join a public battle or launch your own <strong style={{ color:"#FFD700", fontWeight:700 }}>Guild Battle</strong> as an organiser. Entry fees build the prize pool — the best trader wins <strong style={{ color:"#22C55E", fontWeight:600 }}>instant USDT cashout</strong> or a <strong style={{ color:"rgba(255,255,255,.85)", fontWeight:600 }}>real funded broker account</strong> within 90 minutes.
