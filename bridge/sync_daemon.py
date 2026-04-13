@@ -7,10 +7,16 @@ Scalable design:
 """
 import sqlite3, urllib.request, json, time, datetime, os, logging
 
+# File-based logging so we can debug when running as Windows service
+os.makedirs("C:\\mft-bridge\\logs", exist_ok=True)
 logging.basicConfig(
+    handlers=[
+        logging.FileHandler("C:\\mft-bridge\\logs\\sync_daemon.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ],
     level=logging.INFO,
     format='%(asctime)s [SyncDaemon] %(message)s',
-    datefmt='%H:%M:%S'
+    datefmt='%Y-%m-%d %H:%M:%S'
 )
 log = logging.getLogger('sync')
 

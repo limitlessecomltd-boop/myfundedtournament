@@ -10,8 +10,13 @@ Checks every 60s:
 """
 import subprocess, urllib.request, json, time, datetime, logging, os, sqlite3
 
+import os
+os.makedirs('C:\\mft-bridge\\logs', exist_ok=True)
 logging.basicConfig(
-    filename='C:\\mft-bridge\\watchdog.log',
+    handlers=[
+        logging.FileHandler('C:\\mft-bridge\\logs\\watchdog.log', encoding='utf-8'),
+        logging.StreamHandler()
+    ],
     level=logging.INFO,
     format='%(asctime)s [Watchdog] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
@@ -144,14 +149,26 @@ def check_and_heal():
                 else:
                     log.info(f"Account {login}: no trades yet — OK")
 
-    # 4. Is sync daemon alive?
+    # 4. Is sync daemon alive and writing?
     try:
         r = subprocess.run([NSSM, 'status', 'MftSyncDaemon'], capture_output=True, text=True, timeout=10)
-        if 'SERVICE_RUNNING' not in r.stdout:
+        svc_running = 'SERVICE_RUNNING' in r.stdout
+        if not svc_running:
             log.warning(f"MftSyncDaemon not running ({r.stdout.strip()}) — restarting")
             nssm('restart', 'MftSyncDaemon')
         else:
-            log.info("MftSyncDaemon running OK")
+            # Also check log file was updated in last 120s
+            log_file = 'C:\\mft-bridge\\logs\\sync_daemon.log'
+            if os.path.exists(log_file):
+                age = time.time() - os.path.getmtime(log_file)
+                if age > 120:
+                    log.warning(f"SyncDaemon log stale ({age:.0f}s) — restarting")
+                    nssm('restart', 'MftSyncDaemon')
+                else:
+                    log.info(f"MftSyncDaemon running OK (log {age:.0f}s ago)")
+            else:
+                log.warning("SyncDaemon log not found — may not have started properly, restarting")
+                nssm('restart', 'MftSyncDaemon')
     except Exception as e:
         log.error(f"Sync daemon check: {e}")
 
