@@ -114,9 +114,16 @@ export default function HeroAnimation() {
           {/* ══ PHASE 0: TRADERS JOINING ══ */}
           {phase === 0 && (
             <div style={{ width:"100%", textAlign:"center", animation:"fadeUp .5s ease both" }}>
-              {/* Step label */}
-              <div style={{ fontSize:9, fontWeight:800, letterSpacing:".16em", textTransform:"uppercase",
-                color:"rgba(255,215,0,.5)", marginBottom:6 }}>STEP 01 — GET READY</div>
+              {/* Step badge */}
+              <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+                background:"rgba(255,215,0,.1)", border:"1.5px solid rgba(255,215,0,.4)",
+                borderRadius:20, padding:"5px 14px", marginBottom:10 }}>
+                <div style={{ width:18, height:18, borderRadius:"50%", background:"#FFD700",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:10, fontWeight:900, color:"#000" }}>1</div>
+                <span style={{ fontSize:11, fontWeight:800, color:"#FFD700",
+                  letterSpacing:".06em", textTransform:"uppercase" }}>Get Ready</span>
+              </div>
               {/* Battle badge */}
               <div style={{ display:"inline-flex", alignItems:"center", gap:5,
                 background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.3)",
@@ -183,9 +190,18 @@ export default function HeroAnimation() {
           {/* ══ PHASE 1: LIVE BATTLE ══ */}
           {phase === 1 && (
             <div style={{ width:"100%", animation:"fadeUp .5s ease both" }}>
-              {/* Step label */}
-              <div style={{ fontSize:9, fontWeight:800, letterSpacing:".16em", textTransform:"uppercase",
-                color:"rgba(34,197,94,.5)", marginBottom:4, textAlign:"center" }}>STEP 02 — BEAT THE TRADERS</div>
+              {/* Step badge */}
+              <div style={{ display:"flex", justifyContent:"center", marginBottom:6 }}>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+                  background:"rgba(34,197,94,.1)", border:"1.5px solid rgba(34,197,94,.4)",
+                  borderRadius:20, padding:"5px 14px" }}>
+                  <div style={{ width:18, height:18, borderRadius:"50%", background:"#22C55E",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize:10, fontWeight:900, color:"#000" }}>2</div>
+                  <span style={{ fontSize:11, fontWeight:800, color:"#22C55E",
+                    letterSpacing:".06em", textTransform:"uppercase" }}>Beat the Traders</span>
+                </div>
+              </div>
               {/* Live badge + timer row */}
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
                 marginBottom:7, padding:"0 2px" }}>
@@ -267,9 +283,17 @@ export default function HeroAnimation() {
           {/* ══ PHASE 2: WIN THE FORTUNE ══ */}
           {phase === 2 && (
             <div style={{ width:"100%", textAlign:"center", animation:"fadeUp .5s ease both" }}>
-              {/* Step label */}
-              <div style={{ fontSize:9, fontWeight:800, letterSpacing:".16em", textTransform:"uppercase",
-                color:"rgba(255,215,0,.5)", marginBottom:4 }}>STEP 03 — WIN THE FORTUNE</div>
+              {/* Step badge */}
+              <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+                background:"rgba(255,215,0,.1)", border:"1.5px solid rgba(255,215,0,.45)",
+                borderRadius:20, padding:"5px 14px", marginBottom:6,
+                boxShadow:`0 0 12px rgba(255,215,0,.15)` }}>
+                <div style={{ width:18, height:18, borderRadius:"50%", background:"#FFD700",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:10, fontWeight:900, color:"#000" }}>3</div>
+                <span style={{ fontSize:11, fontWeight:800, color:"#FFD700",
+                  letterSpacing:".06em", textTransform:"uppercase" }}>Win the Fortune</span>
+              </div>
               {/* Trophy */}
               <div style={{ fontSize:40, marginBottom:4,
                 filter:`drop-shadow(0 0 ${16+pulse*18}px rgba(255,215,0,.95))`,
