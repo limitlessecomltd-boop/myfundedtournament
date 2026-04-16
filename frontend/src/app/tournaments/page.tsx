@@ -322,7 +322,7 @@ function RegistrationCard({ t }: { t: Tournament & { tier_type?: string; organis
         </Link>
         {t.slug && (
           <div style={{ textAlign:"center", marginTop:8, fontSize:11, color:"rgba(255,255,255,.3)" }}>
-            🔗 myfundedtournament.vercel.app/battle/{t.slug}
+            🔗 myfundedtournament.com/battle/{t.slug}
           </div>
         )}
         <button onClick={(e) => { e.preventDefault(); setShowTransparency(true); }}

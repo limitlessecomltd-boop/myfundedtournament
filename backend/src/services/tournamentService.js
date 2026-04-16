@@ -8,8 +8,12 @@ async function getAllTournaments(filter) {
   if (filter && filter !== "all") where = `WHERE t.status = '${filter}'`;
   const { rows } = await db.query(`
     SELECT t.*,
-      COUNT(DISTINCT e.id) FILTER (WHERE e.status='active') AS active_entries,
-      COUNT(DISTINCT e.user_id) AS unique_traders
+      COUNT(DISTINCT e.id) FILTER (WHERE e.status='active')                        AS active_entries,
+      COUNT(DISTINCT e.user_id)                                                      AS unique_traders,
+      COALESCE(
+        COUNT(DISTINCT e.id) FILTER (WHERE e.status IN ('active','completed')) * t.entry_fee,
+        t.prize_pool, 0
+      )                                                                              AS prize_pool
     FROM tournaments t
     LEFT JOIN entries e ON e.tournament_id = t.id
     ${where}

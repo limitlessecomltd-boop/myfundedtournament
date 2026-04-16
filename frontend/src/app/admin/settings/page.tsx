@@ -230,7 +230,7 @@ export default function AdminSettings() {
             System Information
           </div>
           {[
-            ["Frontend", "Vercel (myfundedtournament.vercel.app)"],
+            ["Frontend", "Vercel (myfundedtournament.com)"],
             ["Backend", "Railway (myfundedtournament-production.up.railway.app)"],
             ["Database", "Supabase PostgreSQL"],
             ["Payments", "ForumPay (Crypto — 8 currencies)"],

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const STEPS = [
   { n:"01", icon:"⚙️", title:"Set Your Battle Rules", desc:"Choose your battle name, entry fee ($1–$10,000), max players (5–200), and how much the winner gets (50–90%). You set the rules — your community plays by them." },
-  { n:"02", icon:"🔗", title:"Get Your Custom Link", desc:'Every Guild Battle gets a unique shareable link like myfundedtournament.vercel.app/battle/your-battle-name. Share it on Discord, Telegram, Twitter — anywhere your community lives.' },
+  { n:"02", icon:"🔗", title:"Get Your Custom Link", desc:'Every Guild Battle gets a unique shareable link like myfundedtournament.com/battle/your-battle-name. Share it on Discord, Telegram, Twitter — anywhere your community lives.' },
   { n:"03", icon:"👥", title:"Your Community Joins", desc:"Traders click your link, pay the entry fee in USDT, connect their MT5 demo account, and wait for the battle to start. All automated — no manual work from you." },
   { n:"04", icon:"⚔️", title:"90-Minute Battle Runs", desc:"When all spots fill, the battle auto-starts with a 5-minute countdown. Traders compete for 90 minutes on their MT5 demo. Live leaderboard updates every 60 seconds." },
   { n:"05", icon:"💰", title:"Everyone Gets Paid", desc:"Winner gets their funded account or cashout. You get your organiser percentage automatically. Platform takes its flat 10%. Transparent, instant, no disputes." },
@@ -232,7 +232,7 @@ export default function EarnPage() {
               </div>
               <div style={{ padding:"16px 20px" }}>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginBottom:6, fontFamily:"monospace" }}>
-                  myfundedtournament.vercel.app/
+                  myfundedtournament.com/
                 </div>
                 <div style={{ fontSize:18, fontWeight:800, color:"#FF6400", fontFamily:"monospace" }}>
                   battle/alpha-traders-cup

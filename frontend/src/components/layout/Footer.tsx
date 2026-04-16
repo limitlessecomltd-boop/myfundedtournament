@@ -4,7 +4,6 @@ import MFTLogo from "@/components/ui/MFTLogo";
 const NAV = [
   ["Tournaments",   "/tournaments"],
   ["Leaderboard",   "/leaderboard"],
-  ["Certificates",  "/certificates"],
   ["How It Works",  "/#how-it-works"],
   ["Earn",          "/earn"],
   ["Rules",         "/#rules"],
@@ -79,7 +78,7 @@ export default function Footer() {
 
         {/* Powered by */}
         <div className="ft-copy">
-          Powered by MetaApi · ForumPay · MT5
+          Powered by ForumPay · MT5 · Railway
         </div>
       </div>
     </footer>

@@ -12,7 +12,7 @@ const STEPS = [
     tagline: "Takes 2 minutes. No bank needed.",
     desc: "Create your free MFT account and choose your battle tier — Starter Bullet ($25) or Pro Bullet ($50). Pay your entry fee in USDT (TRC-20) directly from Binance, any crypto exchange, or your own wallet.",
     substeps: [
-      { icon:"👤", text:"Sign up with email at myfundedtournament.vercel.app" },
+      { icon:"👤", text:"Sign up with email at myfundedtournament.com" },
       { icon:"⚔️", text:"Browse open battles and pick Starter ($25) or Pro ($50)" },
       { icon:"💳", text:"Pay entry fee in USDT — scan a QR or copy the wallet address" },
       { icon:"✅", text:"Payment confirms automatically — you're registered for the battle!" },
