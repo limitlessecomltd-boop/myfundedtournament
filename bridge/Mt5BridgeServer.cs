@@ -115,7 +115,7 @@ namespace MftBridge {
                 api.Connect();
                 lock (Lock) { Accounts[login] = api; }
                 Console.WriteLine("[" + label + "] OK bal=" + api.Account.Balance);
-                // Warm up history in background — doesn't block startup
+                // Warm up history in background â doesn't block startup
                 ThreadPool.QueueUserWorkItem(_ => {
                     try {
                         var warmup = api.DownloadOrderHistory(DateTime.Now.AddDays(-90), DateTime.Now.AddDays(1));
@@ -197,7 +197,7 @@ namespace MftBridge {
                                 string ip = !string.IsNullOrEmpty(sip2) ? sip2 : ServerToIP(sv);
                                 // SAVE to accounts.json FIRST (so it persists across reboots)
                                 SaveAccountToFile(lg, pw, string.IsNullOrEmpty(sv) ? "Exness-MT5Trial15" : sv);
-                                // Always force fresh reconnect — kills old cached MT5API instance
+                                // Always force fresh reconnect â kills old cached MT5API instance
                                 MT5API old_api = null;
                                 lock (Lock) { if (Accounts.ContainsKey(lg)) { old_api = Accounts[lg]; Accounts.Remove(lg); } }
                                 try { if (old_api != null) old_api.Disconnect(); } catch {}
@@ -249,7 +249,17 @@ namespace MftBridge {
                             MT5API api2 = GetApi(lg2);
                             if (api2 == null) { code=503; resp="{\"error\":\"account not connected\"}"; }
                             else { var op2 = api2.GetOpenedOrders(); int closed2=0; int failed2=0;
-                                if (op2 != null) { foreach (var o in op2) { try { api2.CloseOrder(o.Ticket); closed2++; } catch { failed2++; } } }
+                                if (op2 != null) { foreach (var o in op2) { try {
+                                    // New paid API: OrderClose(ticket, symbol, price, lots, type)
+                                    double closePrice = 0;
+                                    try {
+                                        api2.Subscribe(o.Symbol);
+                                        Thread.Sleep(300);
+                                        var q = api2.GetQuote(o.Symbol);
+                                        if (q != null) closePrice = (o.OrderType == OrderType.Buy) ? q.Bid : q.Ask;
+                                    } catch {}
+                                    api2.OrderClose(o.Ticket, o.Symbol, closePrice, o.Lots, o.OrderType);
+                                    closed2++; } catch { failed2++; } } }
                                 resp="{\"closed\":"+closed2+",\"failed\":"+failed2+",\"login\":"+lg2+"}";
                                 Console.WriteLine("[Close-All] "+lg2+" closed="+closed2+" failed="+failed2); } }
                     } else { code = 404; resp = "{\"error\":\"not found\"}"; }
