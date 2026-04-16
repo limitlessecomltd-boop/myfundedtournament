@@ -1,5 +1,5 @@
 /**
- * userService.js — Full user storage, hash ID generation, and event logging
+ * userService.js â Full user storage, hash ID generation, and event logging
  *
  * Responsibilities:
  *  - Generate a deterministic hash_id for each user
@@ -12,12 +12,12 @@ const db     = require('../config/db');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-// ─── HASH ID ────────────────────────────────────────────────────────────────
+// âââ HASH ID ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 /**
  * Generates a deterministic, public-safe SHA-256 hash ID for a user.
  * Uses: userId + email + created_at epoch (+ secret salt if set).
- * Always the same for the same user — safe to expose in URLs / leaderboards.
+ * Always the same for the same user â safe to expose in URLs / leaderboards.
  */
 function generateHashId(userId, email, createdAt) {
   const salt   = process.env.HASH_ID_SALT || 'mft-2025-salt';
@@ -26,10 +26,10 @@ function generateHashId(userId, email, createdAt) {
   return crypto.createHash('sha256').update(source).digest('hex');
 }
 
-// ─── DEVICE / BROWSER PARSING ───────────────────────────────────────────────
+// âââ DEVICE / BROWSER PARSING âââââââââââââââââââââââââââââââââââââââââââââââ
 
 /**
- * Lightweight UA parser — no dependency needed.
+ * Lightweight UA parser â no dependency needed.
  * Returns { device_type, browser, os }
  */
 function parseUserAgent(ua = '') {
@@ -55,7 +55,7 @@ function parseUserAgent(ua = '') {
   return { device_type, browser, os };
 }
 
-// ─── GET REAL IP ─────────────────────────────────────────────────────────────
+// âââ GET REAL IP âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function getIp(req) {
   return (
@@ -66,11 +66,11 @@ function getIp(req) {
   );
 }
 
-// ─── CREATE USER (full signup storage) ───────────────────────────────────────
+// âââ CREATE USER (full signup storage) âââââââââââââââââââââââââââââââââââââââ
 
 /**
  * Creates a new user with ALL data captured from signup.
- * Stores everything — IP, UA, referrer, source, country, timezone, names, etc.
+ * Stores everything â IP, UA, referrer, source, country, timezone, names, etc.
  * Also writes a signup event log row.
  */
 async function createUser(payload, req) {
@@ -139,7 +139,7 @@ async function createUser(payload, req) {
   return user;
 }
 
-// ─── LOGIN ──────────────────────────────────────────────────────────────
+// âââ LOGIN ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 async function loginUser(email, password, req) {
   const ip_address = getIp(req);
@@ -237,7 +237,7 @@ async function updateProfile(userId, fields) {
   return rows[0];
 }
 
-ansync function getUserByHashId(hashId) {
+async function getUserByHashId(hashId) {
   const { rows } = await db.query(
     `SELECT id, hash_id, email, username, display_name, avatar_url,
             country, is_admin, created_at FROM users WHERE hash_id = $1`,
