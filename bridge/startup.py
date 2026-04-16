@@ -52,24 +52,21 @@ try:
 except Exception as e:
     print("[Startup] Start error:", str(e))
 
-# Step 4: Wait for bridge to be ready (bridge now does warmup history download = slower startup)
-print("[Startup] Waiting for C# bridge + account connections...")
+# Step 4: Wait for bridge process to be ready (just the HTTP server, not account connections)
+# Accounts connect in background — watchdog handles reconnects if any fail
+print("[Startup] Waiting for C# bridge HTTP server...")
 bridge_accounts = []
-for i in range(60):  # wait up to 180s for accounts to connect with warmup
+for i in range(10):  # wait up to 30s for HTTP server to start
     try:
         data = json.loads(urllib.request.urlopen("http://localhost:5099/health", timeout=5).read())
         bridge_accounts = data.get("accounts", [])
-        if bridge_accounts:
-            print("[Startup] C# bridge ready -", len(bridge_accounts), "accounts connected")
-            if len(bridge_accounts) >= 1:
-                break  # at least one connected, proceed
-        else:
-            print("[Startup] Bridge up but 0 accounts yet (" + str(i+1) + "/60)...")
+        print("[Startup] C# bridge HTTP ready -", len(bridge_accounts), "accounts connected so far")
+        break  # HTTP is up, move on — accounts connect in background
     except Exception as e:
-        print("[Startup] Not ready yet (" + str(i+1) + "/60):", str(e))
+        print("[Startup] Not ready yet (" + str(i+1) + "/10):", str(e))
     time.sleep(3)
 else:
-    print("[Startup] WARNING: C# bridge not ready after 180s")
+    print("[Startup] WARNING: C# bridge HTTP not ready after 30s")
 
 # Step 5: Retry unconnected accounts from accounts.json
 print("[Startup] Checking for unconnected accounts...")
