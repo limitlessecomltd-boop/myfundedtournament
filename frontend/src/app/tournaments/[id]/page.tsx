@@ -373,8 +373,9 @@ export default function TournamentDetailPage() {
   const durationMins = tournament ? Math.round((new Date(tournament.end_time).getTime() - new Date(tournament.start_time).getTime()) / 60000) : 90;
   const durationLabel = durationMins >= 60 ? `${Math.round(durationMins)} min (${(durationMins/60).toFixed(1)}h)` : `${durationMins} min`;
 
-  const tierColor = tournament?.tier === "pro" ? "#22C55E" : "#FFD700";
-  const tierName  = tournament?.tier === "pro" ? "Pro Bullet" : "Starter Bullet";
+  const isGuild   = (tournament as any)?.tier_type === "guild";
+  const tierColor = isGuild ? "#FF6400" : tournament?.tier === "pro" ? "#22C55E" : "#FFD700";
+  const tierName  = isGuild ? ((tournament as any)?.name || "Guild Battle") : tournament?.tier === "pro" ? "Pro Bullet" : "Starter Bullet";
 
   if (!tournament) return (
     <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:400, background:"#050810" }}>
