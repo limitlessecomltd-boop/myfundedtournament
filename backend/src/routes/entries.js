@@ -311,7 +311,7 @@ router.get("/transparency/:tournamentId", async (req, res, next) => {
   try {
     const { tournamentId } = req.params;
     const { rows: tour } = await db.query(`
-      SELECT id, name, tier, entry_fee, max_entries, status, start_time, end_time,
+      SELECT t.id, t.name, t.tier, t.entry_fee, t.max_entries, t.status, t.start_time, t.end_time,
         COUNT(e.id) FILTER (WHERE e.status IN ('active','completed')) AS confirmed_entries,
         COUNT(e.id) FILTER (WHERE e.status != 'pending_payment')      AS total_entries
       FROM tournaments t LEFT JOIN entries e ON e.tournament_id = t.id
