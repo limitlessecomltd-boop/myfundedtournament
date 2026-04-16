@@ -7,7 +7,7 @@ const userService  = require('../services/userService');
 
 const router = express.Router();
 
-// ─  REGISTER ────────────────────────────────────────────────
+// ─── REGISTER ─────────────────────────────────────────────────────────────────
 // Accepts: email*, password*, username, display_name, first_name, last_name,
 //          phone, country, timezone, avatar_url, bio, signup_source, referrer
 router.post("/register", async (req, res, next) => {
@@ -48,7 +48,7 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-// ─ ℄ LOGIN ────────────────────────────────────────────────
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -64,7 +64,7 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-// ─ ℄ MY FULL PROFILE ───────────────────────────────────────────
+// ─── MY FULL PROFILE ──────────────────────────────────────────────────────────
 router.get("/me", authenticate, async (req, res, next) => {
   try {
     const data = await userService.getFullProfile(req.user.id);
@@ -72,7 +72,7 @@ router.get("/me", authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─ ℄ UPDATE MY PROFILE ──────────────────────────────────────────
+// ─── UPDATE MY PROFILE ────────────────────────────────────────────────────────
 router.patch("/me", authenticate, async (req, res, next) => {
   try {
     // Support old-style walletAddress too
@@ -85,7 +85,7 @@ router.patch("/me", authenticate, async (req, res, next) => {
   }
 });
 
-// ─ ℄ LOOKUP USER BY HASH ID (public) ─  ─────────────────────────────
+// ─── LOOKUP USER BY HASH ID (public) ─────────────────────────────────────────
 router.get("/by-hash/:hashId", async (req, res, next) => {
   try {
     const user = await userService.getUserByHashId(req.params.hashId);
@@ -94,7 +94,7 @@ router.get("/by-hash/:hashId", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─ ℄ MY TUUNNAMENT HISTORY   ────────────────────────────────────
+// ─── MY TOURNAMENT HISTORY   ────────────────────────────────────────────────────
 router.get("/me/tournaments", authenticate, async (req, res, next) => {
   try {
     const { rows } = await db.query(`
@@ -113,7 +113,7 @@ router.get("/me/tournaments", authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─ ℄ SUBMIT PAYOUT REQUEST Ҕ─────────────────────────────────────
+// ─── SUBMIT PAYOUT REQUEST ────────────────────────────────────────────────────
 router.post("/payout-request", authenticate, async (req, res, next) => {
   try {
     const { fundedAccountId, walletAddress, currency, type, grossProfit } = req.body;
@@ -155,4 +155,41 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ─ ℄ ADMIN: GET ALL USERS ─────────────────────────────────────────────
+// ─── ADMIN: GET ALL USERS ─────────────────────────────────────────────────────
+router.get("/admin/all", authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT
+        u.id, u.hash_id, u.email, u.username, u.display_name,
+        u.first_name, u.last_name, u.phone, u.country,
+        u.is_admin, u.is_verified, u.is_banned,
+        u.signup_ip, u.signup_source, u.signup_referrer,
+        u.last_login_at, u.last_login_ip, u.login_count,
+        u.total_deposited, u.total_won,
+        u.created_at, u.updated_at,
+        COUNT(DISTINCT e.id) AS total_entries
+      FROM users u
+      LEFT JOIN entries e ON e.user_id = u.id
+      GROUP BY u.id
+      ORDER BY u.created_at DESC
+      LIMIT 500
+    `);
+    res.json({ success: true, data: rows });
+  } catch (err) { next(err); }
+});
+
+// ─── ADMIN: GET SIGNUP EVENTS ─────────────────────────────────────────────────
+router.get("/admin/signup-events", authenticate, requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT se.*, u.email, u.username, u.display_name
+      FROM user_signup_events se
+      JOIN users u ON u.id = se.user_id
+      ORDER BY se.signup_at DESC
+      LIMIT 200
+    `);
+    res.json({ success: true, data: rows });
+  } catch (err) { next(err); }
+});
+
+module.exports = router;
