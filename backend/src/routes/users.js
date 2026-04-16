@@ -1,83 +1,100 @@
-const express = require("express");
+const express      = require("express");
+const jwt          = require("jsonwebtoken");
+const db           = require("../config/db");
+const { authenticate, requireAdmin } = require("../middleware/auth");
 const emailService = require('../services/emailService');
-const router = express.Router();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const db = require("../config/db");
-const { authenticate } = require("../middleware/auth");
+const userService  = require('../services/userService');
 
-// Register
+const router = express.Router();
+
+// ─  REGISTER ────────────────────────────────────────────────
+// Accepts: email*, password*, username, display_name, first_name, last_name,
+//          phone, country, timezone, avatar_url, bio, signup_source, referrer
 router.post("/register", async (req, res, next) => {
   try {
-    const { email, username, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: "Email and password required" });
+    const user  = await userService.createUser(req.body, req);
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 
-    const hash = await bcrypt.hash(password, 12);
-    const { rows } = await db.query(`
-      INSERT INTO users (email, username, password_hash)
-      VALUES (LOWER($1), $2, $3) RETURNING id, email, username, created_at
-    `, [email, username, hash]);
+    // Welcome email — non-blocking
+    emailService.sendWelcome({
+      email    : user.email,
+      username : user.display_name || user.username,
+    }).catch(() => {});
 
-    const token = jwt.sign({ id: rows[0].id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-    // Send welcome email (non-blocking)
-    emailService.sendWelcome({ email: rows[0].email, username: rows[0].username }).catch(() => {});
-    res.status(201).json({ success: true, token, user: rows[0] });
+    res.status(201).json({
+      success : true,
+      token,
+      user    : {
+        id           : user.id,
+        hash_id      : user.hash_id,
+        email        : user.email,
+        username     : user.username,
+        display_name : user.display_name,
+        first_name   : user.first_name,
+        last_name    : user.last_name,
+        country      : user.country,
+        timezone     : user.timezone,
+        avatar_url   : user.avatar_url,
+        bio          : user.bio,
+        is_admin     : user.is_admin,
+        signup_source: user.signup_source,
+        created_at   : user.created_at,
+      },
+    });
   } catch (err) {
     if (err.code === "23505") return res.status(409).json({ error: "Email already registered" });
+    if (err.status) return res.status(err.status).json({ error: err.message });
     next(err);
   }
 });
 
-// Login
+// ─ ℄ LOGIN ────────────────────────────────────────────────
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const { rows } = await db.query("SELECT * FROM users WHERE email=LOWER($1)", [email]);
-    if (!rows.length) return res.status(401).json({ error: "Invalid credentials" });
+    if (!email || !password) return res.status(400).json({ error: "Email and password required" });
 
-    const valid = await bcrypt.compare(password, rows[0].password_hash);
-    if (!valid) return res.status(401).json({ error: "Invalid credentials" });
+    const user  = await userService.loginUser(email, password, req);
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 
-    const token = jwt.sign({ id: rows[0].id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-    const { password_hash, ...user } = rows[0];
     res.json({ success: true, token, user });
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    next(err);
+  }
 });
 
-// My profile
+// ─ ℄ MY FULL PROFILE ───────────────────────────────────────────
 router.get("/me", authenticate, async (req, res, next) => {
   try {
-    const { rows } = await db.query(`
-      SELECT u.id, u.email, u.username, u.is_admin, u.wallet_address, u.created_at,
-        COUNT(DISTINCT e.id) AS total_entries,
-        COUNT(DISTINCT e.tournament_id) AS total_tournaments,
-        COUNT(DISTINCT t.id) FILTER (WHERE t.winner_entry_id = e.id) AS wins
-      FROM users u
-      LEFT JOIN entries e ON e.user_id = u.id
-      LEFT JOIN tournaments t ON t.id = e.tournament_id
-      WHERE u.id=$1
-      GROUP BY u.id
-    `, [req.user.id]);
-    res.json({ success: true, data: rows[0] });
+    const data = await userService.getFullProfile(req.user.id);
+    res.json({ success: true, data });
   } catch (err) { next(err); }
 });
 
-// Update profile
+// ─ ℄ UPDATE MY PROFILE ──────────────────────────────────────────
 router.patch("/me", authenticate, async (req, res, next) => {
   try {
-    const { username, walletAddress, wallet_address } = req.body;
-    const finalWalletAddress = walletAddress || wallet_address;
-    const { rows } = await db.query(`
-      UPDATE users SET
-        username       = COALESCE($1, username),
-        wallet_address = COALESCE($2, wallet_address)
-      WHERE id=$3 RETURNING id, email, username, wallet_address
-    `, [username, finalWalletAddress, req.user.id]);
-    res.json({ success: true, data: rows[0] });
+    // Support old-style walletAddress too
+    if (req.body.walletAddress) req.body.wallet_address = req.body.walletAddress;
+    const data = await userService.updateProfile(req.user.id, req.body);
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    next(err);
+  }
+});
+
+// ─ ℄ LOOKUP USER BY HASH ID (public) ─  ─────────────────────────────
+router.get("/by-hash/:hashId", async (req, res, next) => {
+  try {
+    const user = await userService.getUserByHashId(req.params.hashId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ success: true, data: user });
   } catch (err) { next(err); }
 });
 
-// My tournament history
+// ─ ℄ MY TUUNNAMENT HISTORY   ────────────────────────────────────
 router.get("/me/tournaments", authenticate, async (req, res, next) => {
   try {
     const { rows } = await db.query(`
@@ -96,14 +113,12 @@ router.get("/me/tournaments", authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// Submit payout request
+// ─ ℄ SUBMIT PAYOUT REQUEST Ҕ─────────────────────────────────────
 router.post("/payout-request", authenticate, async (req, res, next) => {
   try {
     const { fundedAccountId, walletAddress, currency, type, grossProfit } = req.body;
-
     if (!walletAddress) return res.status(400).json({ error: "Wallet address required" });
 
-    // Accept pending_kyc (cashout choice) or active accounts
     const { rows: fa } = await db.query(
       `SELECT * FROM funded_accounts WHERE id=$1 AND user_id=$2 AND status IN ('pending_kyc','active')`,
       [fundedAccountId, req.user.id]
@@ -111,14 +126,11 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
     if (!fa.length) return res.status(404).json({ error: "Funded account not found" });
     const account = fa[0];
 
-    // For cashout type: trader gets 75% of prize pool
-    // For profit withdrawal from active account: trader gets their split
     let traderAmount, platformAmount;
     if (type === 'cashout') {
-      // account_size is the 90% of pool — 80% cashout = account_size * (80/90)
       const poolEquivalent = parseFloat(account.account_size) / 0.9;
       traderAmount   = poolEquivalent * 0.80;
-      platformAmount = poolEquivalent * 0.10; // platform keeps difference
+      platformAmount = poolEquivalent * 0.10;
     } else {
       const profit  = parseFloat(grossProfit || 0);
       const tSplit  = parseFloat(account.trader_split_pct || 90) / 100;
@@ -126,16 +138,15 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
       platformAmount = profit * (1 - tSplit);
     }
 
-    // Mark funded account as cashout_requested to prevent duplicate claims
     await db.query(
       `UPDATE funded_accounts SET status = 'cashout_requested' WHERE id = $1 AND status = 'pending_kyc'`,
       [fundedAccountId]
     );
 
     const { rows } = await db.query(`
-      INSERT INTO payout_requests
+  	INSERT INTO payout_requests
         (funded_account_id, user_id, gross_profit, trader_amount, platform_amount, wallet_address, currency)
-      VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *
+      VALUES ($1,$2,$3,$4,$5,$6,$7) REPTYRIING
     `, [fundedAccountId, req.user.id,
         type === 'cashout' ? traderAmount : parseFloat(grossProfit || 0),
         traderAmount, platformAmount, walletAddress, currency || "usdttrc20"]);
@@ -144,4 +155,4 @@ router.post("/payout-request", authenticate, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-module.exports = router;
+// ─ ℄ ADMIN: GET ALL USERS ─────────────────────────────────────────────
