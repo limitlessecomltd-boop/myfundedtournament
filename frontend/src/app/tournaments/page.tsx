@@ -37,6 +37,227 @@ function cleanName(name: string): string {
   });
 }
 
+
+// ── Transparency Report Modal ─────────────────────────────────────────────────
+const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
+
+function TransparencyModal({ tournamentId, onClose }: { tournamentId: string; onClose: () => void }) {
+  const [data,    setData]    = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState("");
+  const [copied,  setCopied]  = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`${API}/api/entries/transparency/${tournamentId}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setData(d); else setError("Failed to load report"); })
+      .catch(() => setError("Failed to load report"))
+      .finally(() => setLoading(false));
+  }, [tournamentId]);
+
+  const copyToClipboard = (text: string, key: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  };
+
+  const statusColor = (s: string) => s === "active" ? "#22C55E" : s === "completed" ? "#60a5fa" : "#FFD700";
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.88)", zIndex:1000,
+      display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}
+      onClick={onClose}>
+      <div style={{ background:"#080d18", border:"1px solid rgba(255,255,255,.1)",
+        borderRadius:20, padding:0, maxWidth:680, width:"100%", maxHeight:"88vh",
+        overflow:"hidden", display:"flex", flexDirection:"column" }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{ padding:"24px 28px 18px", borderBottom:"1px solid rgba(255,255,255,.07)",
+          background:"rgba(255,215,0,.03)", flexShrink:0 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                <span style={{ fontSize:18 }}>🔍</span>
+                <span style={{ fontSize:11, fontWeight:700, letterSpacing:".12em",
+                  textTransform:"uppercase", color:"rgba(255,215,0,.7)" }}>Transparency Report</span>
+              </div>
+              {data && (
+                <>
+                  <div style={{ fontSize:20, fontWeight:800, color:"#fff",
+                    fontFamily:"'Space Grotesk',sans-serif", marginBottom:4 }}>
+                    {data.tournament.name?.replace(/ #\d{10,}$/, "") || "Battle"}
+                  </div>
+                  <div style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>
+                    {data.tournament.total_confirmed} confirmed traders ·{" "}
+                    ${data.tournament.entry_fee} USDT entry ·{" "}
+                    <span style={{ color: data.tournament.status === "active" ? "#22C55E" : "#FFD700",
+                      fontWeight:700, textTransform:"capitalize" }}>
+                      {data.tournament.status}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+            <button onClick={onClose} style={{ background:"rgba(255,255,255,.06)",
+              border:"1px solid rgba(255,255,255,.1)", borderRadius:8, color:"rgba(255,255,255,.5)",
+              fontSize:18, cursor:"pointer", padding:"4px 10px", lineHeight:1 }}>✕</button>
+          </div>
+
+          {data && (
+            <div style={{ display:"flex", gap:10, marginTop:16, flexWrap:"wrap" }}>
+              {[
+                { label:"Total Spots", value:`${data.tournament.total_confirmed} / ${data.tournament.max_entries}` },
+                { label:"Entry Fee", value:`$${data.tournament.entry_fee} USDT` },
+                { label:"Total Paid In", value:`$${(data.tournament.total_confirmed * data.tournament.entry_fee).toFixed(2)}` },
+                { label:"Generated", value:new Date(data.generated_at).toLocaleTimeString() },
+              ].map(s => (
+                <div key={s.label} style={{ background:"rgba(255,255,255,.04)",
+                  border:"1px solid rgba(255,255,255,.08)", borderRadius:8,
+                  padding:"7px 12px", flex:1, minWidth:120 }}>
+                  <div style={{ fontSize:9, fontWeight:700, textTransform:"uppercase",
+                    letterSpacing:".08em", color:"rgba(255,255,255,.3)", marginBottom:3 }}>{s.label}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY:"auto", flex:1, padding:"16px 28px 24px" }}>
+          {loading && (
+            <div style={{ display:"flex", justifyContent:"center", padding:"48px 0" }}>
+              <div className="spinner"/>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ textAlign:"center", padding:"48px 0", color:"rgba(255,255,255,.4)" }}>
+              <div style={{ fontSize:32, marginBottom:12 }}>⚠️</div>
+              <div>{error}</div>
+            </div>
+          )}
+
+          {data && data.participants.length === 0 && (
+            <div style={{ textAlign:"center", padding:"48px 0", color:"rgba(255,255,255,.35)" }}>
+              <div style={{ fontSize:32, marginBottom:12 }}>📭</div>
+              <div style={{ fontSize:14 }}>No confirmed entries yet</div>
+              <div style={{ fontSize:12, marginTop:6 }}>Entries will appear here once payments are confirmed</div>
+            </div>
+          )}
+
+          {data && data.participants.length > 0 && (
+            <>
+              <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase",
+                letterSpacing:".1em", color:"rgba(255,255,255,.3)", marginBottom:14 }}>
+                Confirmed Participants ({data.participants.length})
+              </div>
+
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {data.participants.map((p: any, i: number) => (
+                  <div key={p.entry_id} style={{ background:"rgba(255,255,255,.03)",
+                    border:"1px solid rgba(255,255,255,.07)", borderRadius:12,
+                    padding:"12px 16px" }}>
+
+                    <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom: p.tx_hash ? 10 : 0 }}>
+                      {/* Slot number */}
+                      <div style={{ width:32, height:32, borderRadius:"50%",
+                        background:"rgba(255,215,0,.08)", border:"1px solid rgba(255,215,0,.2)",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:12, fontWeight:800, color:"#FFD700", flexShrink:0 }}>
+                        {String(i + 1).padStart(2, "0")}
+                      </div>
+
+                      {/* Username */}
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:"#fff",
+                          fontFamily:"'Space Grotesk',sans-serif" }}>
+                          {p.masked_username}
+                        </div>
+                        <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:2 }}>
+                          Joined {new Date(p.created_at).toLocaleDateString("en", {
+                            month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Payment amount */}
+                      <div style={{ textAlign:"right" }}>
+                        <div style={{ fontSize:14, fontWeight:800, color:"#22C55E" }}>
+                          ${p.amount_usd || p.entry_fee || "—"}
+                        </div>
+                        <div style={{ fontSize:10, color:"rgba(255,255,255,.3)",
+                          textTransform:"uppercase" }}>
+                          {p.currency || "USDT"}
+                        </div>
+                      </div>
+
+                      {/* Status badge */}
+                      <div style={{ fontSize:10, fontWeight:700, padding:"3px 9px",
+                        borderRadius:20, background:`${statusColor(p.status)}15`,
+                        border:`1px solid ${statusColor(p.status)}33`,
+                        color:statusColor(p.status), textTransform:"uppercase", flexShrink:0 }}>
+                        {p.status === "active" ? "✓ Active" : p.status}
+                      </div>
+                    </div>
+
+                    {/* TX Hash row */}
+                    {p.tx_hash && (
+                      <div style={{ display:"flex", alignItems:"center", gap:8,
+                        background:"rgba(34,197,94,.05)", border:"1px solid rgba(34,197,94,.15)",
+                        borderRadius:8, padding:"8px 12px" }}>
+                        <span style={{ fontSize:12 }}>🔗</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:9, fontWeight:700, color:"rgba(34,197,94,.6)",
+                            letterSpacing:".08em", textTransform:"uppercase", marginBottom:2 }}>
+                            Transaction Hash (Payment Proof)
+                          </div>
+                          <div style={{ fontSize:11, color:"rgba(255,255,255,.6)",
+                            fontFamily:"monospace", wordBreak:"break-all" }}>
+                            {p.tx_hash}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(p.tx_hash, p.entry_id)}
+                          style={{ background: copied === p.entry_id ? "rgba(34,197,94,.2)" : "rgba(255,255,255,.06)",
+                            border:"1px solid rgba(255,255,255,.1)", borderRadius:6,
+                            color: copied === p.entry_id ? "#22C55E" : "rgba(255,255,255,.4)",
+                            fontSize:10, fontWeight:700, cursor:"pointer",
+                            padding:"4px 8px", flexShrink:0, transition:"all .2s" }}>
+                          {copied === p.entry_id ? "✓ COPIED" : "COPY"}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* No tx hash yet */}
+                    {!p.tx_hash && (
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,.2)",
+                        fontStyle:"italic", marginTop:4, paddingLeft:44 }}>
+                        Transaction hash pending confirmation
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop:20, padding:"14px 18px",
+                background:"rgba(255,215,0,.04)", border:"1px solid rgba(255,215,0,.12)",
+                borderRadius:10, fontSize:12, color:"rgba(255,255,255,.4)", lineHeight:1.6 }}>
+                <strong style={{ color:"rgba(255,215,0,.7)" }}>About this report:</strong>{" "}
+                Usernames are partially masked for privacy. Transaction hashes are on-chain proof of payment
+                and can be verified on any USDT TRC-20 block explorer (e.g. tronscan.org).
+                Report refreshes on each open.
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Registration card ─────────────────────────────────────────────────────────
 function RegistrationCard({ t }: { t: Tournament & { tier_type?: string; organiser_username?: string; winner_pct?: number; slug?: string } }) {
   const filled  = parseInt(String(t.active_entries)) || 0;
@@ -44,6 +265,7 @@ function RegistrationCard({ t }: { t: Tournament & { tier_type?: string; organis
   const isGuild = t.tier_type === "guild";
   const color   = isGuild ? "#FF6400" : t.tier === "pro" ? "#22C55E" : "#FFD700";
   const link    = t.slug ? `/battle/${t.slug}` : `/tournaments/${t.id}`;
+  const [showTransparency, setShowTransparency] = useState(false);
 
   return (
     <div style={{ background:"rgba(13,18,29,.95)", border:`1px solid ${color}44`,
@@ -103,7 +325,18 @@ function RegistrationCard({ t }: { t: Tournament & { tier_type?: string; organis
             🔗 myfundedtournament.vercel.app/battle/{t.slug}
           </div>
         )}
+        <button onClick={(e) => { e.preventDefault(); setShowTransparency(true); }}
+          style={{ width:"100%", marginTop:8, background:"transparent",
+            border:"1px solid rgba(255,255,255,.1)", borderRadius:10,
+            color:"rgba(255,255,255,.45)", fontSize:12, fontWeight:600,
+            padding:"9px", cursor:"pointer", display:"flex", alignItems:"center",
+            justifyContent:"center", gap:6, transition:"all .2s" }}
+          onMouseEnter={e=>{(e.currentTarget as any).style.borderColor="rgba(255,255,255,.25)"; (e.currentTarget as any).style.color="rgba(255,255,255,.75)";}}
+          onMouseLeave={e=>{(e.currentTarget as any).style.borderColor="rgba(255,255,255,.1)"; (e.currentTarget as any).style.color="rgba(255,255,255,.45)";}}>
+          🔍 Transparency Report
+        </button>
       </div>
+      {showTransparency && <TransparencyModal tournamentId={t.id} onClose={() => setShowTransparency(false)} />}
     </div>
   );
 }
@@ -111,6 +344,7 @@ function RegistrationCard({ t }: { t: Tournament & { tier_type?: string; organis
 // ── Live card ─────────────────────────────────────────────────────────────────
 function LiveCard({ t }: { t: Tournament & { tier_type?: string; organiser_username?: string; winner_pct?: number; slug?: string } }) {
   const [secs, setSecs] = useState(0);
+  const [showTransparency, setShowTransparency] = useState(false);
   const isGuild = t.tier_type === "guild";
   const color   = isGuild ? "#FF6400" : t.tier === "pro" ? "#22C55E" : "#FFD700";
   const link    = t.slug ? `/battle/${t.slug}` : `/tournaments/${t.id}`;
@@ -160,6 +394,17 @@ function LiveCard({ t }: { t: Tournament & { tier_type?: string; organiser_usern
         fontWeight:700, fontSize:14, padding:"12px" }}>
         ⚔️ Watch Live →
       </Link>
+      <button onClick={(e) => { e.preventDefault(); setShowTransparency(true); }}
+        style={{ width:"100%", marginTop:8, background:"transparent",
+          border:"1px solid rgba(255,255,255,.1)", borderRadius:10,
+          color:"rgba(255,255,255,.45)", fontSize:12, fontWeight:600,
+          padding:"9px", cursor:"pointer", display:"flex", alignItems:"center",
+          justifyContent:"center", gap:6, transition:"all .2s" }}
+        onMouseEnter={e=>{(e.currentTarget as any).style.borderColor="rgba(255,255,255,.25)"; (e.currentTarget as any).style.color="rgba(255,255,255,.75)";}}
+        onMouseLeave={e=>{(e.currentTarget as any).style.borderColor="rgba(255,255,255,.1)"; (e.currentTarget as any).style.color="rgba(255,255,255,.45)";}}>
+        🔍 Transparency Report
+      </button>
+      {showTransparency && <TransparencyModal tournamentId={t.id} onClose={() => setShowTransparency(false)} />}
     </div>
   );
 }
