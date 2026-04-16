@@ -64,7 +64,7 @@ const STEPS = [
     dim: "rgba(255,215,0,.08)",
     border: "rgba(255,215,0,.22)",
     tagline: "Pure skill. Highest % gain wins.",
-    desc: "Trade any forex pairs on your MT5 demo. We track your % gain every 60 seconds via MetaApi. The leaderboard updates live. Your goal: end with the highest percentage gain on your starting $1,000 balance.",
+    desc: "Trade any forex pairs on your MT5 demo. We track your % gain every 10 seconds via our live MT5 bridge. The leaderboard updates live. Your goal: end with the highest percentage gain on your starting $1,000 balance.",
     substeps: [
       { icon:"💹", text:"Trade any currency pairs — EURUSD, GBPUSD, XAUUSD, any pair" },
       { icon:"📊", text:"Your % gain is tracked every 60 seconds — leaderboard updates live" },

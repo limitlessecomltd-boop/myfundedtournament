@@ -52,7 +52,7 @@ const PRIZES = [
 const STEPS = [
   { n:"01", title:"Register & pay entry", desc:"Pay USDT via crypto link or wallet. Works from Binance or any exchange — no personal wallet needed.", icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" },
   { n:"02", title:"Open your MT5 demo", desc:"Create a free demo at Exness, ICMarkets or Tickmill. Submit your investor (read-only) password.", icon:"M22 12h-4l-3 9L9 3l-3 9H2" },
-  { n:"03", title:"Trade Actively till End", desc:"We track your % gain live via MetaApi every 60 seconds. Close all trades 3 minutes before the 90-minute mark.", icon:"M18 20V10M12 20V4M6 20v-6" },
+  { n:"03", title:"Trade Actively till End", desc:"We track your % gain live via our MT5 bridge every 10 seconds. Close all trades 3 minutes before the 90-minute mark.", icon:"M18 20V10M12 20V4M6 20v-6" },
   { n:"04", title:"Win your funded account", desc:"Highest % gain wins the prize pool! Choose your reward: 90% as a live funded broker account with real capital, or 80% as instant USDT cashout. Only the champion is rewarded — no evaluation needed.", icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
 ];
 

@@ -234,7 +234,7 @@ export default function AdminSettings() {
             ["Backend", "Railway (myfundedtournament-production.up.railway.app)"],
             ["Database", "Supabase PostgreSQL"],
             ["Payments", "ForumPay (Crypto — 8 currencies)"],
-            ["MT5 API", "MetaApi (expires Jun 13, 2026)"],
+            ["MT5 API", "MT5 Bridge (self-hosted VPS)"],
             ["Model", "Claude Sonnet 4.6"],
           ].map(([k,v])=>(
             <div key={k} style={{ display:"flex", justifyContent:"space-between",
