@@ -103,7 +103,7 @@ router.post('/verify-mt5', async (req, res) => {
     const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
     const SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
 
-    // ── Resolve server name → IP so any valid server connects automatically ──
+    // ââ Resolve server name â IP so any valid server connects automatically ââ
     let serverIp = mt5Server;
     try {
       const serverMap = {
@@ -216,7 +216,7 @@ router.get('/:id/mt5', async (req, res) => {
     const profitPct = Math.round((profitAbs / startBal) * 10000) / 100;
 
     // Calculate win rate from history
-    // Real trades only — strip Balance/deposit/credit rows
+    // Real trades only â strip Balance/deposit/credit rows
     const isTrade = t => t.symbol && t.symbol.trim() !== "" &&
                          !["balance","deposit","credit","withdrawal"].includes((t.type||"").toLowerCase());
     const closed = (Array.isArray(histRes) ? histRes : []).filter(isTrade);
@@ -305,3 +305,42 @@ router.post('/:id/close-all', authenticate, async (req, res) => {
 });
 
 module.exports = router;
+
+// ── PUBLIC: Transparency Report ──────────────────────────────────────────────
+router.get("/transparency/:tournamentId", async (req, res, next) => {
+  try {
+    const { tournamentId } = req.params;
+    const { rows: tour } = await db.query(`
+      SELECT id, name, tier, entry_fee, max_entries, status, start_time, end_time,
+        COUNT(e.id) FILTER (WHERE e.status IN ('active','completed')) AS confirmed_entries,
+        COUNT(e.id) FILTER (WHERE e.status != 'pending_payment')      AS total_entries
+      FROM tournaments t LEFT JOIN entries e ON e.tournament_id = t.id
+      WHERE t.id = $1 GROUP BY t.id
+    `, [tournamentId]);
+    if (!tour.length) return res.status(404).json({ error:'Battle not found' });
+
+    const { rows: participants } = await db.query(`
+      SELECT e.id AS entry_id, e.entry_number, e.status, e.created_at,
+        CASE WHEN LENGTH(u.username)<=3 THEN REPEAT('*',LENGTH(u.username))
+             ELSE LEFT(u.username,2)||REPEAT('*',GREATEST(LENGTH(u.username)-3,3))||RIGHT(u.username,1) END AS masked_username,
+        u.hash_id AS user_hash,
+        p.tx_hash, p.nowpayments_id AS payment_ref, p.currency, p.amount_usd,
+        p.status AS payment_status, p.confirmed_at
+      FROM entries e JOIN users u ON u.id=e.user_id
+      LEFT JOIN payments p ON p.entry_id=e.id AND p.status='confirmed'
+      WHERE e.tournament_id=$1 AND e.status IN ('active','completed')
+      ORDER BY e.created_at ASC
+    `, [tournamentId]);
+
+    res.json({
+      success: true,
+      tournament: { id:tour[0].id, name:tour[0].name, tier:tour[0].tier,
+        entry_fee:tour[0].entry_fee, max_entries:tour[0].max_entries,
+        status:tour[0].status, start_time:tour[0].start_time, end_time:tour[0].end_time,
+        total_confirmed:parseInt(tour[0].confirmed_entries||0),
+        total_entries:parseInt(tour[0].total_entries||0) },
+      participants,
+      generated_at: new Date().toISOString(),
+    });
+  } catch(err){ next(err); }
+});
