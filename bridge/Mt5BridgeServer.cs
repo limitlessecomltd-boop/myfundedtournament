@@ -115,7 +115,7 @@ namespace MftBridge {
                 api.Connect();
                 lock (Lock) { Accounts[login] = api; }
                 Console.WriteLine("[" + label + "] OK bal=" + api.Account.Balance);
-                // Warm up history in background â doesn't block startup
+                // Warm up history in background Ã¢ÂÂ doesn't block startup
                 ThreadPool.QueueUserWorkItem(_ => {
                     try {
                         var warmup = api.DownloadOrderHistory(DateTime.Now.AddDays(-90), DateTime.Now.AddDays(1));
@@ -176,7 +176,7 @@ namespace MftBridge {
                         ulong lg = ulong.Parse(qs["login"]); var api = GetApi(lg);
                         if (api == null) { code = 404; resp = "{\"error\":\"not connected\"}"; }
                         else { var ord = api.GetOpenedOrders(); var sb = new StringBuilder(); sb.Append("[");
-                            for (int i = 0; i < ord.Length; i++) { var o = ord[i]; if (i > 0) sb.Append(",");
+                            for (int i = 0; i < ord.Count; i++) { var o = ord[i]; if (i > 0) sb.Append(",");
                                 sb.Append("{\"ticket\":" + o.Ticket + ",\"symbol\":\"" + o.Symbol + "\",\"type\":\"" + o.OrderType + "\",\"lots\":" + o.Lots + ",\"open_price\":" + o.OpenPrice + ",\"profit\":" + Math.Round(o.Profit, 2) + ",\"open_time\":\"" + o.OpenTime.ToString("yyyy-MM-dd HH:mm:ss") + "\",\"account\":" + lg + "}"); }
                             sb.Append("]"); resp = sb.ToString(); }
                     } else if (path == "/trades/history") {
@@ -197,7 +197,7 @@ namespace MftBridge {
                                 string ip = !string.IsNullOrEmpty(sip2) ? sip2 : ServerToIP(sv);
                                 // SAVE to accounts.json FIRST (so it persists across reboots)
                                 SaveAccountToFile(lg, pw, string.IsNullOrEmpty(sv) ? "Exness-MT5Trial15" : sv);
-                                // Always force fresh reconnect â kills old cached MT5API instance
+                                // Always force fresh reconnect Ã¢ÂÂ kills old cached MT5API instance
                                 MT5API old_api = null;
                                 lock (Lock) { if (Accounts.ContainsKey(lg)) { old_api = Accounts[lg]; Accounts.Remove(lg); } }
                                 try { if (old_api != null) old_api.Disconnect(); } catch {}
@@ -218,9 +218,9 @@ namespace MftBridge {
                                     }
                                     if (api == null || api.Account == null) { code = 400; resp = "{\"valid\":false,\"error\":\"Cannot connect - check credentials\"}"; }
                                     else { double bal = api.Account.Balance; bool balOk = bal >= 990.0 && bal <= 1010.0;
-                                        var op = api.GetOpenedOrders(); bool noT = op == null || op.Length == 0;
+                                        var op = api.GetOpenedOrders(); bool noT = op == null || op.Count == 0;
                                         if (!balOk) { code = 400; resp = "{\"valid\":false,\"error\":\"Balance must be $1,000. Yours: $" + bal.ToString("F2") + "\"}"; }
-                                        else if (!noT) { code = 400; resp = "{\"valid\":false,\"error\":\"Close all open trades first\",\"open_trades\":" + op.Length + "}"; }
+                                        else if (!noT) { code = 400; resp = "{\"valid\":false,\"error\":\"Close all open trades first\",\"open_trades\":" + op.Count + "}"; }
                                         else { resp = "{\"valid\":true,\"login\":" + lg + ",\"balance\":" + bal.ToString("F2") + ",\"open_trades\":0}"; Console.WriteLine("[Verify] OK " + lg); } }
                                 } catch (Exception ex) { code = 400; resp = "{\"valid\":false,\"error\":\"" + Esc(ex.Message) + "\"}"; }
                                 finally { try { if (!existing && tmp != null) tmp.Disconnect(); } catch {} } } }
