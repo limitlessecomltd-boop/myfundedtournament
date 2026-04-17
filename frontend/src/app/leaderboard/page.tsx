@@ -124,10 +124,10 @@ function LeaderboardContent() {
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
               <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)" }}>Select Battle</div>
               <select value={selected} onChange={e=>setSelected(e.target.value)}
-                style={{ background:"rgba(13,17,26,.9)", border:"1px solid rgba(255,255,255,.1)", borderRadius:8, color:"#fff", fontSize:13, padding:"9px 12px", outline:"none", cursor:"pointer", minWidth:240 }}>
-                <option value="">Choose tournament...</option>
+                style={{ background:"#0d1220", border:"1px solid rgba(255,255,255,.1)", borderRadius:8, color:"#fff", fontSize:13, padding:"9px 12px", outline:"none", cursor:"pointer", minWidth:240 }}>
+                <option value="" style={{background:"#0d1220", color:"rgba(255,255,255,.4)"}}>Choose tournament...</option>
                 {allTours.map(t=>(
-                  <option key={t.id} value={t.id}>{t.name} — {t.status}</option>
+                  <option key={t.id} value={t.id} style={{background:"#0d1220", color:"#fff"}}>{t.name} — {t.status}</option>
                 ))}
               </select>
             </div>

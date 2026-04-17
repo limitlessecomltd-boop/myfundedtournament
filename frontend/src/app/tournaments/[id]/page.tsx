@@ -639,31 +639,31 @@ export default function TournamentDetailPage() {
                           form.broker;
                         setForm(f => ({...f, mt5Server: sv, broker}));
                       }}
-                      style={{ color: form.mt5Server ? "#fff" : "rgba(255,255,255,.35)" }}
+                      style={{ color: form.mt5Server ? "#fff" : "rgba(255,255,255,.35)", backgroundColor:"#0d1220" }}
                       required>
-                      <option value="" disabled>— Select your server —</option>
-                      <optgroup label="Exness Demo (Trial)">
+                      <option value="" disabled style={{color:"rgba(255,255,255,.35)", backgroundColor:"#080d18"}}>— Select your server —</option>
+                      <optgroup label="Exness Demo (Trial)" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
                         {Array.from({length:30},(_,i)=>`Exness-MT5Trial${i+1 === 1 ? "" : i+1}`).map(s=>(
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
                         ))}
                       </optgroup>
-                      <optgroup label="Exness Real">
+                      <optgroup label="Exness Real" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
                         {["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4",
                           "Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8"].map(s=>(
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
                         ))}
                       </optgroup>
-                      <optgroup label="ICMarkets">
+                      <optgroup label="ICMarkets" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
                         {["ICMarkets-MT5","ICMarkets-MT5Live","ICMarkets-MT5Demo"].map(s=>(
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
                         ))}
                       </optgroup>
-                      <optgroup label="Tickmill">
+                      <optgroup label="Tickmill" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
                         {["Tickmill-MT5Live","Tickmill-MT5Demo"].map(s=>(
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
                         ))}
                       </optgroup>
-                      <option value="__custom__">✏️ Type custom server...</option>
+                      <option value="__custom__" style={{backgroundColor:"#0d1220", color:"rgba(255,215,0,.8)"}}>✏️ Type custom server...</option>
                     </select>
                     {/* Custom server text input - shown when "Type custom" selected */}
                     {form.mt5Server === "__custom__" && (
@@ -689,8 +689,10 @@ export default function TournamentDetailPage() {
                   </div>
                   <div>
                     <label className="input-label">Broker</label>
-                    <select className="input" value={form.broker} onChange={e => setForm(f => ({...f,broker:e.target.value}))}>
-                      {BROKERS.map(b => <option key={b}>{b}</option>)}
+                    <select className="input" value={form.broker}
+                      onChange={e => setForm(f => ({...f,broker:e.target.value}))}
+                      style={{backgroundColor:"#0d1220", color:"#fff"}}>
+                      {BROKERS.map(b => <option key={b} style={{backgroundColor:"#0d1220", color:"#fff"}}>{b}</option>)}
                     </select>
                     <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4,paddingLeft:2}}>
                       Auto-detected from server name when possible
