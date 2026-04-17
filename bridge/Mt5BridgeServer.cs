@@ -268,16 +268,16 @@ namespace MftBridge {
                                         string sip = GetJV(body, "serverIp") ?? "";
                                         string ip  = !string.IsNullOrEmpty(sip) ? sip : ServerToIP(sv);
                                         tmp = new MT5API(lg, pw, ip, MPORT); tmp.Connect();
-                                        int w = 0; while (tmp.Account == null && w < 10000) { Thread.Sleep(200); w += 200; }
+                                        int w = 0; while (tmp.Account == null && w < 20000) { Thread.Sleep(200); w += 200; } // 20s timeout
                                         api = tmp;
                                     }
                                     if (api == null || api.Account == null) { code = 400; resp = "{\"valid\":false,\"error\":\"Cannot connect - check credentials\"}"; }
                                     else {
                                         double bal = api.Account.Balance;
-                                        bool balOk = bal >= 990.0 && bal <= 1010.0;
+                                        bool balOk = bal >= 500.0 && bal <= 1100.0; // Accept $500-$1100 (fresh demo or minor trading)
                                         var op = api.GetOpenedOrders(); // Order[]
                                         bool noT = op == null || op.Length == 0;
-                                        if (!balOk)  { code = 400; resp = "{\"valid\":false,\"error\":\"Balance must be $1,000. Yours: $" + bal.ToString("F2") + "\"}"; }
+                                        if (!balOk)  { code = 400; resp = "{\"valid\":false,\"error\":\"Balance must be between $500-$1,100. Yours: $" + bal.ToString("F2") + ". Reset your demo account to $1,000 in your broker dashboard.\"}"; }
                                         else if (!noT) { code = 400; resp = "{\"valid\":false,\"error\":\"Close all open trades first\",\"open_trades\":" + op.Length + "}"; }
                                         else { resp = "{\"valid\":true,\"login\":" + lg + ",\"balance\":" + bal.ToString("F2") + ",\"open_trades\":0}"; Console.WriteLine("[Verify] OK " + lg); }
                                     }

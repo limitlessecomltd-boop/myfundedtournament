@@ -284,39 +284,42 @@ export default function TournamentDetailPage() {
     entryApi.getMy(id).then(setMyEntries).catch(() => {});
   }
   async function verifyMT5() {
+    if (!form.mt5Login || !form.mt5Password || !form.mt5Server) {
+      setError("Fill in Account Number, Password and Server Name first.");
+      return;
+    }
     setVerifying(true);
     setVerifyResult(null);
     setVerified(false);
     setError("");
     try {
       const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
-      const token = localStorage.getItem("mft_token") || localStorage.getItem("fc_token") || "";
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const r = await fetch(`${API}/api/entries/verify-mt5`, {
         method: "POST",
-        headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-        body: JSON.stringify({ mt5Login: form.mt5Login, mt5Password: form.mt5Password, mt5Server: form.mt5Server, broker: form.broker })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mt5Login:    form.mt5Login.trim(),
+          mt5Password: form.mt5Password.trim(),
+          mt5Server:   form.mt5Server.trim(),
+          broker:      form.broker,
+        }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const data = await r.json();
       const isValid = data.valid === true || data.ok === true;
-
-      // Map bridge response to UI-friendly result
-      let friendlyError = data.error || "";
-      if (!isValid && friendlyError) {
-        if (friendlyError === "INVALID_ACCOUNT")
-          friendlyError = `Account not found on server "${form.mt5Server}". Make sure your MT5 account number and server name are correct. Check your broker dashboard for the exact server name.`;
-        else if (friendlyError.toLowerCase().includes("invalid password") || friendlyError.toLowerCase().includes("auth"))
-          friendlyError = "Wrong password. Use the Master password from your MT5 broker account.";
-        else if (friendlyError.toLowerCase().includes("balance"))
-          friendlyError = data.error; // already has balance info
-        else if (friendlyError.toLowerCase().includes("connect") || friendlyError.toLowerCase().includes("bridge"))
-          friendlyError = "Could not reach the MT5 server. Try clicking Resolve to check your server IP, then try again.";
-      }
-
+      const friendlyError = data.error || "Verification failed";
       setVerifyResult({ ...data, ok: isValid, friendlyError });
       setVerified(isValid);
       if (!isValid) setError(friendlyError);
     } catch(e: any) {
-      setError("Verification failed — " + e.message);
+      const msg = e.name === "AbortError"
+        ? "Verification timed out (30s). MT5 server is slow — wait 30 seconds and try again."
+        : "Verification failed — " + e.message;
+      setError(msg);
+      setVerifyResult({ ok: false, friendlyError: msg });
     } finally {
       setVerifying(false);
     }
@@ -657,7 +660,7 @@ export default function TournamentDetailPage() {
                     <button type="button" onClick={verifyMT5}
                       disabled={verifying || !form.mt5Login || !form.mt5Password || !form.mt5Server}
                       className="btn btn-primary" style={{ width:"100%", marginBottom:10 }}>
-                      {verifying ? "⏳ Verifying account..." : "🔍 Verify MT5 Account"}
+                      {verifying ? "⏳ Connecting to MT5... (up to 20s)" : "🔍 Verify MT5 Account"}
                     </button>
                   )}
 

@@ -91,63 +91,132 @@ router.get("/:id", authenticate, async (req, res, next) => {
 
 router.post('/verify-mt5', async (req, res) => {
   try {
-    const mt5Login    = req.body.mt5Login    || req.body.mt5_login;
-    const mt5Password = req.body.mt5Password || req.body.mt5_password;
-    const mt5Server   = req.body.mt5Server   || req.body.mt5_server || '';
-    const broker      = req.body.broker || 'Exness';
+    const mt5Login    = String(req.body.mt5Login    || req.body.mt5_login    || '').trim();
+    const mt5Password = String(req.body.mt5Password || req.body.mt5_password || '').trim();
+    const mt5Server   = String(req.body.mt5Server   || req.body.mt5_server   || '').trim();
+    const broker      = String(req.body.broker      || 'Exness').trim();
 
     if (!mt5Login || !mt5Password) {
       return res.status(400).json({ valid: false, error: 'Login and password required' });
+    }
+    if (!mt5Server) {
+      return res.status(400).json({ valid: false, error: 'Server name required (e.g. Exness-MT5Trial15)' });
     }
 
     const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
     const SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
 
-    // ââ Resolve server name â IP so any valid server connects automatically ââ
-    let serverIp = mt5Server;
-    try {
-      const serverMap = {
-        'exness-mt5trial':  '47.91.105.29',  // matches Trial, Trial2..Trial99
-        'exness-mt5real8':  '196.191.218.8',
-        'exness-mt5real7':  '196.191.218.7',
-        'exness-mt5real6':  '196.191.218.6',
-        'exness-mt5real5':  '196.191.218.5',
-        'exness-mt5real4':  '196.191.218.4',
-        'exness-mt5real3':  '196.191.218.3',
-        'exness-mt5real2':  '196.191.218.2',
-        'exness-mt5real':   '196.191.218.1',
-        'icmarkets-mt5':    '18.141.205.68',
-        'tickmill':         '52.220.128.77',
-      };
-      const lower = mt5Server.toLowerCase();
-      const match = Object.keys(serverMap).find(k => lower.startsWith(k));
-      if (match) {
-        serverIp = serverMap[match];
-      } else {
-        const { address } = await require('dns').promises.lookup(mt5Server).catch(() => ({ address: mt5Server }));
+    // ── Resolve server name → IP ──────────────────────────────────────────────
+    const serverMap = {
+      'exness-mt5trial':  '47.91.105.29',
+      'exness-mt5real8':  '196.191.218.8',
+      'exness-mt5real7':  '196.191.218.7',
+      'exness-mt5real6':  '196.191.218.6',
+      'exness-mt5real5':  '196.191.218.5',
+      'exness-mt5real4':  '196.191.218.4',
+      'exness-mt5real3':  '196.191.218.3',
+      'exness-mt5real2':  '196.191.218.2',
+      'exness-mt5real':   '196.191.218.1',
+      'icmarkets-mt5':    '18.141.205.68',
+      'tickmill':         '52.220.128.77',
+    };
+
+    const lower = mt5Server.toLowerCase();
+    let serverIp = serverMap[Object.keys(serverMap).find(k => lower.startsWith(k))] || null;
+
+    if (!serverIp) {
+      // Try DNS lookup as fallback for other brokers
+      try {
+        const dns = require('dns');
+        const { address } = await dns.promises.lookup(mt5Server);
         serverIp = address;
+      } catch (_) {
+        serverIp = mt5Server; // pass name directly, bridge will try
       }
-    } catch (_) { /* use server name as fallback */ }
+    }
 
-    const r = await fetch(BRIDGE + '/verify-account', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        login:    String(mt5Login),
-        password: mt5Password,
-        server:   mt5Server,
-        serverIp: serverIp,
-        broker,
-        secret:   SECRET
-      })
-    });
+    // ── Step 1: Force disconnect any cached session for this login ────────────
+    // This ensures we always verify fresh credentials, not cached connections
+    try {
+      await fetch(BRIDGE + '/disconnect-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: mt5Login, secret: SECRET }),
+        signal: AbortSignal.timeout(5000),
+      });
+    } catch (_) { /* disconnect is best-effort */ }
 
-    const data = await r.json();
-    return res.json(data);
+    // ── Step 2: Fresh verify with new credentials ─────────────────────────────
+    let bridgeRes;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000); // 25s — MT5 needs time to connect
+      bridgeRes = await fetch(BRIDGE + '/verify-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          login:    mt5Login,
+          password: mt5Password,
+          server:   mt5Server,
+          serverIp: serverIp,
+          broker,
+          secret:   SECRET,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+    } catch (fetchErr) {
+      if (fetchErr.name === 'AbortError') {
+        return res.status(504).json({ valid: false, error: 'Bridge timeout — MT5 server took too long to respond. Try again.', code: 'TIMEOUT' });
+      }
+      return res.status(503).json({ valid: false, error: 'Bridge unreachable — VPS may be down.', code: 'BRIDGE_DOWN' });
+    }
+
+    const data = await bridgeRes.json();
+
+    // ── Step 3: Normalise the bridge response ─────────────────────────────────
+    if (data.valid === true) {
+      return res.json({
+        valid:   true,
+        ok:      true,
+        balance: data.balance,
+        login:   data.login,
+        message: 'Account verified successfully',
+      });
+    }
+
+    // Bridge returned invalid — map to friendly errors
+    const rawError = (data.error || '').toLowerCase();
+    let friendlyError = data.error || 'Verification failed';
+    let code = 'UNKNOWN';
+
+    if (rawError.includes('balance must be')) {
+      // Extract actual balance from error
+      const match = data.error.match(/Yours: \\$([0-9.]+)/);
+      const actualBal = match ? parseFloat(match[1]) : null;
+      friendlyError = actualBal !== null
+        ? `Your demo account balance is $${actualBal.toFixed(2)}. Please reset it to $1,000 in your Exness dashboard before joining.`
+        : 'Demo account balance must be $1,000. Please reset it in your broker dashboard.';
+      code = 'WRONG_BALANCE';
+    } else if (rawError.includes('close all open trades')) {
+      friendlyError = `You have ${data.open_trades || 'open'} trades. Close all positions in MT5 before joining.`;
+      code = 'OPEN_TRADES';
+    } else if (rawError.includes('cannot connect') || rawError.includes('check credentials') || rawError.includes('invalid')) {
+      friendlyError = `Cannot connect to MT5. Check: (1) Account number is correct, (2) You are using your Master password (not investor), (3) Server name matches exactly — e.g. Exness-MT5Trial15`;
+      code = 'BAD_CREDENTIALS';
+    } else if (rawError.includes('timeout') || rawError.includes('timed out')) {
+      friendlyError = 'MT5 server took too long to respond. Wait 30 seconds and try again.';
+      code = 'TIMEOUT';
+    } else if (rawError.includes('network') || rawError.includes('socket')) {
+      friendlyError = `Cannot reach server "${mt5Server}". Check the server name is spelled correctly.`;
+      code = 'BAD_SERVER';
+    }
+
+    return res.status(400).json({ valid: false, ok: false, error: friendlyError, code, rawError: data.error });
 
   } catch (err) {
     console.error('[verify-mt5]', err.message);
-    return res.status(500).json({ valid: false, error: 'Bridge connection failed: ' + err.message });
+    return res.status(500).json({ valid: false, error: 'Server error: ' + err.message, code: 'SERVER_ERROR' });
   }
 });
 
