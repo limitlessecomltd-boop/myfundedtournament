@@ -214,6 +214,7 @@ export default function TournamentDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ mt5Login:"", mt5Password:"", mt5Server:"", mt5ServerIp:"", broker:"Exness" });
+  const [serverDropOpen, setServerDropOpen] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [verifyResult, setVerifyResult] = useState<any>(null);
@@ -626,64 +627,77 @@ export default function TournamentDetailPage() {
                       value={form.mt5Password}
                       onChange={e => setForm(f => ({...f, mt5Password: e.target.value}))} required/>
                   </div>
-                  {/* Smart Server Picker */}
-                  <div>
+                  {/* Smart Server Picker — Custom dropdown (native select has CSS issues on Windows) */}
+                  <div style={{ position:"relative" }}>
                     <label className="input-label">MT5 Server</label>
-                    <select className="input" value={form.mt5Server}
-                      onChange={e => {
-                        const sv = e.target.value;
-                        const broker =
-                          sv.toLowerCase().includes("exness")     ? "Exness" :
-                          sv.toLowerCase().includes("icmarkets")  ? "ICMarkets" :
-                          sv.toLowerCase().includes("tickmill")   ? "Tickmill" :
-                          form.broker;
-                        setForm(f => ({...f, mt5Server: sv, broker}));
-                      }}
-                      style={{ color: form.mt5Server ? "#fff" : "rgba(255,255,255,.35)", backgroundColor:"#0d1220" }}
-                      required>
-                      <option value="" disabled style={{color:"rgba(255,255,255,.35)", backgroundColor:"#080d18"}}>— Select your server —</option>
-                      <optgroup label="Exness Demo (Trial)" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
-                        {Array.from({length:30},(_,i)=>`Exness-MT5Trial${i+1 === 1 ? "" : i+1}`).map(s=>(
-                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
+                    {/* Trigger button */}
+                    <div onClick={() => setServerDropOpen(o => !o)}
+                      style={{ width:"100%", background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.12)",
+                        borderRadius:8, padding:"10px 14px", color: form.mt5Server && form.mt5Server !== "__custom__" ? "#fff" : "rgba(255,255,255,.35)",
+                        fontSize:14, cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center",
+                        userSelect:"none" as any }}>
+                      <span>{form.mt5Server && form.mt5Server !== "__custom__" ? form.mt5Server : "— Select your server —"}</span>
+                      <span style={{ fontSize:10, opacity:.5 }}>{serverDropOpen ? "▲" : "▼"}</span>
+                    </div>
+                    {/* Dropdown list */}
+                    {serverDropOpen && (
+                      <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:999,
+                        background:"#0d1220", border:"1px solid rgba(255,255,255,.15)", borderRadius:8,
+                        marginTop:4, maxHeight:260, overflowY:"auto", boxShadow:"0 8px 32px rgba(0,0,0,.6)" }}>
+                        {[
+                          { group: "Exness Demo (Trial)", servers: Array.from({length:30},(_,i)=>`Exness-MT5Trial${i===0?"":i+1}`) },
+                          { group: "Exness Real", servers: ["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4","Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8"] },
+                          { group: "ICMarkets", servers: ["ICMarkets-MT5","ICMarkets-MT5Live","ICMarkets-MT5Demo"] },
+                          { group: "Tickmill", servers: ["Tickmill-MT5Live","Tickmill-MT5Demo"] },
+                        ].map(({ group, servers }) => (
+                          <div key={group}>
+                            <div style={{ padding:"7px 14px 4px", fontSize:10, fontWeight:700, letterSpacing:".1em",
+                              textTransform:"uppercase", color:"rgba(255,215,0,.6)", background:"rgba(255,215,0,.04)",
+                              borderBottom:"1px solid rgba(255,255,255,.05)" }}>{group}</div>
+                            {servers.map(s => (
+                              <div key={s} onClick={() => {
+                                  const broker = s.toLowerCase().includes("exness") ? "Exness" :
+                                    s.toLowerCase().includes("icmarkets") ? "ICMarkets" :
+                                    s.toLowerCase().includes("tickmill") ? "Tickmill" : form.broker;
+                                  setForm(f => ({...f, mt5Server: s, broker}));
+                                  setServerDropOpen(false);
+                                }}
+                                style={{ padding:"9px 14px", fontSize:13, color:"#fff", cursor:"pointer",
+                                  background: form.mt5Server === s ? "rgba(255,215,0,.1)" : "transparent",
+                                  borderLeft: form.mt5Server === s ? "2px solid #FFD700" : "2px solid transparent" }}
+                                onMouseEnter={e => (e.currentTarget.style.background="rgba(255,255,255,.07)")}
+                                onMouseLeave={e => (e.currentTarget.style.background= form.mt5Server===s?"rgba(255,215,0,.1)":"transparent")}>
+                                {s}
+                              </div>
+                            ))}
+                          </div>
                         ))}
-                      </optgroup>
-                      <optgroup label="Exness Real" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
-                        {["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4",
-                          "Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8"].map(s=>(
-                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="ICMarkets" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
-                        {["ICMarkets-MT5","ICMarkets-MT5Live","ICMarkets-MT5Demo"].map(s=>(
-                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="Tickmill" style={{backgroundColor:"#080d18", color:"rgba(255,215,0,.7)"}}>
-                        {["Tickmill-MT5Live","Tickmill-MT5Demo"].map(s=>(
-                          <option key={s} value={s} style={{backgroundColor:"#0d1220", color:"#fff"}}>{s}</option>
-                        ))}
-                      </optgroup>
-                      <option value="__custom__" style={{backgroundColor:"#0d1220", color:"rgba(255,215,0,.8)"}}>✏️ Type custom server...</option>
-                    </select>
-                    {/* Custom server text input - shown when "Type custom" selected */}
+                        {/* Custom option */}
+                        <div onClick={() => { setForm(f=>({...f,mt5Server:"__custom__"})); setServerDropOpen(false); }}
+                          style={{ padding:"9px 14px", fontSize:13, color:"rgba(255,215,0,.7)", cursor:"pointer",
+                            borderTop:"1px solid rgba(255,255,255,.07)" }}
+                          onMouseEnter={e=>(e.currentTarget.style.background="rgba(255,255,255,.07)")}
+                          onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
+                          ✏️ Type custom server...
+                        </div>
+                      </div>
+                    )}
+                    {/* Custom text input */}
                     {form.mt5Server === "__custom__" && (
-                      <input className="input" type="text"
+                      <input className="input" type="text" autoFocus
                         placeholder="Type exact server name e.g. Pepperstone-MT5"
                         style={{ marginTop:8 }}
                         onChange={e => {
                           const sv = e.target.value;
-                          const broker =
-                            sv.toLowerCase().includes("exness")    ? "Exness" :
+                          const broker = sv.toLowerCase().includes("exness") ? "Exness" :
                             sv.toLowerCase().includes("icmarkets") ? "ICMarkets" :
-                            sv.toLowerCase().includes("tickmill")  ? "Tickmill" :
-                            form.broker;
+                            sv.toLowerCase().includes("tickmill") ? "Tickmill" : form.broker;
                           setForm(f => ({...f, mt5Server: sv || "__custom__", broker}));
-                        }}
-                        autoFocus/>
+                        }}/>
                     )}
                     {form.mt5Server && form.mt5Server !== "__custom__" && (
-                      <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:4, paddingLeft:2 }}>
-                        ✓ Server selected — IP will be resolved automatically on verify
+                      <div style={{ fontSize:11, color:"rgba(34,197,94,.6)", marginTop:5, paddingLeft:2 }}>
+                        ✓ {form.mt5Server} — IP resolved automatically
                       </div>
                     )}
                   </div>
