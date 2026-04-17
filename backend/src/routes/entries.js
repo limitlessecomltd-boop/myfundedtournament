@@ -108,7 +108,9 @@ router.post('/verify-mt5', async (req, res) => {
 
     // ── Resolve server name → IP ──────────────────────────────────────────────
     const serverMap = {
+      // Exness Trial (all numbered variants Trial1–Trial30 + unnumbered)
       'exness-mt5trial':  '47.91.105.29',
+      // Exness Real
       'exness-mt5real8':  '196.191.218.8',
       'exness-mt5real7':  '196.191.218.7',
       'exness-mt5real6':  '196.191.218.6',
@@ -117,8 +119,17 @@ router.post('/verify-mt5', async (req, res) => {
       'exness-mt5real3':  '196.191.218.3',
       'exness-mt5real2':  '196.191.218.2',
       'exness-mt5real':   '196.191.218.1',
+      // ICMarkets
       'icmarkets-mt5':    '18.141.205.68',
+      // Tickmill
+      'tickmill-mt5':     '52.220.128.77',
       'tickmill':         '52.220.128.77',
+      // Pepperstone
+      'pepperstone-mt5':  '45.32.161.103',
+      // XM
+      'xm-mt5':           '52.76.127.89',
+      // FBS
+      'fbs-mt5':          '47.91.83.57',
     };
 
     const lower = mt5Server.toLowerCase();

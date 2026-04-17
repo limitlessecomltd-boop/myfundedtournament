@@ -612,45 +612,89 @@ export default function TournamentDetailPage() {
                 </button>
               ) : (
                 <form onSubmit={handleJoin} style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                  {[
-                    ["MT5 Account Number",         "e.g. 123456789",         "mt5Login",    "text"],
-                    ["Master Password","Your master password","mt5Password", "password"],
-                    ["MT5 Server",                 "e.g. Exness-MT5Trial15", "mt5Server",   "text"],
-                  ].map(([label,ph,field,type]) => (
-                    <div key={field}>
-                      <label className="input-label">{label}</label>
-                      <input className="input" type={type} placeholder={ph}
-                        value={(form as any)[field]}
-                        onChange={e => setForm(f => ({...f,[field]:e.target.value}))} required/>
-                    </div>
-                  ))}
+                  {/* Account Number */}
                   <div>
-                    <label className="input-label">Server IP <span style={{fontSize:10,color:"rgba(255,255,255,.3)"}}>(auto-resolved)</span></label>
-                    <div style={{display:"flex",gap:8}}>
-                      <input className="input" type="text" placeholder="Click Resolve to auto-fill"
-                        value={form.mt5ServerIp||""}
-                        onChange={e => setForm(f => ({...f, mt5ServerIp: e.target.value}))}
-                        style={{flex:1,color:form.mt5ServerIp&&!form.mt5ServerIp.includes("...")&&form.mt5ServerIp!=="resolve failed"?"#4ade80":"inherit"}}
-                        readOnly={false}/>
-                      <button type="button"
-                        style={{padding:"0 14px",background:"#1a1a2e",border:"1px solid rgba(255,255,255,.2)",borderRadius:8,color:"#fff",cursor:"pointer",fontSize:12,whiteSpace:"nowrap"}}
-                        onClick={async()=>{
-                          if(!form.mt5Server){alert("Enter server name first");return;}
-                          setForm(f=>({...f,mt5ServerIp:"resolving..."}));
-                          try{
-                            const API=process.env.NEXT_PUBLIC_API_URL||"https://myfundedtournament-production.up.railway.app";
-                            const r=await fetch(API+"/api/entries/resolve-server",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({server:form.mt5Server})});
-                            const d=await r.json();
-                            setForm(f=>({...f,mt5ServerIp:d.ip||"unknown"}));
-                          }catch(e){setForm(f=>({...f,mt5ServerIp:"resolve failed"}));}
-                        }}>🔍 Resolve</button>
-                    </div>
+                    <label className="input-label">MT5 Account Number</label>
+                    <input className="input" type="text" placeholder="e.g. 12345678"
+                      value={form.mt5Login}
+                      onChange={e => setForm(f => ({...f, mt5Login: e.target.value}))} required/>
+                  </div>
+                  {/* Master Password */}
+                  <div>
+                    <label className="input-label">Master Password</label>
+                    <input className="input" type="password" placeholder="Master password (not investor)"
+                      value={form.mt5Password}
+                      onChange={e => setForm(f => ({...f, mt5Password: e.target.value}))} required/>
+                  </div>
+                  {/* Smart Server Picker */}
+                  <div>
+                    <label className="input-label">MT5 Server</label>
+                    <select className="input" value={form.mt5Server}
+                      onChange={e => {
+                        const sv = e.target.value;
+                        const broker =
+                          sv.toLowerCase().includes("exness")     ? "Exness" :
+                          sv.toLowerCase().includes("icmarkets")  ? "ICMarkets" :
+                          sv.toLowerCase().includes("tickmill")   ? "Tickmill" :
+                          form.broker;
+                        setForm(f => ({...f, mt5Server: sv, broker}));
+                      }}
+                      style={{ color: form.mt5Server ? "#fff" : "rgba(255,255,255,.35)" }}
+                      required>
+                      <option value="" disabled>— Select your server —</option>
+                      <optgroup label="Exness Demo (Trial)">
+                        {Array.from({length:30},(_,i)=>`Exness-MT5Trial${i+1 === 1 ? "" : i+1}`).map(s=>(
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Exness Real">
+                        {["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4",
+                          "Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8"].map(s=>(
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="ICMarkets">
+                        {["ICMarkets-MT5","ICMarkets-MT5Live","ICMarkets-MT5Demo"].map(s=>(
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Tickmill">
+                        {["Tickmill-MT5Live","Tickmill-MT5Demo"].map(s=>(
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </optgroup>
+                      <option value="__custom__">✏️ Type custom server...</option>
+                    </select>
+                    {/* Custom server text input - shown when "Type custom" selected */}
+                    {form.mt5Server === "__custom__" && (
+                      <input className="input" type="text"
+                        placeholder="Type exact server name e.g. Pepperstone-MT5"
+                        style={{ marginTop:8 }}
+                        onChange={e => {
+                          const sv = e.target.value;
+                          const broker =
+                            sv.toLowerCase().includes("exness")    ? "Exness" :
+                            sv.toLowerCase().includes("icmarkets") ? "ICMarkets" :
+                            sv.toLowerCase().includes("tickmill")  ? "Tickmill" :
+                            form.broker;
+                          setForm(f => ({...f, mt5Server: sv || "__custom__", broker}));
+                        }}
+                        autoFocus/>
+                    )}
+                    {form.mt5Server && form.mt5Server !== "__custom__" && (
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:4, paddingLeft:2 }}>
+                        ✓ Server selected — IP will be resolved automatically on verify
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="input-label">Broker</label>
                     <select className="input" value={form.broker} onChange={e => setForm(f => ({...f,broker:e.target.value}))}>
                       {BROKERS.map(b => <option key={b}>{b}</option>)}
                     </select>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:4,paddingLeft:2}}>
+                      Auto-detected from server name when possible
+                    </div>
                   </div>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", background:"rgba(255,255,255,.03)", borderRadius:8, padding:"10px 12px" }}>
                     🔒 Master password required — used to verify your account balance and trade history.

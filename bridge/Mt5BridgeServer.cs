@@ -21,7 +21,9 @@ namespace MftBridge {
         static string ServerToIP(string server) {
             if (string.IsNullOrEmpty(server)) return "47.91.105.29";
             var map = new Dictionary<string, string> {
+                // Exness Trial (Trial1-Trial30 all use same IP, prefix match covers all)
                 {"Exness-MT5Trial", "47.91.105.29"},
+                // Exness Real
                 {"Exness-MT5Real8", "196.191.218.8"},
                 {"Exness-MT5Real7", "196.191.218.7"},
                 {"Exness-MT5Real6", "196.191.218.6"},
@@ -29,7 +31,18 @@ namespace MftBridge {
                 {"Exness-MT5Real4", "196.191.218.4"},
                 {"Exness-MT5Real3", "196.191.218.3"},
                 {"Exness-MT5Real2", "196.191.218.2"},
-                {"Exness-MT5Real",  "196.191.218.1"}
+                {"Exness-MT5Real",  "196.191.218.1"},
+                // ICMarkets
+                {"ICMarkets-MT5",   "18.141.205.68"},
+                // Tickmill
+                {"Tickmill-MT5",    "52.220.128.77"},
+                {"Tickmill",        "52.220.128.77"},
+                // Pepperstone
+                {"Pepperstone-MT5", "45.32.161.103"},
+                // XM
+                {"XM-MT5",         "52.76.127.89"},
+                // FBS
+                {"FBS-MT5",        "47.91.83.57"}
             };
             foreach (var kv in map)
                 if (server.StartsWith(kv.Key, StringComparison.OrdinalIgnoreCase)) return kv.Value;
