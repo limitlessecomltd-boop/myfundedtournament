@@ -32,8 +32,16 @@ namespace MftBridge {
                 {"Exness-MT5Real3", "196.191.218.3"},
                 {"Exness-MT5Real2", "196.191.218.2"},
                 {"Exness-MT5Real",  "196.191.218.1"},
-                // ICMarkets
+                // ICMarkets (all entity variants - SC/AU/EU/International)
+                {"ICMarketsSC-Demo","18.141.205.68"},
+                {"ICMarketsSC-MT5", "18.141.205.68"},
+                {"ICMarketsSC",     "18.141.205.68"},
+                {"ICMarketsAU",     "18.141.205.68"},
+                {"ICMarketsEU",     "18.141.205.68"},
+                {"ICMarketsInternational", "18.141.205.68"},
                 {"ICMarkets-MT5",   "18.141.205.68"},
+                {"ICMarkets-Demo",  "18.141.205.68"},
+                {"ICMarkets",       "18.141.205.68"},
                 // Tickmill
                 {"Tickmill-MT5",    "52.220.128.77"},
                 {"Tickmill",        "52.220.128.77"},

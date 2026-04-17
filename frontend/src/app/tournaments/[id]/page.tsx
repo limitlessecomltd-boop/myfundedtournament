@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { usePaymentSocket } from "@/hooks/useSockets";
 import { Tournament, Entry } from "@/types";
 
-const BROKERS = ["Exness", "ICMarkets", "Tickmill", "Other"];
+const BROKERS = ["Exness", "ICMarkets", "Tickmill", "Pepperstone", "XM", "FBS", "Other"];
 
 // ── ForumPay Payment Card ─────────────────────────────────────────────────────
 const FORUMPAY_CURRENCIES = [
@@ -647,7 +647,12 @@ export default function TournamentDetailPage() {
                         {[
                           { group: "Exness Demo (Trial)", servers: Array.from({length:30},(_,i)=>`Exness-MT5Trial${i===0?"":i+1}`) },
                           { group: "Exness Real", servers: ["Exness-MT5Real","Exness-MT5Real2","Exness-MT5Real3","Exness-MT5Real4","Exness-MT5Real5","Exness-MT5Real6","Exness-MT5Real7","Exness-MT5Real8"] },
-                          { group: "ICMarkets", servers: ["ICMarkets-MT5","ICMarkets-MT5Live","ICMarkets-MT5Demo"] },
+                          { group: "ICMarkets", servers: [
+                            "ICMarketsSC-Demo","ICMarketsSC-MT5",
+                            "ICMarketsAU-Demo","ICMarketsEU-Demo",
+                            "ICMarketsInternational-Demo",
+                            "ICMarkets-MT5","ICMarkets-MT5Live","ICMarkets-MT5Demo",
+                          ] },
                           { group: "Tickmill", servers: ["Tickmill-MT5Live","Tickmill-MT5Demo"] },
                         ].map(({ group, servers }) => (
                           <div key={group}>

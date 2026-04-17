@@ -119,7 +119,13 @@ router.post('/verify-mt5', async (req, res) => {
       'exness-mt5real3':  '196.191.218.3',
       'exness-mt5real2':  '196.191.218.2',
       'exness-mt5real':   '196.191.218.1',
-      // ICMarkets
+      // ICMarkets (all entity variants)
+      'icmarketssc-demo': '18.141.205.68',   // ICMarketsSC-Demo (Raw Trading Ltd / SC entity)
+      'icmarketssc-mt5':  '18.141.205.68',   // ICMarketsSC-MT5 (live)
+      'icmarketssc':      '18.141.205.68',   // catch-all for SC entity
+      'icmarketsau':      '18.141.205.68',   // AU entity
+      'icmarketseu':      '18.141.205.68',   // EU entity
+      'icmarketsinternational': '18.141.205.68',
       'icmarkets-mt5':    '18.141.205.68',
       // Tickmill
       'tickmill-mt5':     '52.220.128.77',
