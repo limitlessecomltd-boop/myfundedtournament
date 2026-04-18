@@ -280,7 +280,7 @@ export default function HomePage() {
             </div>
 
             {/* trust pills */}
-            <div className="hp-trust-pills" style={{ display:"flex", gap:20, flexWrap:"wrap", animation:"hfadeup .9s .5s ease both" }}}>
+            <div className="hp-trust-pills" style={{ display:"flex", gap:20, flexWrap:"wrap", animation:"hfadeup .9s .5s ease both" }}>
               {["Set your own entry fee","Earn as organiser","No payout denial ever"].map(t=>(
                 <div key={t} style={{ display:"flex", alignItems:"center", gap:7,
                   fontSize:13, color:"rgba(255,255,255,.45)", fontWeight:500 }}>
