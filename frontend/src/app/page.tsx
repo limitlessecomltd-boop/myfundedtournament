@@ -264,7 +264,7 @@ export default function HomePage() {
 
             {/* action buttons */}
             <div className="hp-hero-btns" style={{ display:"flex", gap:14, flexWrap:"wrap", marginBottom:32,
-              animation:"hfadeup .9s .4s ease both" }}}>
+              animation:"hfadeup .9s .4s ease both" }}>
               <Link href="/tournaments" style={{ background:"linear-gradient(135deg,#FFD700,#FFA500)",
                 color:"#000", fontWeight:700, fontSize:15, padding:"15px 36px",
                 borderRadius:8, textDecoration:"none", letterSpacing:".04em",
