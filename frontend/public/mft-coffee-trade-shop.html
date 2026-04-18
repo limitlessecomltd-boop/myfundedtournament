@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MFT Coffee & Trade Shop — The World's First Trading Battle Franchise</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#FFD700;--gold2:#FFA500;--green:#22C55E;--red:#EF4444;--orange:#FF6400;
+  --bg:#030508;--bg2:#080d15;--bg3:#0d1525;--bg4:#111a2e;
+  --text:#fff;--text2:rgba(255,255,255,.6);--text3:rgba(255,255,255,.35);
+  --border:rgba(255,255,255,.08);--gborder:rgba(255,215,0,.2);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+
+/* cursor glow */
+.cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,215,0,.04) 0%,transparent 70%);
+  pointer-events:none;transform:translate(-50%,-50%);z-index:0;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;padding:20px 60px;
+  background:linear-gradient(180deg,rgba(3,5,8,.97) 0%,transparent 100%);backdrop-filter:blur(10px);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-cta{background:var(--gold);color:#000;font-weight:700;font-size:13px;padding:10px 24px;
+  border-radius:6px;text-decoration:none;letter-spacing:.05em;transition:all .2s;}
+.nav-cta:hover{background:#fff;transform:translateY(-1px);}
+
+/* TICKER */
+.ticker{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:14px 0;overflow:hidden;margin-top:72px;}
+.ticker-inner{display:flex;gap:60px;animation:ticker 40s linear infinite;white-space:nowrap;}
+.ticker-item{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);display:flex;align-items:center;gap:8px;}
+.ticker-item span{color:var(--gold);}
+@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding:100px 60px 60px;text-align:center;}
+.hero-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 90% 70% at 50% 0%,rgba(255,100,0,.08) 0%,transparent 55%),
+             radial-gradient(ellipse 60% 50% at 10% 80%,rgba(255,215,0,.05) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 60% at 90% 70%,rgba(34,197,94,.04) 0%,transparent 60%);}
+.hero-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,215,0,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,215,0,.025) 1px,transparent 1px);
+  background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 10%,transparent 80%);}
+.hero-content{position:relative;z-index:1;max-width:1000px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,100,0,.1);border:1px solid rgba(255,100,0,.3);
+  border-radius:100px;padding:8px 20px;font-size:12px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:28px;
+  animation:fadeDown .8s ease both;}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--orange);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.4);}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8.5vw,130px);
+  line-height:.9;letter-spacing:2px;margin-bottom:28px;animation:fadeUp .9s .1s ease both;}
+.hero h1 .l1{display:block;color:var(--text);}
+.hero h1 .l2{display:block;color:var(--text);}
+.hero h1 .l3{display:block;
+  background:linear-gradient(135deg,#FFD700 0%,#FF6400 40%,#FFD700 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fadeUp .9s .2s ease both,shimmer 4s linear 1s infinite;}
+.hero h1 .l4{display:block;color:var(--text);}
+@keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+.hero-sub{font-size:18px;color:var(--text2);line-height:1.75;max-width:680px;
+  margin:0 auto 48px;font-weight:300;animation:fadeUp .9s .3s ease both;}
+.hero-sub strong{color:#fff;font-weight:600;}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fadeUp .9s .4s ease both;}
+.btn-primary{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;font-weight:700;
+  font-size:15px;padding:16px 40px;border-radius:8px;text-decoration:none;letter-spacing:.05em;
+  transition:all .25s;box-shadow:0 0 40px rgba(255,215,0,.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(255,215,0,.5);}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600;
+  font-size:15px;padding:16px 40px;border-radius:8px;text-decoration:none;letter-spacing:.05em;transition:all .25s;}
+.btn-ghost:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);}
+
+/* coffee cup SVG area */
+.hero-visual{margin:56px auto 0;max-width:700px;animation:fadeUp .9s .5s ease both;}
+.shop-mockup{background:var(--bg3);border:1px solid rgba(255,100,0,.2);border-radius:24px;
+  padding:36px;position:relative;overflow:hidden;}
+.shop-mockup::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#FF6400,#FFD700,#22C55E,#FFD700,#FF6400);}
+.shop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+.shop-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--orange);}
+.shop-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+  color:var(--green);letter-spacing:.1em;}
+.shop-live::before{content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--green);animation:pulse 1.5s infinite;}
+.tables-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.table-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;padding:14px 10px;text-align:center;transition:.3s;}
+.table-card.active{border-color:rgba(255,100,0,.3);background:rgba(255,100,0,.06);}
+.table-card.winning{border-color:rgba(255,215,0,.4);background:rgba(255,215,0,.07);}
+.table-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:4px;}
+.table-trader{font-size:13px;font-weight:600;color:var(--text);}
+.table-gain{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;
+  color:var(--green);margin-top:4px;}
+.table-gain.top{color:var(--gold);}
+.table-order{font-size:11px;color:var(--text3);margin-top:3px;}
+.shop-pool{margin-top:20px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);
+  border-radius:14px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.pool-stat .pv{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.pool-stat .pl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);}
+
+/* SECTIONS */
+section{padding:120px 60px;}
+.container{max-width:1200px;margin:0 auto;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'';display:block;width:30px;height:1px;background:var(--gold);}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,5vw,72px);
+  line-height:1;letter-spacing:2px;margin-bottom:20px;}
+.section-sub{font-size:17px;color:var(--text2);line-height:1.7;max-width:560px;}
+
+/* CONCEPT INSIGHT */
+.insight-box{max-width:960px;margin:60px auto 0;
+  background:linear-gradient(135deg,rgba(255,100,0,.07),rgba(255,215,0,.03));
+  border:1px solid rgba(255,100,0,.25);border-radius:20px;padding:72px;
+  text-align:center;position:relative;overflow:hidden;}
+.insight-box::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(255,100,0,.07) 0%,transparent 60%);}
+.insight-quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,3.5vw,46px);
+  letter-spacing:1.5px;line-height:1.15;position:relative;z-index:1;margin-bottom:28px;}
+.insight-quote .hl{background:linear-gradient(135deg,#FFD700,#FF6400);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.insight-note{font-size:16px;color:var(--text2);line-height:1.75;max-width:680px;
+  margin:0 auto;position:relative;z-index:1;}
+
+/* NUMBERS BAR */
+.numbers-section{background:linear-gradient(135deg,rgba(255,100,0,.05),transparent 50%,rgba(255,215,0,.04) 100%);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.numbers-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);}
+.number-cell{background:var(--bg);padding:50px 32px;text-align:center;transition:.3s;}
+.number-cell:hover{background:var(--bg2);}
+.n-value{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;margin-bottom:6px;}
+.n-label{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);}
+.n-sub{font-size:13px;color:var(--text2);margin-top:4px;}
+
+/* WHAT HAPPENS INSIDE */
+.inside-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;margin-top:80px;}
+.inside-points{display:flex;flex-direction:column;gap:24px;}
+.inside-point{display:flex;gap:18px;align-items:flex-start;padding:20px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:14px;transition:.3s;}
+.inside-point:hover{border-color:var(--gborder);}
+.point-icon{width:48px;height:48px;border-radius:12px;flex-shrink:0;
+  background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.15);
+  display:flex;align-items:center;justify-content:center;font-size:22px;}
+.point-title{font-size:16px;font-weight:700;margin-bottom:5px;}
+.point-desc{font-size:13px;color:var(--text2);line-height:1.6;}
+
+/* COMMISSION MODEL */
+.commission-section{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 50%,var(--bg) 100%);}
+.commission-hero{text-align:center;margin-bottom:72px;}
+.commission-hero .section-label{justify-content:center;}
+.commission-hero .section-label::before{display:none;}
+
+.models-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.model-card{background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+  padding:40px 32px;position:relative;overflow:hidden;transition:all .3s;}
+.model-card:hover{border-color:rgba(255,215,0,.3);transform:translateY(-4px);}
+.model-card.featured{border-color:rgba(255,215,0,.4);
+  background:linear-gradient(135deg,rgba(255,215,0,.07) 0%,var(--bg3) 60%);}
+.model-card.featured::before{content:'OWNER PLAN';position:absolute;top:20px;right:-28px;
+  background:var(--gold);color:#000;font-size:10px;font-weight:700;letter-spacing:.1em;
+  padding:5px 40px;transform:rotate(45deg) translateX(-10px);width:140px;text-align:center;}
+.model-icon{font-size:40px;margin-bottom:20px;}
+.model-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:8px;}
+.model-rate{font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:1px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;margin-bottom:4px;}
+.model-rate-label{font-size:13px;color:var(--text3);margin-bottom:24px;}
+.model-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:28px;}
+.model-perks{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.model-perks li{font-size:13px;color:var(--text2);display:flex;gap:10px;align-items:flex-start;}
+.model-perks li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+.model-perks li.bold{color:var(--text);font-weight:600;}
+
+/* REVENUE CALCULATOR */
+.calc-section{background:var(--bg2);}
+.calc-wrapper{max-width:960px;margin:60px auto 0;
+  background:var(--bg3);border:1px solid var(--border);border-radius:24px;padding:60px;}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+.calc-inputs{display:flex;flex-direction:column;gap:28px;}
+.calc-input-group label{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);display:flex;justify-content:space-between;margin-bottom:14px;}
+.calc-input-group label span{color:var(--gold);font-family:'DM Mono',monospace;font-size:14px;}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;
+  background:rgba(255,255,255,.1);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+  border-radius:50%;background:linear-gradient(135deg,#FFD700,#FFA500);cursor:pointer;
+  box-shadow:0 0 12px rgba(255,215,0,.4);}
+.calc-result{text-align:center;}
+.calc-monthly{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.calc-amount{font-family:'Bebas Neue',sans-serif;font-size:80px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;}
+.calc-period{font-size:13px;color:var(--text3);margin-top:4px;margin-bottom:32px;}
+.calc-breakdown{display:flex;flex-direction:column;gap:10px;}
+.calc-row{display:flex;justify-content:space-between;font-size:13px;
+  padding:10px 16px;background:rgba(255,255,255,.03);border-radius:8px;}
+.calc-row .cv{color:var(--gold);font-family:'DM Mono',monospace;font-weight:500;}
+.calc-row.green-row{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12);}
+.calc-row.green-row .cv{color:var(--green);}
+
+/* DAY IN THE LIFE */
+.timeline-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:72px;}
+.day-timeline{display:flex;flex-direction:column;gap:0;}
+.day-item{display:flex;gap:20px;position:relative;}
+.day-item:not(:last-child)::after{content:'';position:absolute;left:19px;top:44px;
+  width:1px;height:calc(100% - 8px);background:var(--border);}
+.day-dot{width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25);
+  display:flex;align-items:center;justify-content:center;font-size:16px;}
+.day-body{padding-bottom:32px;}
+.day-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:4px;}
+.day-title{font-size:15px;font-weight:700;margin-bottom:4px;}
+.day-desc{font-size:13px;color:var(--text2);line-height:1.6;}
+.day-earn{display:inline-flex;margin-top:8px;background:rgba(34,197,94,.08);
+  border:1px solid rgba(34,197,94,.2);color:var(--green);font-size:11px;
+  font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.06em;}
+
+/* PERSONAS */
+.personas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:72px;}
+.persona{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:32px;transition:all .3s;}
+.persona:hover{border-color:rgba(255,215,0,.25);background:var(--bg3);}
+.persona-emoji{font-size:40px;margin-bottom:20px;}
+.persona-title{font-size:18px;font-weight:700;margin-bottom:10px;}
+.persona-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px;}
+.persona-earn{font-size:13px;color:var(--gold);font-weight:600;
+  padding:8px 16px;background:rgba(255,215,0,.08);border-radius:20px;display:inline-block;}
+
+/* WHY CARDS */
+.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:72px;}
+.why-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:32px;display:flex;gap:20px;}
+.why-card.wide{grid-column:span 2;}
+.why-icon{font-size:28px;flex-shrink:0;}
+.why-title{font-size:16px;font-weight:700;margin-bottom:8px;}
+.why-desc{font-size:14px;color:var(--text2);line-height:1.6;}
+.why-highlight{display:inline-block;margin-top:12px;
+  background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);
+  color:var(--green);font-size:12px;font-weight:600;letter-spacing:.08em;
+  padding:4px 12px;border-radius:20px;}
+
+/* INVESTMENT BREAKDOWN */
+.invest-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;margin-top:72px;}
+.invest-card{background:var(--bg3);border:1px solid var(--gborder);border-radius:20px;
+  padding:40px;position:relative;overflow:hidden;}
+.invest-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#FFD700,#FF6400,#FFD700);}
+.invest-label{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:24px;}
+.invest-row{display:flex;justify-content:space-between;align-items:center;
+  padding:12px 0;border-bottom:1px solid var(--border);}
+.invest-row:last-of-type{border:none;}
+.ir-l{font-size:13px;color:var(--text2);}
+.ir-r{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;}
+.ir-r.green{color:var(--green);}.ir-r.gold{color:var(--gold2);}.ir-r.white{color:#fff;}
+.invest-total{margin-top:24px;padding:20px;background:rgba(255,215,0,.05);
+  border:1px solid rgba(255,215,0,.15);border-radius:12px;text-align:center;}
+.it-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.it-value{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.it-sub{font-size:12px;color:var(--text3);margin-top:4px;}
+
+/* SETUP STEPS */
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:72px;position:relative;}
+.steps-grid::before{content:'';position:absolute;top:32px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,215,0,.2) 20%,rgba(255,215,0,.2) 80%,transparent);}
+.step{text-align:center;}
+.step-num{width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,100,0,.1));
+  border:1px solid rgba(255,215,0,.25);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);}
+.step-title{font-size:16px;font-weight:700;margin-bottom:10px;}
+.step-desc{font-size:13px;color:var(--text2);line-height:1.6;}
+
+/* QUOTE */
+.quote-section{background:var(--bg2);text-align:center;padding:100px 60px;}
+.big-quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,68px);
+  letter-spacing:2px;line-height:1.1;max-width:1000px;margin:0 auto 40px;color:rgba(255,255,255,.9);}
+.big-quote span{background:linear-gradient(135deg,#FFD700,#FFA500);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.big-quote .coffee{background:linear-gradient(135deg,#FF6400,#FF3000);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.quote-sub{font-size:17px;color:var(--text2);max-width:560px;margin:0 auto;}
+
+/* VISION — GLOBAL MAP */
+.vision-section{background:var(--bg2);}
+.vision-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:60px;}
+.vision-stat{background:var(--bg3);border:1px solid var(--border);border-radius:16px;
+  padding:32px;text-align:center;transition:.3s;}
+.vision-stat:hover{border-color:var(--gborder);}
+.vs-val{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;margin-bottom:6px;}
+.vs-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);}
+.vs-sub{font-size:13px;color:var(--text2);margin-top:6px;}
+
+/* CTA */
+.cta-section{padding:140px 60px;text-align:center;position:relative;overflow:hidden;}
+.cta-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(255,100,0,.07) 0%,transparent 70%);}
+.cta-section .section-title{font-size:clamp(48px,6vw,96px);margin-bottom:24px;}
+.cta-section .section-sub{margin:0 auto 48px;text-align:center;}
+.cta-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.contact-options{display:flex;gap:32px;justify-content:center;margin-top:48px;flex-wrap:wrap;}
+.contact-opt{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2);}
+.contact-opt a{color:var(--gold);text-decoration:none;font-weight:600;}
+.contact-opt a:hover{text-decoration:underline;}
+
+/* FOOTER */
+footer{padding:40px 60px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.footer-text{font-size:12px;color:var(--text3);}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:16px 24px;}section{padding:80px 24px;}.hero{padding:100px 24px 60px;}
+  .models-grid,.personas-grid,.why-grid,.inside-grid,.invest-grid,.timeline-grid{grid-template-columns:1fr;}
+  .steps-grid{grid-template-columns:1fr 1fr;}.steps-grid::before{display:none;}
+  .numbers-grid{grid-template-columns:1fr 1fr;}.vision-stats{grid-template-columns:1fr 1fr;}
+  .why-card.wide{grid-column:span 1;}.calc-grid{grid-template-columns:1fr;}
+  .calc-wrapper{padding:32px 24px;}.tables-grid{grid-template-columns:1fr 1fr;}
+  footer{flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="glow"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">MFT</div>
+  <a href="mailto:limitlessecomltd@gmail.com?subject=MFT Coffee Trade Shop Franchise Enquiry" class="nav-cta">Open a Shop →</a>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="ticker-item">☕ Coffee & Trade Shop <span>FRANCHISE</span></div>
+    <div class="ticker-item">💰 12% Net Commission <span>EVERY BATTLE</span></div>
+    <div class="ticker-item">🔥 $0 Setup Fee <span>ZERO RISK</span></div>
+    <div class="ticker-item">⚔️ Live Battles All Day <span>NON-STOP</span></div>
+    <div class="ticker-item">☕ Croissants + Trades <span>WORLD FIRST</span></div>
+    <div class="ticker-item">📍 Physical Location <span>YOUR CITY</span></div>
+    <div class="ticker-item">💵 2% Bonus <span>SHOP OWNERS ONLY</span></div>
+    <div class="ticker-item">🌍 Global Franchise <span>OPEN NOW</span></div>
+    <div class="ticker-item">☕ Coffee & Trade Shop <span>FRANCHISE</span></div>
+    <div class="ticker-item">💰 12% Net Commission <span>EVERY BATTLE</span></div>
+    <div class="ticker-item">🔥 $0 Setup Fee <span>ZERO RISK</span></div>
+    <div class="ticker-item">⚔️ Live Battles All Day <span>NON-STOP</span></div>
+    <div class="ticker-item">☕ Croissants + Trades <span>WORLD FIRST</span></div>
+    <div class="ticker-item">📍 Physical Location <span>YOUR CITY</span></div>
+    <div class="ticker-item">💵 2% Bonus <span>SHOP OWNERS ONLY</span></div>
+    <div class="ticker-item">🌍 Global Franchise <span>OPEN NOW</span></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">☕ The World's First Trading Battle Franchise — Now Open</div>
+    <h1>
+      <span class="l1">MFT COFFEE</span>
+      <span class="l3">&amp; TRADE SHOP</span>
+      <span class="l4">THE FRANCHISE THAT PRINTS WHILE YOU POUR</span>
+    </h1>
+    <p class="hero-sub">
+      Imagine a coffee shop where every table is a <strong>live trading battle station</strong>.
+      Traders come in, order coffee and croissants, sit down, and compete in 90-minute MT5 battles —
+      while <strong>you earn 12% commission on every single entry fee. All day. Every day.</strong>
+    </p>
+    <div class="hero-actions">
+      <a href="mailto:limitlessecomltd@gmail.com?subject=MFT Coffee Trade Shop Franchise" class="btn-primary">Claim Your City →</a>
+      <a href="#commission" class="btn-ghost">See the Numbers ↓</a>
+    </div>
+
+    <!-- live shop mockup -->
+    <div class="hero-visual">
+      <div class="shop-mockup">
+        <div class="shop-header">
+          <div class="shop-name">☕ MFT COFFEE &amp; TRADE — LAHORE BRANCH</div>
+          <div class="shop-live">6 BATTLES LIVE NOW</div>
+        </div>
+        <div class="tables-grid">
+          <div class="table-card winning">
+            <div class="table-num">TABLE 01</div>
+            <div class="table-trader">Khalid A.</div>
+            <div class="table-gain top">+47.3% 🥇</div>
+            <div class="table-order">☕ Espresso</div>
+          </div>
+          <div class="table-card active">
+            <div class="table-num">TABLE 02</div>
+            <div class="table-trader">Mubeen R.</div>
+            <div class="table-gain">+31.8%</div>
+            <div class="table-order">🥐 Croissant</div>
+          </div>
+          <div class="table-card active">
+            <div class="table-num">TABLE 03</div>
+            <div class="table-trader">Aisha K.</div>
+            <div class="table-gain">+28.5%</div>
+            <div class="table-order">🥪 Sandwich</div>
+          </div>
+          <div class="table-card active">
+            <div class="table-num">TABLE 04</div>
+            <div class="table-trader">Chen W.</div>
+            <div class="table-gain">+19.2%</div>
+            <div class="table-order">☕ Latte</div>
+          </div>
+          <div class="table-card active">
+            <div class="table-num">TABLE 05</div>
+            <div class="table-trader">Faisal M.</div>
+            <div class="table-gain">+14.8%</div>
+            <div class="table-order">☕ Cappuccino</div>
+          </div>
+          <div class="table-card active">
+            <div class="table-num">TABLE 06</div>
+            <div class="table-trader">Zara T.</div>
+            <div class="table-gain">+11.3%</div>
+            <div class="table-order">🥐 Croissant</div>
+          </div>
+          <div class="table-card active">
+            <div class="table-num">TABLE 07</div>
+            <div class="table-trader">Aryan S.</div>
+            <div class="table-gain">+9.6%</div>
+            <div class="table-order">🥪 Club Sandwich</div>
+          </div>
+          <div class="table-card">
+            <div class="table-num">TABLE 08</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:8px;">Open Seat</div>
+            <div style="font-size:20px;margin-top:8px;">➕</div>
+          </div>
+        </div>
+        <div class="shop-pool">
+          <div class="pool-stat">
+            <div class="pv">$2,400</div>
+            <div class="pl">Today's Battle Pool</div>
+          </div>
+          <div class="pool-stat">
+            <div class="pv">$288</div>
+            <div class="pl">Your 12% Today</div>
+          </div>
+          <div class="pool-stat">
+            <div class="pv">38</div>
+            <div class="pl">Traders Seated</div>
+          </div>
+          <div class="pool-stat">
+            <div class="pv">$6</div>
+            <div class="pl">Avg Coffee Sale</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THE CONCEPT -->
+<section>
+  <div class="container">
+    <div class="section-label reveal">The Concept</div>
+    <h2 class="section-title reveal">THE WORLD'S FIRST TRADING BATTLE CAFÉ</h2>
+    <p class="section-sub reveal">Two industries that have never been combined — until now. A physical space where traders eat, drink, and compete for funded accounts and USDT cashouts.</p>
+    <div class="insight-box reveal">
+      <div class="insight-quote">
+        "STARBUCKS BUILT AN EMPIRE SELLING <span class="hl">$7 COFFEE.</span><br/>
+        WE BUILD AN EMPIRE WHERE EVERY SIP FUNDS<br/>
+        A <span class="hl">$500 TRADING BATTLE.</span><br/>
+        YOU OWN THE SHOP. <span class="coffee">YOU KEEP 12%.</span>"
+      </div>
+      <p class="insight-note">
+        MFT Coffee &amp; Trade Shop is a licensed franchise where the venue owner runs live 90-minute trading battles all day long.
+        Traders sit at dedicated battle stations, connect their MT5 demo accounts, pay their entry fee — and compete.
+        The shop owner earns 12% commission on every entry, every day, on every battle.
+        <strong>The coffee and food? That's pure bonus revenue on top.</strong>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<div class="numbers-section reveal">
+  <div class="numbers-grid">
+    <div class="number-cell">
+      <div class="n-value">12%</div>
+      <div class="n-label">Commission Per Entry</div>
+      <div class="n-sub">2% bonus for shop owners</div>
+    </div>
+    <div class="number-cell">
+      <div class="n-value">$0</div>
+      <div class="n-label">Platform Setup Fee</div>
+      <div class="n-sub">Zero upfront to MFT</div>
+    </div>
+    <div class="number-cell">
+      <div class="n-value">90</div>
+      <div class="n-label">Minutes Per Battle</div>
+      <div class="n-sub">Multiple per day, all day</div>
+    </div>
+    <div class="number-cell">
+      <div class="n-value">∞</div>
+      <div class="n-label">Battles Per Day</div>
+      <div class="n-sub">New battle when last one ends</div>
+    </div>
+    <div class="number-cell">
+      <div class="n-value">2×</div>
+      <div class="n-label">Revenue Streams</div>
+      <div class="n-sub">Battle commissions + F&amp;B sales</div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT HAPPENS INSIDE -->
+<section style="background:var(--bg2);">
+  <div class="container">
+    <div class="inside-grid">
+      <div class="reveal">
+        <div class="section-label">Inside the Shop</div>
+        <h2 class="section-title">A COFFEE SHOP THAT TRADES FOR YOU</h2>
+        <p class="section-sub" style="margin-bottom:0;">
+          Every piece of the experience is designed to create a recurring, addictive loop that keeps traders coming back — and keeps your commission counter climbing.
+        </p>
+      </div>
+      <div class="inside-points reveal">
+        <div class="inside-point">
+          <div class="point-icon">💻</div>
+          <div>
+            <div class="point-title">Dedicated Battle Stations</div>
+            <div class="point-desc">Each table has a laptop or screen running MT5. Traders sit down, connect their demo account in 60 seconds, pay entry via USDT QR code, and they're live. Your staff assist — no tech knowledge needed.</div>
+          </div>
+        </div>
+        <div class="inside-point">
+          <div class="point-icon">☕</div>
+          <div>
+            <div class="point-title">Food &amp; Drinks Revenue On Top</div>
+            <div class="point-desc">Traders spend 90 minutes in your shop. That's a coffee, a croissant, maybe a sandwich. Average spend $8–$15 per person. With 30 traders per day that's an extra $240–$450 in F&amp;B — before you touch the commission.</div>
+          </div>
+        </div>
+        <div class="inside-point">
+          <div class="point-icon">📺</div>
+          <div>
+            <div class="point-title">Live Leaderboard on the Wall</div>
+            <div class="point-desc">A big screen shows the live battle leaderboard. Traders see each other's gains. The competitive energy is electric. Spectators watch. Some sign up on the spot. The screen is your best marketing.</div>
+          </div>
+        </div>
+        <div class="inside-point">
+          <div class="point-icon">🔄</div>
+          <div>
+            <div class="point-title">Non-Stop Battle Cycle</div>
+            <div class="point-desc">Battle ends, winner is announced, new battle starts filling up. The cycle never stops. Regulars come every day. Losers come back for revenge. Winners come back to defend. Your shop is always buzzing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMISSION MODEL -->
+<section class="commission-section" id="commission">
+  <div class="container">
+    <div class="commission-hero reveal">
+      <div class="section-label">Your Commission</div>
+      <h2 class="section-title">HOW YOU EARN AS A SHOP OWNER</h2>
+      <p class="section-sub" style="margin:0 auto;text-align:center;">
+        Three layers of earning baked into one physical location. Every cup of coffee is also a battle commission.
+      </p>
+    </div>
+    <div class="models-grid reveal">
+      <div class="model-card">
+        <div class="model-icon">☕</div>
+        <div class="model-name">F&B Revenue</div>
+        <div class="model-rate">100%</div>
+        <div class="model-rate-label">of all food &amp; drinks sales — yours</div>
+        <div class="model-desc">Coffee, tea, croissants, sandwiches, juices. Every drink sold to a trader at your shop is pure profit for your business. We take nothing from your F&B.</div>
+        <ul class="model-perks">
+          <li class="bold">100% of café revenue is yours</li>
+          <li>Average spend $8–$15 per trader</li>
+          <li>30–100 traders per day</li>
+          <li>Turns into $240–$1,500/day F&amp;B alone</li>
+          <li>Traders stay 90+ mins = upsell easily</li>
+        </ul>
+      </div>
+      <div class="model-card featured">
+        <div class="model-icon">💰</div>
+        <div class="model-name">Battle Commission</div>
+        <div class="model-rate">12%</div>
+        <div class="model-rate-label">on every entry fee — automatically paid</div>
+        <div class="model-desc">Standard affiliate commission is 10%. As a registered MFT Physical Shop, you receive an exclusive 2% bonus — 12% total — on every battle entry made from your location.</div>
+        <ul class="model-perks">
+          <li class="bold">12% on every battle entry</li>
+          <li class="bold">2% exclusive shop owner bonus</li>
+          <li>Paid automatically on battle end</li>
+          <li>$3 per $25 entry (Starter Bullet)</li>
+          <li>$6 per $50 entry (Pro Bullet)</li>
+          <li>No caps. No limits. Scales with footfall.</li>
+        </ul>
+      </div>
+      <div class="model-card">
+        <div class="model-icon">🎯</div>
+        <div class="model-name">Guild Battles</div>
+        <div class="model-rate">+5–40%</div>
+        <div class="model-rate-label">run your own battles for extra cut</div>
+        <div class="model-desc">On top of your 12% commission, you can also create your own Guild Battles at custom entry fees. Keep up to 40% of the pool as organiser — stacking on top of your standard commission.</div>
+        <ul class="model-perks">
+          <li class="bold">Stack Guild earnings on top of 12%</li>
+          <li>Set $50–$500 premium entry fees</li>
+          <li>Weekend "Championship Battles"</li>
+          <li>VIP table events, corporate bookings</li>
+          <li>Maximum earning potential</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE CALCULATOR -->
+<section class="calc-section">
+  <div class="container">
+    <div style="text-align:center;" class="reveal">
+      <div class="section-label" style="justify-content:center;"><span></span>Revenue Calculator</div>
+      <h2 class="section-title">WHAT DOES YOUR SHOP EARN?</h2>
+      <p class="section-sub" style="margin:0 auto;">Drag the sliders. See your daily and monthly income from battles alone.</p>
+    </div>
+    <div class="calc-wrapper reveal">
+      <div class="calc-grid">
+        <div class="calc-inputs">
+          <div class="calc-input-group">
+            <label>Traders Per Day <span id="lv-t">40 traders</span></label>
+            <input type="range" min="5" max="200" value="40" step="5" id="sl-t"/>
+          </div>
+          <div class="calc-input-group">
+            <label>Average Entry Fee <span id="lv-f">$50 USDT</span></label>
+            <input type="range" min="25" max="200" value="50" step="25" id="sl-f"/>
+          </div>
+          <div class="calc-input-group">
+            <label>Operating Days Per Month <span id="lv-d">26 days</span></label>
+            <input type="range" min="10" max="31" value="26" id="sl-d"/>
+          </div>
+          <div class="calc-input-group">
+            <label>Avg F&amp;B Spend Per Trader <span id="lv-fb">$10</span></label>
+            <input type="range" min="5" max="25" value="10" step="1" id="sl-fb"/>
+          </div>
+          <div style="padding:16px;background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.12);border-radius:10px;font-size:13px;color:var(--text2);line-height:1.75;">
+            ☕ <strong style="color:#fff;">Pro tip:</strong> A shop near a university or business district with 60 traders/day at $50 entry can generate <strong style="color:var(--gold);">$9,360/month</strong> in battle commissions alone — before a single cup of coffee.
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-monthly">Your Monthly Revenue</div>
+          <div class="calc-amount" id="cv-total">$14,360</div>
+          <div class="calc-period">battle commissions + food &amp; drinks</div>
+          <div class="calc-breakdown">
+            <div class="calc-row"><span>Daily battle entries value</span><span class="cv" id="cv-daily-pool">$2,000</span></div>
+            <div class="calc-row"><span>Your 12% daily commission</span><span class="cv" id="cv-daily-comm">$240</span></div>
+            <div class="calc-row"><span>Daily F&amp;B revenue</span><span class="cv" id="cv-daily-fb">$400</span></div>
+            <div class="calc-row"><span>Monthly battle commissions</span><span class="cv" id="cv-mon-comm">$6,240</span></div>
+            <div class="calc-row"><span>Monthly F&amp;B revenue</span><span class="cv" id="cv-mon-fb">$10,400</span></div>
+            <div class="calc-row green-row"><span><strong>Combined monthly total</strong></span><span class="cv" id="cv-combined">$16,640</span></div>
+            <div class="calc-row"><span>Annual projection</span><span class="cv" id="cv-annual">$199,680/yr</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DAY IN THE LIFE -->
+<section style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-label reveal">A Day In The Shop</div>
+    <h2 class="section-title reveal">FROM FIRST COFFEE TO LAST TRADE</h2>
+    <p class="section-sub reveal">This is what a typical day looks like at an MFT Coffee &amp; Trade Shop. Every hour earns. Every battle counts.</p>
+    <div class="timeline-grid reveal">
+      <div class="day-timeline">
+        <div class="day-item">
+          <div class="day-dot">🌅</div>
+          <div class="day-body">
+            <div class="day-time">07:00 AM — OPEN</div>
+            <div class="day-title">Doors Open, First Battle Fills</div>
+            <div class="day-desc">Morning traders arrive, laptops out, coffees ordered. First battle of the day fills up and starts. 25 traders × $25 entry = $625 pool. You earn $75 before 8am.</div>
+            <span class="day-earn">+$75 earned</span>
+          </div>
+        </div>
+        <div class="day-item">
+          <div class="day-dot">☕</div>
+          <div class="day-body">
+            <div class="day-time">09:00 AM — RUSH HOUR</div>
+            <div class="day-title">Battle 2 &amp; 3 Run Simultaneously</div>
+            <div class="day-desc">Pro Bullet table fills — 25 traders at $50 each. $1,250 pool running. Your barista is flat out serving cappuccinos. You earn $150 from the Pro battle while the coffee queue builds.</div>
+            <span class="day-earn">+$150 per battle</span>
+          </div>
+        </div>
+        <div class="day-item">
+          <div class="day-dot">🏆</div>
+          <div class="day-body">
+            <div class="day-time">12:00 PM — WINNER DECLARED</div>
+            <div class="day-title">Live Celebration, New Battle Starts</div>
+            <div class="day-desc">The leaderboard screen shows the winner. The shop erupts. Losing traders immediately sign up for the next battle. The crowd effect converts spectators to participants on the spot.</div>
+            <span class="day-earn">Viral word-of-mouth</span>
+          </div>
+        </div>
+        <div class="day-item">
+          <div class="day-dot">🎯</div>
+          <div class="day-body">
+            <div class="day-time">02:00 PM — GUILD BATTLE</div>
+            <div class="day-title">Your Premium $100 Entry Battle</div>
+            <div class="day-desc">You run a special Guild Battle — 20 traders at $100 entry. $2,000 pool. You keep 10% as organiser ($200) PLUS your 12% standard commission ($240). One battle earns $440.</div>
+            <span class="day-earn">+$440 from one Guild battle</span>
+          </div>
+        </div>
+        <div class="day-item">
+          <div class="day-dot">🌙</div>
+          <div class="day-body">
+            <div class="day-time">08:00 PM — CLOSE</div>
+            <div class="day-title">Count the Day's Earnings</div>
+            <div class="day-desc">Doors close. 8 battles ran today. 120 traders. $8,400 in total entries. Your 12% = $1,008. Plus F&amp;B — 120 traders × $10 average = $1,200. Today's total: $2,208.</div>
+            <span class="day-earn">+$2,208 total today</span>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div style="background:var(--bg3);border:1px solid var(--gborder);border-radius:20px;padding:40px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FFD700,#FF6400,#FFD700);"></div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:28px;">
+            📊 Daily P&amp;L — Typical Weekday
+          </div>
+
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;color:var(--text2);">Battles run</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;color:#fff;">6–10 battles</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;color:var(--text2);">Traders seated</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;color:#fff;">50–120 traders</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;color:var(--text2);">Total entry pool generated</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;color:var(--gold2);">$3,000–$8,000</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;color:var(--text2);">Your 12% battle commission</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;color:var(--green);">$360–$960</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;color:var(--text2);">F&amp;B revenue (coffee, food)</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;color:var(--gold2);">$400–$1,200</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px 0;">
+            <span style="font-size:13px;color:var(--text2);">Guild Battle organiser cut</span>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;color:var(--gold2);">$0–$500</span>
+          </div>
+
+          <div style="margin-top:24px;padding:22px;background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:12px;text-align:center;">
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;">Estimated Daily Total</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;">$760–$2,660</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;">per operating day</div>
+          </div>
+
+          <div style="margin-top:20px;padding:16px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:10px;font-size:13px;color:var(--text2);line-height:1.7;text-align:center;">
+            🔥 At <strong style="color:#fff;">26 days/month</strong>, a mid-performing shop generates<br/>
+            <strong style="color:var(--green);">$19,760–$69,160/month</strong> in total revenue.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO SHOULD OPEN ONE -->
+<section>
+  <div class="container">
+    <div class="section-label reveal">Perfect For</div>
+    <h2 class="section-title reveal">WHO SHOULD OPEN AN MFT COFFEE &amp; TRADE SHOP?</h2>
+    <p class="section-sub reveal">You don't need to be a trader. You just need a space, a dream, and the willingness to serve the best cup of coffee in the trading world.</p>
+    <div class="personas-grid reveal">
+      <div class="persona">
+        <div class="persona-emoji">☕</div>
+        <div class="persona-title">Existing Café Owners</div>
+        <div class="persona-desc">You already have the location, the staff, and the coffee machine. Add battle stations to your existing café and unlock a second revenue stream overnight. Your footfall converts to battle entries with zero extra marketing.</div>
+        <span class="persona-earn">Lowest barrier to entry</span>
+      </div>
+      <div class="persona">
+        <div class="persona-emoji">📍</div>
+        <div class="persona-title">First-Time Franchise Investors</div>
+        <div class="persona-desc">Want to open a business with a clear, tested revenue model? MFT Coffee &amp; Trade Shop is a franchise where the commission revenue is calculable, transparent, and consistent — and it's backed by blockchain proof.</div>
+        <span class="persona-earn">$0 platform setup fee to MFT</span>
+      </div>
+      <div class="persona">
+        <div class="persona-emoji">📊</div>
+        <div class="persona-title">Trading Educators &amp; Mentors</div>
+        <div class="persona-desc">You already gather traders for your sessions. Open a physical space where your students trade live in a café environment. You earn 12% on every entry fee — and the café pays for itself while you teach.</div>
+        <span class="persona-earn">Community + income = one venue</span>
+      </div>
+      <div class="persona">
+        <div class="persona-emoji">🌍</div>
+        <div class="persona-title">Emerging Market Entrepreneurs</div>
+        <div class="persona-desc">In Pakistan, UAE, Egypt, Nigeria, Indonesia — trading culture is exploding. A dedicated physical trading battle café is a first-mover opportunity in markets where the concept has never existed. Be the pioneer.</div>
+        <span class="persona-earn">First-mover in your city</span>
+      </div>
+      <div class="persona">
+        <div class="persona-emoji">🏢</div>
+        <div class="persona-title">Co-Working Space Operators</div>
+        <div class="persona-desc">Add a dedicated "Trading Floor" section to your co-working space. Traders pay membership AND battle entry fees. The battle station creates a recurring reason to come back every single day.</div>
+        <span class="persona-earn">Daily recurring footfall</span>
+      </div>
+      <div class="persona">
+        <div class="persona-emoji">💼</div>
+        <div class="persona-title">Investor Groups &amp; Funds</div>
+        <div class="persona-desc">License multiple locations under one operator. A small group of 5 shops in a single city can generate $500K+ per year in combined commissions and F&amp;B — with transparent, blockchain-verifiable revenue.</div>
+        <span class="persona-earn">Multi-location franchise model</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY THIS WORKS -->
+<section style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-label reveal">Why It Works</div>
+    <h2 class="section-title reveal">FOUR REASONS THIS DISRUPTS EVERYTHING</h2>
+    <div class="why-grid reveal">
+      <div class="why-card wide">
+        <div class="why-icon">🔄</div>
+        <div>
+          <div class="why-title">The Social Circle Effect — Why Traders Come Back Every Single Day</div>
+          <div class="why-desc">Starbucks discovered that making coffee a "third place" (home, work, café) was worth $100 billion. MFT Coffee &amp; Trade Shop creates the ultimate third place for traders. It's not just about the battle — it's about the community. Traders make friends. They form rivalries. They share strategies. They come back tomorrow because their competitor is already there. The shop becomes the social hub of the local trading scene. And every return visit is another commission for you.</div>
+          <span class="why-highlight">✓ Habit-forming social loop</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📺</div>
+        <div>
+          <div class="why-title">The Spectator Economy</div>
+          <div class="why-desc">When battles are running and the big screen shows a live leaderboard, non-traders become spectators. Spectators become curious. Curious people become traders. Every battle is a live advertisement for the next one. Your shop markets itself.</div>
+          <span class="why-highlight">✓ Self-marketing engine</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🧾</div>
+        <div>
+          <div class="why-title">Transparent, On-Chain Revenue</div>
+          <div class="why-desc">Every entry fee is paid in USDT and recorded on the blockchain. Your commission is calculated and paid automatically when each battle ends. There's no "trusting the franchisor" — the smart contract is the franchisor.</div>
+          <span class="why-highlight">✓ Zero payout disputes</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">☕</div>
+        <div>
+          <div class="why-title">Café Revenue Is Pure Bonus</div>
+          <div class="why-desc">Most franchises need F&amp;B to be profitable. MFT shops are profitable purely from battle commissions. The coffee and food is pure unapologetic bonus revenue. You don't need a full restaurant — even a small menu works.</div>
+          <span class="why-highlight">✓ Two revenue streams, one space</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🌐</div>
+        <div>
+          <div class="why-title">Works in Any City Globally</div>
+          <div class="why-desc">USDT payments work everywhere. MT5 is available in every country. Trading culture exists globally. Whether you're in Dubai, Karachi, Lagos, Jakarta or London — the concept works wherever traders exist.</div>
+          <span class="why-highlight">✓ Global franchise model</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🚀</div>
+        <div>
+          <div class="why-title">First Physical Trading Battle Venue on Earth</div>
+          <div class="why-desc">No one has done this. Not Starbucks. Not any café chain. Not any prop firm. You would be operating the world's first physical live-trading-battle café. That's a media story. That's virality. That's a category you own entirely.</div>
+          <span class="why-highlight">✓ World first — zero competition</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVESTMENT REALITY -->
+<section>
+  <div class="container">
+    <div class="section-label reveal">The Investment</div>
+    <h2 class="section-title reveal">WHAT IT COSTS TO OPEN. WHAT IT MAKES.</h2>
+    <p class="section-sub reveal">The honest numbers. What you spend to set up, and what you earn from day one.</p>
+    <div class="invest-grid reveal">
+      <div class="invest-card">
+        <div class="invest-label">📋 One-Time Setup Costs (Your Side)</div>
+        <div class="invest-row"><div class="ir-l">Café space rent (first month)</div><div class="ir-r gold">~$800–$3,000</div></div>
+        <div class="invest-row"><div class="ir-l">Battle station setups (laptops + screens)</div><div class="ir-r gold">~$200–$500 each</div></div>
+        <div class="invest-row"><div class="ir-l">Coffee machine &amp; basic F&amp;B setup</div><div class="ir-r gold">~$500–$2,000</div></div>
+        <div class="invest-row"><div class="ir-l">Signage &amp; branding materials</div><div class="ir-r gold">~$200–$600</div></div>
+        <div class="invest-row"><div class="ir-l">WiFi setup (high-speed, low latency)</div><div class="ir-r gold">~$100–$300</div></div>
+        <div class="invest-row"><div class="ir-l">Big screen for live leaderboard</div><div class="ir-r gold">~$200–$500</div></div>
+        <div class="invest-row"><div class="ir-l"><strong>MFT Platform Setup Fee</strong></div><div class="ir-r green">$0 — FREE</div></div>
+        <div class="invest-total">
+          <div class="it-label">Total Estimated Setup</div>
+          <div class="it-value">$2K–$7K</div>
+          <div class="it-sub">depending on location &amp; scale</div>
+        </div>
+      </div>
+      <div class="invest-card">
+        <div class="invest-label">💰 Monthly Revenue Projection (Mid-Size Shop)</div>
+        <div class="invest-row"><div class="ir-l">Daily traders (avg)</div><div class="ir-r white">50 traders</div></div>
+        <div class="invest-row"><div class="ir-l">Average entry fee</div><div class="ir-r white">$50 USDT</div></div>
+        <div class="invest-row"><div class="ir-l">Operating days per month</div><div class="ir-r white">26 days</div></div>
+        <div class="invest-row"><div class="ir-l">Monthly battle entries total</div><div class="ir-r gold">$65,000</div></div>
+        <div class="invest-row"><div class="ir-l">Your 12% commission</div><div class="ir-r green">$7,800/mo</div></div>
+        <div class="invest-row"><div class="ir-l">F&amp;B revenue (50 traders × $10 × 26)</div><div class="ir-r green">$13,000/mo</div></div>
+        <div class="invest-row"><div class="ir-l">Estimated monthly costs (rent + staff + COGS)</div><div class="ir-r" style="color:var(--red);">~$3,500/mo</div></div>
+        <div class="invest-total">
+          <div class="it-label">Monthly Net Profit</div>
+          <div class="it-value">$17,300</div>
+          <div class="it-sub">ROI on setup achieved in less than 2 weeks</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO GET STARTED -->
+<section style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-label reveal">Getting Started</div>
+    <h2 class="section-title reveal">CLAIM YOUR CITY IN 4 STEPS</h2>
+    <div class="steps-grid reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Contact MFT</div>
+        <div class="step-desc">Email us with your city, space size, and vision. We confirm your location exclusivity. First enquiry for a city gets first right to operate there.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Set Up Your Shop</div>
+        <div class="step-desc">You set up the physical space — tables, screens, coffee, WiFi. We provide the MFT platform, branding assets, signage templates, and onboarding guide. $0 platform fee to us.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Go Live</div>
+        <div class="step-desc">Your shop opens. First battle starts. Traders sit down, connect MT5, pay entry, and compete. The platform tracks everything automatically. You watch the commission counter run.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Collect &amp; Scale</div>
+        <div class="step-desc">Commissions paid automatically in USDT within 24 hours of each battle end. Scale up: more tables, more hours, more Guild Battles. Open a second location. Build your trading empire.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE BIG VISION -->
+<section class="vision-section">
+  <div class="container">
+    <div style="text-align:center;" class="reveal">
+      <div class="section-label" style="justify-content:center;"><span></span>The Vision</div>
+      <h2 class="section-title">1,000 SHOPS. ONE GLOBAL TRADING NETWORK.</h2>
+      <p class="section-sub" style="margin:0 auto;text-align:center;">
+        This isn't just a café franchise. This is the physical infrastructure of the world's first live trading battle social network.
+        Every shop is a node. Every trader is a member. Every battle is a connection.
+      </p>
+    </div>
+    <div class="vision-stats reveal">
+      <div class="vision-stat">
+        <div class="vs-val">1,000</div>
+        <div class="vs-label">Target Locations</div>
+        <div class="vs-sub">Globally by 2028</div>
+      </div>
+      <div class="vision-stat">
+        <div class="vs-val">50K</div>
+        <div class="vs-label">Daily Active Traders</div>
+        <div class="vs-sub">Across all shop locations</div>
+      </div>
+      <div class="vision-stat">
+        <div class="vs-val">$2.5M</div>
+        <div class="vs-label">Daily Battle Volume</div>
+        <div class="vs-sub">Across the network</div>
+      </div>
+      <div class="vision-stat">
+        <div class="vs-val">180+</div>
+        <div class="vs-label">Countries Eligible</div>
+        <div class="vs-sub">USDT + MT5 = global</div>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:40px;max-width:860px;margin-left:auto;margin-right:auto;
+      background:linear-gradient(135deg,rgba(255,100,0,.07),rgba(255,215,0,.04));
+      border:1px solid rgba(255,100,0,.2);border-radius:16px;padding:40px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:12px;">
+        THE STARBUCKS OF TRADING.
+        <span style="background:linear-gradient(135deg,#FFD700,#FF6400);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+          THE CHESS CLUB WITH REAL PRIZES.
+        </span>
+        THE SOCIAL CIRCLE THAT PRINTS MONEY.
+      </div>
+      <p style="font-size:15px;color:var(--text2);line-height:1.75;max-width:620px;margin:0 auto;">
+        When traders know there's a place in their city where they can walk in, order coffee, and immediately enter a live battle for a funded account — they'll come every day. And every day they come, you earn. That's the MFT Coffee &amp; Trade Shop. That's the franchise no one else is building. Until you.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-section reveal">
+  <p class="big-quote">
+    "EVERY COFFEE SHOP SELLS <span class="coffee">CAFFEINE.</span><br/>
+    MFT COFFEE &amp; TRADE SHOPS SELL<br/>
+    <span>FUNDED ACCOUNTS, COMMUNITY,</span><br/>
+    AND A REASON TO COME BACK TOMORROW."
+  </p>
+  <p class="quote-sub">The world's first trading battle café franchise. $0 platform setup. 12% commission. Unlimited upside. The only question is: which city is yours?</p>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="reveal">
+      <div class="section-label" style="justify-content:center;"><span></span>Claim Your City</div>
+      <h2 class="section-title">READY TO OPEN THE WORLD'S FIRST TRADING BATTLE CAFÉ IN YOUR CITY?</h2>
+      <p class="section-sub">$0 MFT platform fee. 12% commission from day one. Two revenue streams in one space. The franchise that disrupts both the coffee industry and the trading industry — simultaneously.</p>
+      <div class="cta-actions">
+        <a href="mailto:limitlessecomltd@gmail.com?subject=MFT Coffee Trade Shop — Franchise Enquiry&body=Hi, I'd like to open an MFT Coffee and Trade Shop in [YOUR CITY]. Please send me more information." class="btn-primary" style="font-size:16px;padding:18px 48px;">
+          Claim Your City →
+        </a>
+        <a href="https://www.myfundedtournament.com" target="_blank" class="btn-ghost" style="font-size:16px;padding:18px 48px;">
+          See the Platform
+        </a>
+      </div>
+      <div class="contact-options">
+        <div class="contact-opt">📧 <a href="mailto:limitlessecomltd@gmail.com">limitlessecomltd@gmail.com</a></div>
+        <div class="contact-opt">🌐 <a href="https://www.myfundedtournament.com" target="_blank">myfundedtournament.com</a></div>
+        <div class="contact-opt">☕ Response within 24 hours</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">MFT COFFEE &amp; TRADE</div>
+  <div class="footer-text">The World's First Trading Battle Café Franchise · Powered by MT5 · USDT · MFT Platform</div>
+  <div class="footer-text">© 2026 MyFundedTournament. All rights reserved.</div>
+</footer>
+
+<script>
+// Cursor glow
+const glow = document.getElementById('glow');
+document.addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+// Animated counter in shop mockup
+const pool = document.querySelector('.pool-stat .pv');
+let p = 2400;
+setInterval(() => {
+  p += Math.floor(Math.random() * 50);
+  if(pool) pool.textContent = '$' + p.toLocaleString();
+}, 3000);
+
+// Revenue calculator
+function calc() {
+  const t  = +document.getElementById('sl-t').value;
+  const f  = +document.getElementById('sl-f').value;
+  const d  = +document.getElementById('sl-d').value;
+  const fb = +document.getElementById('sl-fb').value;
+  const dailyPool = t * f;
+  const dailyComm = dailyPool * 0.12;
+  const dailyFb   = t * fb;
+  const monComm   = dailyComm * d;
+  const monFb     = dailyFb * d;
+  const combined  = monComm + monFb;
+  const annual    = combined * 12;
+  document.getElementById('lv-t').textContent  = t + ' traders';
+  document.getElementById('lv-f').textContent  = '$' + f + ' USDT';
+  document.getElementById('lv-d').textContent  = d + ' days';
+  document.getElementById('lv-fb').textContent = '$' + fb;
+  document.getElementById('cv-total').textContent      = '$' + Math.round(combined).toLocaleString();
+  document.getElementById('cv-daily-pool').textContent = '$' + dailyPool.toLocaleString();
+  document.getElementById('cv-daily-comm').textContent = '$' + Math.round(dailyComm).toLocaleString();
+  document.getElementById('cv-daily-fb').textContent   = '$' + Math.round(dailyFb).toLocaleString();
+  document.getElementById('cv-mon-comm').textContent   = '$' + Math.round(monComm).toLocaleString();
+  document.getElementById('cv-mon-fb').textContent     = '$' + Math.round(monFb).toLocaleString();
+  document.getElementById('cv-combined').textContent   = '$' + Math.round(combined).toLocaleString();
+  document.getElementById('cv-annual').textContent     = '$' + Math.round(annual).toLocaleString() + '/yr';
+}
+['sl-t','sl-f','sl-d','sl-fb'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+calc();
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
