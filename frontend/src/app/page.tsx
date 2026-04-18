@@ -148,7 +148,7 @@ export default function HomePage() {
         @keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
         @keyframes hticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
         .hp-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#FFD700;animation:hpulse 2s infinite;flex-shrink:0;}
-        .hp-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,8vw,112px);line-height:.92;letter-spacing:2px;margin-bottom:28px;animation:hfadeup .9s .1s ease both;}
+        .hp-h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,10vw,112px);line-height:.92;letter-spacing:2px;margin-bottom:20px;animation:hfadeup .9s .1s ease both;}
         .hp-h1 .l1,.hp-h1 .l2{display:block;color:#fff;}
         .hp-h1 .l3{display:block;background:linear-gradient(135deg,#FFD700 0%,#FF6400 50%,#FFD700 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:hfadeup .9s .2s ease both,shimmer 4s linear 1s infinite;}
         .hp-ticker{background:rgba(8,13,21,.95);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:13px 0;overflow:hidden;}
@@ -178,12 +178,19 @@ export default function HomePage() {
           .hp-prize-grid{grid-template-columns:1fr !important;}
           .hp-breakdown-grid{grid-template-columns:1fr !important;}
           .hp-wrap{padding:80px 24px !important;}
-          .hp-hero-wrap{padding:100px 24px 60px !important;}
+          .hp-hero-wrap{padding:88px 20px 48px !important;grid-template-columns:1fr !important;}
+          .hp-h1{font-size:clamp(38px,11vw,72px) !important;letter-spacing:1px !important;margin-bottom:16px !important;}
+          .hp-badge{font-size:11px !important;padding:7px 14px 7px 12px !important;}
+          .hp-hero-btns{flex-direction:column !important;gap:10px !important;}
+          .hp-hero-btns a{width:100% !important;justify-content:center !important;text-align:center !important;display:block !important;}
         }
         @media(max-width:560px){
           .hp-stats-grid{grid-template-columns:1fr !important;}
           .hp-steps-grid{grid-template-columns:1fr !important;}
           .comp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+          .hp-h1{font-size:clamp(36px,12vw,56px) !important;margin-bottom:14px !important;}
+          .hp-trust-pills{gap:12px !important;}
+          .hp-trust-pills>div{font-size:12px !important;}
         }
       `}</style>
 
@@ -221,7 +228,7 @@ export default function HomePage() {
           maskImage:"radial-gradient(ellipse 70% 70% at 50% 50%,black 20%,transparent 80%)" as any }}/>
 
         <section className="hp-hero-wrap" style={{ maxWidth:1280, margin:"0 auto",
-          padding:"110px 60px 70px", display:"grid", gridTemplateColumns:"1fr 480px",
+          padding:"clamp(88px,10vw,110px) clamp(16px,5vw,60px) clamp(40px,6vw,70px)", display:"grid", gridTemplateColumns:"1fr 480px",
           gap:56, alignItems:"center" }} >
 
           <div style={{ position:"relative", zIndex:1, animation:"hfadeup .9s ease both" }}>
@@ -242,8 +249,8 @@ export default function HomePage() {
               <span className="l3">PLATFORM</span>
             </h1>
 
-            <p style={{ fontSize:17, color:"rgba(255,255,255,.6)", lineHeight:1.75,
-              maxWidth:520, marginBottom:32, fontWeight:300, animation:"hfadeup .9s .3s ease both" }}>
+            <p style={{ fontSize:"clamp(14px,4vw,17px)", color:"rgba(255,255,255,.6)", lineHeight:1.75,
+              maxWidth:"min(520px,100%)", marginBottom:28, fontWeight:300, animation:"hfadeup .9s .3s ease both" }}>
               Join a public battle or launch your own{" "}
               <strong style={{ color:"#FFD700", fontWeight:600 }}>Guild Battle</strong> as an organiser.
               Entry fees build the prize pool — the best trader wins{" "}
@@ -253,8 +260,8 @@ export default function HomePage() {
             </p>
 
             {/* action buttons */}
-            <div style={{ display:"flex", gap:14, flexWrap:"wrap", marginBottom:36,
-              animation:"hfadeup .9s .4s ease both" }}>
+            <div className="hp-hero-btns" style={{ display:"flex", gap:14, flexWrap:"wrap", marginBottom:32,
+              animation:"hfadeup .9s .4s ease both" }}}>
               <Link href="/tournaments" style={{ background:"linear-gradient(135deg,#FFD700,#FFA500)",
                 color:"#000", fontWeight:700, fontSize:15, padding:"15px 36px",
                 borderRadius:8, textDecoration:"none", letterSpacing:".04em",
@@ -270,7 +277,7 @@ export default function HomePage() {
             </div>
 
             {/* trust pills */}
-            <div style={{ display:"flex", gap:24, flexWrap:"wrap", animation:"hfadeup .9s .5s ease both" }}>
+            <div className="hp-trust-pills" style={{ display:"flex", gap:20, flexWrap:"wrap", animation:"hfadeup .9s .5s ease both" }}}>
               {["Set your own entry fee","Earn as organiser","No payout denial ever"].map(t=>(
                 <div key={t} style={{ display:"flex", alignItems:"center", gap:7,
                   fontSize:13, color:"rgba(255,255,255,.45)", fontWeight:500 }}>
