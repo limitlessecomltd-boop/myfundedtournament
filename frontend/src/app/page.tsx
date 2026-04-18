@@ -179,18 +179,21 @@ export default function HomePage() {
           .hp-breakdown-grid{grid-template-columns:1fr !important;}
           .hp-wrap{padding:80px 24px !important;}
           .hp-hero-wrap{padding:88px 20px 48px !important;grid-template-columns:1fr !important;}
+          .hp-hero-wrap>div:first-child{text-align:center !important;align-items:center !important;display:flex !important;flex-direction:column !important;}
           .hp-h1{font-size:clamp(38px,11vw,72px) !important;letter-spacing:1px !important;margin-bottom:16px !important;}
-          .hp-badge{font-size:11px !important;padding:7px 14px 7px 12px !important;}
-          .hp-hero-btns{flex-direction:column !important;gap:10px !important;}
+          .hp-badge{font-size:11px !important;padding:7px 14px 7px 12px !important;align-self:center !important;}
+          .hp-hero-btns{flex-direction:column !important;gap:10px !important;width:100% !important;align-items:center !important;}
           .hp-hero-btns a{width:100% !important;justify-content:center !important;text-align:center !important;display:block !important;}
+          .hp-trust-pills{justify-content:center !important;}
         }
         @media(max-width:560px){
           .hp-stats-grid{grid-template-columns:1fr !important;}
           .hp-steps-grid{grid-template-columns:1fr !important;}
           .comp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
           .hp-h1{font-size:clamp(36px,12vw,56px) !important;margin-bottom:14px !important;}
-          .hp-trust-pills{gap:12px !important;}
+          .hp-trust-pills{gap:12px !important;justify-content:center !important;}
           .hp-trust-pills>div{font-size:12px !important;}
+          .hp-hero-wrap>div:first-child p{max-width:100% !important;text-align:center !important;}
         }
       `}</style>
 
