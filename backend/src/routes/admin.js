@@ -703,3 +703,50 @@ router.post("/tournaments/:id/create-prize", async (req, res, next) => {
     res.json({ success: true, created: fa.length > 0, fundedSize, winner: winner.username });
   } catch (err) { next(err); }
 });
+
+// POST /api/admin/migrate — run DB migration SQL (admin only)
+router.post("/migrate", async (req, res, next) => {
+  try {
+    const { secret } = req.body;
+    if (secret !== (process.env.DEPLOY_SECRET || "mft_deploy_secret_2024")) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const migrations = [
+      `CREATE TABLE IF NOT EXISTS organiser_rebates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        organiser_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+        prize_pool NUMERIC(12,2) NOT NULL DEFAULT 0,
+        entry_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
+        rebate_pct NUMERIC(5,2) NOT NULL DEFAULT 0,
+        rebate_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+        tier_label TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        paid_at TIMESTAMPTZ
+      )`,
+      `CREATE TABLE IF NOT EXISTS organiser_monthly_bonuses (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        organiser_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        period_start DATE NOT NULL,
+        period_end DATE NOT NULL,
+        prize_volume NUMERIC(14,2) NOT NULL DEFAULT 0,
+        tier_label TEXT NOT NULL DEFAULT '',
+        bonus_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        paid_at TIMESTAMPTZ,
+        UNIQUE (organiser_id, period_start)
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_rebates_organiser ON organiser_rebates(organiser_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_rebates_tournament ON organiser_rebates(tournament_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_monthly_bonus_org ON organiser_monthly_bonuses(organiser_id)`,
+    ];
+    const results = [];
+    for (const sql of migrations) {
+      await db.query(sql);
+      results.push("ok");
+    }
+    res.json({ success: true, results });
+  } catch (err) { next(err); }
+});
