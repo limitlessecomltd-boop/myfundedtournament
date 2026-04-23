@@ -104,3 +104,46 @@ router.get('/:id/certificates', async (req, res, next) => {
     res.json({ success: true, data: certificates, tournament: { id: t.id, name: t.name, status: t.status, tier: t.tier, end_time: t.end_time, prize_pool: t.prize_pool } });
   } catch (err) { next(err); }
 });
+
+// ── Battle Live Chat ──────────────────────────────────────────────────────────
+const { authenticate } = require("../middleware/auth");
+
+// GET /api/tournaments/:id/chat — fetch last 50 messages
+router.get("/:id/chat", async (req, res, next) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT id, username, message, msg_type, created_at
+      FROM battle_chat
+      WHERE tournament_id=$1
+      ORDER BY created_at DESC LIMIT 60
+    `, [req.params.id]);
+    res.json({ success: true, data: rows.reverse() });
+  } catch(err) { next(err); }
+});
+
+// POST /api/tournaments/:id/chat — post a message (authenticated)
+router.post("/:id/chat", authenticate, async (req, res, next) => {
+  try {
+    const { message, msg_type = "message" } = req.body;
+    if (!message || typeof message !== "string") return res.status(400).json({ error: "Message required" });
+    const clean = message.trim().slice(0, 200);
+    if (!clean) return res.status(400).json({ error: "Empty message" });
+
+    const username = req.user.username || req.user.email?.split("@")[0] || "Trader";
+
+    const { rows } = await db.query(`
+      INSERT INTO battle_chat (tournament_id, user_id, username, message, msg_type)
+      VALUES ($1,$2,$3,$4,$5) RETURNING *
+    `, [req.params.id, req.user.id, username, clean, msg_type]);
+
+    const msg = rows[0];
+
+    // Broadcast via WebSocket
+    try {
+      const { broadcastChat } = require("../websocket/liveSocket");
+      broadcastChat(req.params.id, msg);
+    } catch {}
+
+    res.json({ success: true, data: msg });
+  } catch(err) { next(err); }
+});

@@ -12,6 +12,22 @@ db.query(`
 `).then(() => console.log('[DB] ForumPay columns ready'))
   .catch(e => console.warn('[DB] Migration note:', e.message));
 
+// Battle chat table
+db.query(`
+  CREATE TABLE IF NOT EXISTS battle_chat (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+    user_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+    username    TEXT NOT NULL DEFAULT 'Trader',
+    message     TEXT NOT NULL,
+    msg_type    TEXT NOT NULL DEFAULT 'message',  -- message | system | taunt
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(e => console.warn('[DB] battle_chat migration:', e.message));
+
+db.query(`CREATE INDEX IF NOT EXISTS idx_battle_chat_tournament ON battle_chat(tournament_id, created_at DESC)`)
+  .catch(() => {});
+
 // Add hard_closed_at column for server-side 87-min position close tracking
 db.query(`ALTER TABLE entries ADD COLUMN IF NOT EXISTS hard_closed_at TIMESTAMPTZ`)
   .then(() => console.log('[DB] hard_closed_at column ready'))

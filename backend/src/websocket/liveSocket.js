@@ -27,6 +27,13 @@ function initWebSocket(httpServer) {
         if (msg.type === "subscribe_payment" && msg.paymentId) {
           clients.set(ws, { type: "payment", paymentId: msg.paymentId });
         }
+
+        // Chat room subscription — layered onto existing subscription
+        if (msg.type === "subscribe_chat" && msg.tournamentId) {
+          const meta = clients.get(ws) || {};
+          clients.set(ws, { ...meta, chatRoom: msg.tournamentId });
+          ws.send(JSON.stringify({ type: "chat_subscribed", tournamentId: msg.tournamentId }));
+        }
       } catch {}
     });
 
@@ -100,4 +107,13 @@ function broadcastToEntry(entryId, data) {
   }
 }
 
-module.exports = { initWebSocket, broadcastToEntry };
+function broadcastChat(tournamentId, msg) {
+  const payload = JSON.stringify({ type: "chat_message", tournamentId, data: msg });
+  for (const [ws, meta] of clients.entries()) {
+    if (meta.chatRoom === tournamentId && ws.readyState === WebSocket.OPEN) {
+      ws.send(payload);
+    }
+  }
+}
+
+module.exports = { initWebSocket, broadcastToEntry, broadcastChat };

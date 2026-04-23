@@ -4,7 +4,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { entryApi } from "@/lib/api";
-import { useEntrySocket } from "@/hooks/useSockets";
+import { useAuth } from "@/lib/auth";
+import { useEntrySocket, useBattleChat, ChatMessage } from "@/hooks/useSockets";
 import MFTLogo from "@/components/ui/MFTLogo";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
@@ -239,6 +240,14 @@ export default function TradePage() {
   const fetchingRef               = useRef(false);
   const mt5Ref                    = useRef<any>(null);
   const liveEntry                 = useEntrySocket(entryId);
+  const { user }                  = useAuth();
+  const { messages: chatMsgs, setMessages: setChatMsgs } = useBattleChat(id || "");
+  const [chatInput,   setChatInput]   = useState("");
+  const [chatOpen,    setChatOpen]    = useState(false);
+  const [chatSending, setChatSending] = useState(false);
+  const [chatUnread,  setChatUnread]  = useState(0);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
 
   const fetchMt5 = useCallback(() => {
     if (!entryId || fetchingRef.current) return;
@@ -299,6 +308,41 @@ export default function TradePage() {
     }, 1000);
     return () => clearInterval(iv);
   }, []);
+
+  // Load chat history on mount
+  useEffect(() => {
+    if (!id) return;
+    fetch(`${API_URL}/api/tournaments/${id}/chat`)
+      .then(r => r.json())
+      .then(d => { if (d.data) setChatMsgs(d.data); })
+      .catch(() => {});
+  }, [id]);
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    if (chatOpen && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    } else if (!chatOpen && chatMsgs.length > 0) {
+      setChatUnread(n => n + 1);
+    }
+  }, [chatMsgs]);
+
+  // Reset unread when chat opens
+  useEffect(() => { if (chatOpen) setChatUnread(0); }, [chatOpen]);
+
+  const sendChatMessage = async (text: string, type = "message") => {
+    if (!text.trim() || chatSending) return;
+    const token = typeof window !== "undefined" ? localStorage.getItem("mft_token") || localStorage.getItem("fc_token") || "" : "";
+    setChatSending(true);
+    try {
+      await fetch(`${API_URL}/api/tournaments/${id}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ message: text.trim(), msg_type: type }),
+      });
+      setChatInput("");
+    } catch {} finally { setChatSending(false); }
+  };
 
   // Fetch rank from leaderboard every 30s
   useEffect(() => {
@@ -459,6 +503,59 @@ export default function TradePage() {
           .trade-topbar{height:48px;}
           .trade-topbar-right .trade-hide-sm{display:none;}
           .trade-metrics{grid-template-columns:1fr 1fr 1fr;}
+        }
+        /* ── Battle Chat ── */
+        .battle-chat-fab{position:fixed;bottom:28px;right:28px;z-index:999;
+          width:52px;height:52px;border-radius:50%;
+          background:linear-gradient(135deg,#FFD700,#FFA500);
+          border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+          font-size:22px;box-shadow:0 4px 20px rgba(255,215,0,.4);
+          transition:transform .2s,box-shadow .2s;}
+        .battle-chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(255,215,0,.55);}
+        .battle-chat-fab .unread-badge{position:absolute;top:-4px;right:-4px;
+          background:#EF4444;color:#fff;font-size:10px;font-weight:800;
+          min-width:18px;height:18px;border-radius:9px;display:flex;
+          align-items:center;justify-content:center;padding:0 4px;
+          border:2px solid #04060d;}
+        .battle-chat-panel{position:fixed;bottom:90px;right:28px;z-index:998;
+          width:320px;height:420px;background:#0a0f1c;
+          border:1px solid rgba(255,215,0,.2);border-radius:18px;
+          display:flex;flex-direction:column;overflow:hidden;
+          box-shadow:0 12px 48px rgba(0,0,0,.7),0 0 0 1px rgba(255,215,0,.08);}
+        .chat-header{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);
+          display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+          background:rgba(255,215,0,.06);}
+        .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;
+          scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;}
+        .chat-messages::-webkit-scrollbar{width:4px;}
+        .chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+        .chat-msg{display:flex;flex-direction:column;gap:2px;max-width:88%;}
+        .chat-msg.mine{align-self:flex-end;align-items:flex-end;}
+        .chat-msg.other{align-self:flex-start;align-items:flex-start;}
+        .chat-msg-user{font-size:10px;font-weight:700;letter-spacing:.05em;color:rgba(255,255,255,.35);padding:0 6px;}
+        .chat-msg-bubble{padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.45;word-break:break-word;}
+        .chat-msg.mine .chat-msg-bubble{background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.25);color:#fff;border-bottom-right-radius:4px;}
+        .chat-msg.other .chat-msg-bubble{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);color:rgba(255,255,255,.85);border-bottom-left-radius:4px;}
+        .chat-msg.taunt .chat-msg-bubble{background:rgba(255,100,0,.12);border-color:rgba(255,100,0,.3);color:#FF8C42;}
+        .chat-taunts{display:flex;gap:6px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap;flex-shrink:0;background:rgba(255,255,255,.02);}
+        .chat-taunt-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+          color:rgba(255,255,255,.7);font-size:11px;padding:4px 10px;border-radius:20px;
+          cursor:pointer;transition:.15s;white-space:nowrap;}
+        .chat-taunt-btn:hover{background:rgba(255,100,0,.12);border-color:rgba(255,100,0,.3);color:#FF8C42;}
+        .chat-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+        .chat-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+          border-radius:20px;padding:8px 14px;font-size:13px;color:#fff;outline:none;
+          font-family:inherit;transition:border-color .2s;}
+        .chat-input:focus{border-color:rgba(255,215,0,.35);}
+        .chat-input::placeholder{color:rgba(255,255,255,.25);}
+        .chat-send-btn{background:linear-gradient(135deg,#FFD700,#FFA500);border:none;
+          width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;
+          align-items:center;justify-content:center;flex-shrink:0;transition:.2s;}
+        .chat-send-btn:hover{transform:scale(1.08);}
+        .chat-send-btn:disabled{opacity:.4;cursor:not-allowed;}
+        @media(max-width:600px){
+          .battle-chat-panel{width:calc(100vw - 32px);right:16px;}
+          .battle-chat-fab{bottom:20px;right:20px;}
         }
       `}</style>
       <Sidebar tournamentId={id} entry={entry} profitPct={profitPct} />
@@ -812,6 +909,100 @@ export default function TradePage() {
 
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════
+          BATTLE LIVE CHAT
+      ════════════════════════════════════════════ */}
+
+      {/* Floating chat bubble */}
+      <button className="battle-chat-fab" onClick={() => setChatOpen(o => !o)} title="Battle Chat">
+        {chatOpen ? "✕" : "💬"}
+        {!chatOpen && chatUnread > 0 && (
+          <span className="unread-badge">{chatUnread > 9 ? "9+" : chatUnread}</span>
+        )}
+      </button>
+
+      {/* Chat panel */}
+      {chatOpen && (
+        <div className="battle-chat-panel">
+          {/* Header */}
+          <div className="chat-header">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14 }}>💬</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Battle Chat</div>
+                <div style={{ fontSize: 10, color: "rgba(255,215,0,.6)", letterSpacing: ".05em" }}>
+                  🔥 LIVE · All traders in this battle
+                </div>
+              </div>
+            </div>
+            <button onClick={() => setChatOpen(false)}
+              style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", cursor: "pointer", fontSize: 16, padding: "4px" }}>
+              ✕
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="chat-messages">
+            {chatMsgs.length === 0 ? (
+              <div style={{ textAlign: "center", color: "rgba(255,255,255,.25)", fontSize: 13, padding: "24px 12px", lineHeight: 1.6 }}>
+                <div style={{ fontSize: 28, marginBottom: 10 }}>⚔️</div>
+                Battle is live. Be the first to talk trash.<br/>
+                <span style={{ color: "rgba(255,215,0,.4)" }}>May the best trader win.</span>
+              </div>
+            ) : (
+              chatMsgs.map((msg, i) => {
+                const isMe = msg.username === (user?.username || user?.email?.split("@")[0]);
+                const isTaunt = msg.msg_type === "taunt";
+                return (
+                  <div key={msg.id || i} className={`chat-msg ${isMe ? "mine" : "other"} ${isTaunt ? "taunt" : ""}`}>
+                    {!isMe && <div className="chat-msg-user">{msg.username}</div>}
+                    <div className="chat-msg-bubble">
+                      {isTaunt && <span style={{ marginRight: 4 }}>🔥</span>}
+                      {msg.message}
+                    </div>
+                    <div style={{ fontSize: 9, color: "rgba(255,255,255,.2)", padding: "0 6px" }}>
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Quick taunt buttons */}
+          <div className="chat-taunts">
+            {["🔥 I'm up!", "💀 GG already", "😤 Try harder", "👀 Watch this", "📈 Moon time"].map(t => (
+              <button key={t} className="chat-taunt-btn"
+                onClick={() => sendChatMessage(t.replace(/^[^ ]+ /, ""), "taunt")}>
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* Input row */}
+          <div className="chat-input-row">
+            <input
+              className="chat-input"
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChatMessage(chatInput); } }}
+              placeholder="Say something..."
+              maxLength={200}
+              disabled={chatSending}
+            />
+            <button className="chat-send-btn" disabled={!chatInput.trim() || chatSending}
+              onClick={() => sendChatMessage(chatInput)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

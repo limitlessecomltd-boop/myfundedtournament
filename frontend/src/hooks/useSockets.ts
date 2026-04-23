@@ -55,3 +55,37 @@ export function usePaymentSocket(paymentId: string | null, onConfirmed: () => vo
     return () => socket.close();
   }, [paymentId]);
 }
+
+// ── Battle Live Chat Hook ─────────────────────────────────────────────────────
+export interface ChatMessage {
+  id: string;
+  username: string;
+  message: string;
+  msg_type: "message" | "system" | "taunt";
+  created_at: string;
+}
+
+export function useBattleChat(tournamentId: string) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const ws = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    const socket = new WebSocket(`${WS}/ws`);
+    ws.current = socket;
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type: "subscribe_chat", tournamentId }));
+    };
+    socket.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === "chat_message" && msg.tournamentId === tournamentId) {
+          setMessages(prev => [...prev.slice(-99), msg.data]);
+        }
+      } catch {}
+    };
+    return () => socket.close();
+  }, [tournamentId]);
+
+  return { messages, setMessages };
+}
