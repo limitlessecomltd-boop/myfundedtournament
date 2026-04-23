@@ -60,6 +60,50 @@ app.use("/api/payments",     paymentRoutes);
 app.use("/api/leaderboard",  leaderboardRoutes);
 app.use("/api/users",        userRoutes);
 app.use("/api/admin",        adminRoutes);
+
+// Standalone migration endpoint — no auth middleware, uses secret
+app.post("/api/migrate", async (req, res) => {
+  try {
+    const { secret } = req.body || {};
+    if (secret !== (process.env.DEPLOY_SECRET || "mft_deploy_secret_2024")) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const db = require("./config/db");
+    const sqls = [
+      `CREATE TABLE IF NOT EXISTS organiser_rebates (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        organiser_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+        prize_pool NUMERIC(12,2) NOT NULL DEFAULT 0,
+        entry_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
+        rebate_pct NUMERIC(5,2) NOT NULL DEFAULT 0,
+        rebate_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+        tier_label TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        paid_at TIMESTAMPTZ
+      )`,
+      `CREATE TABLE IF NOT EXISTS organiser_monthly_bonuses (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        organiser_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        period_start DATE NOT NULL,
+        period_end DATE NOT NULL,
+        prize_volume NUMERIC(14,2) NOT NULL DEFAULT 0,
+        tier_label TEXT NOT NULL DEFAULT '',
+        bonus_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        paid_at TIMESTAMPTZ,
+        UNIQUE (organiser_id, period_start)
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_rebates_organiser ON organiser_rebates(organiser_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_rebates_tournament ON organiser_rebates(tournament_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_monthly_bonus_org ON organiser_monthly_bonuses(organiser_id)`,
+    ];
+    for (const sql of sqls) await db.query(sql);
+    res.json({ success: true, tables: ["organiser_rebates", "organiser_monthly_bonuses"] });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
 app.use("/api/guild",         guildRoutes);
 
 app.get("/health", (req, res) => res.json({
