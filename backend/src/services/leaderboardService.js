@@ -12,6 +12,7 @@ async function getLeaderboard(tournamentId, limit = 100) {
       e.user_id,
       e.entry_number,
       e.broker,
+      e.mt5_login,
       e.profit_pct,
       e.profit_abs,
       e.total_trades,

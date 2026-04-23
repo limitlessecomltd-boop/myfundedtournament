@@ -180,7 +180,11 @@ function LeaderboardContent() {
               <div style={{ fontSize:9, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"#FFD700", marginBottom:4 }}>Current Leader</div>
               <div style={{ fontSize:20, fontWeight:900, color:"#fff", fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px" }}>{leader.display_name || leader.username || `Trader #${leader.entry_number}`}</div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
-                {leader.broker} · MT5 {leader.mt5_login || "—"} · Entry #{leader.entry_number}
+                <span style={{ textTransform:"capitalize" }}>{leader.broker||"Exness"}</span>
+                {" · "}
+                <span style={{ fontFamily:"'DM Mono',monospace" }}>
+                  {leader.mt5_login ? `MT5 ***${String(leader.mt5_login).slice(-3)}` : `Entry #${leader.entry_number}`}
+                </span>
               </div>
             </div>
             <div style={{ display:"flex", gap:20, flexWrap:"wrap" }}>
@@ -238,7 +242,13 @@ function LeaderboardContent() {
                   </div>
                   <div style={{ minWidth:0 }}>
                     <div style={{ fontSize:13, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{entry.display_name || entry.username || `Trader #${entry.entry_number}`}</div>
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,.28)" }}>{entry.broker||"Exness"} · Entry #{entry.entry_number}</div>
+                    <div style={{ fontSize:10, color:"rgba(255,255,255,.28)", display:"flex", alignItems:"center", gap:4 }}>
+                      <span style={{ textTransform:"capitalize" }}>{entry.broker||"Exness"}</span>
+                      <span style={{ opacity:.4 }}>·</span>
+                      <span style={{ fontFamily:"'DM Mono',monospace", letterSpacing:".04em" }}>
+                        {entry.mt5_login ? `***${String(entry.mt5_login).slice(-3)}` : `Entry #${entry.entry_number}`}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
