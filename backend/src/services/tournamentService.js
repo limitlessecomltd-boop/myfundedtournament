@@ -258,6 +258,13 @@ async function finalizeDueTournaments() {
           [orgAmount, t.id]
         );
         console.log(`[Finalized] Guild organiser payout: $${orgAmount.toFixed(2)}`);
+        // Calculate entry rebate for this organiser based on prize pool tier
+        try {
+          const { calculateAndSaveRebate } = require('./rebateService');
+          await calculateAndSaveRebate(t.id);
+        } catch(rebateErr) {
+          console.warn('[Rebate] Could not save rebate:', rebateErr.message);
+        }
       }
 
       console.log(`[Finalized] ${t.name} → 🏆 Winner: ${winner.username || winner.email} +${parseFloat(winner.profit_pct).toFixed(2)}% | Prize: $${fundedSize.toFixed(2)}`);

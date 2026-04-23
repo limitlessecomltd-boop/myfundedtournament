@@ -75,6 +75,7 @@ export const guildApi = {
   getById:     (id: string) => api.get(`/api/guild/${id}`).then(r => r.data.data),
   getBySlug:   (slug: string) => api.get(`/api/guild/slug/${slug}`).then(r => r.data.data),
   create:      (data: any) => api.post("/api/guild", data).then(r => r.data.data),
+  getRebates:  () => api.get("/api/guild/rebates").then(r => r.data),
 };
 
 export const adminApi = {

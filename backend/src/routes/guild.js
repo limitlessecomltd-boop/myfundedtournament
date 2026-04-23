@@ -126,3 +126,14 @@ router.get("/:id", async (req, res, next) => {
 });
 
 module.exports = router;
+
+// ── Rebates & Monthly Bonuses ─────────────────────────────────────────────────
+const { getRebatesDashboard } = require("../services/rebateService");
+
+// GET /api/guild/rebates — full rebates dashboard for organiser
+router.get("/rebates", authenticate, async (req, res, next) => {
+  try {
+    const data = await getRebatesDashboard(req.user.id);
+    res.json({ success: true, ...data });
+  } catch (err) { next(err); }
+});
