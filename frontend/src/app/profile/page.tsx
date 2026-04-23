@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { userApi } from "@/lib/api";
+import { userApi, guildApi, adminApi } from "@/lib/api";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "https://myfundedtournament-production.up.railway.app";
 const fmt = (v: number, d = 2) => parseFloat((v||0).toFixed(d)).toLocaleString("en",{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -84,8 +84,28 @@ export default function ProfilePage() {
   const [saving, setSaving]       = useState(false);
   const [saved, setSaved]         = useState(false);
   const [saveErr, setSaveErr]     = useState("");
+  const [guildTab,   setGuildTab]  = useState<"commissions"|"rebates"|"monthly">("commissions");
+  const [guildData,  setGuildData] = useState<any>(null);
+  const [guildLoad,  setGuildLoad] = useState(false);
+  const [guildDone,  setGuildDone] = useState(false);
+  const [reqLoading, setReqLoad]   = useState<string|null>(null);
+  const [reqMsg,     setReqMsg]    = useState<string|null>(null);
 
   useEffect(() => { if (!loading && !user) router.push("/login"); }, [loading, user]);
+
+  // Load guild organiser data when tab opens
+  useEffect(() => {
+    if (tab !== "guild" || guildDone) return;
+    setGuildLoad(true);
+    Promise.all([
+      guildApi.getMine().catch(() => ({ data: [], summary: null })),
+      guildApi.getRebates().catch(() => null),
+    ]).then(([mine, rebates]) => {
+      const battles = Array.isArray(mine) ? mine : mine.data || [];
+      setGuildData({ battles, summary: mine.summary || null, rebates });
+      setGuildDone(true);
+    }).finally(() => setGuildLoad(false));
+  }, [tab]);
 
   useEffect(() => {
     if (!user) return;
@@ -128,6 +148,7 @@ export default function ProfilePage() {
     { id: "battles",     label: "My Battles",        icon: "M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z", badge: active.length > 0 ? active.length : 0 },
     { id: "payouts",     label: "Payouts",           icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", badge: won.length > 0 ? won.length : 0 },
     { id: "certificates",label: "Certificates",      icon: "M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" },
+    { id: "guild",       label: "Guild Organiser", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
     { id: "settings",    label: "Settings",          icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   ];
 
@@ -566,6 +587,276 @@ export default function ProfilePage() {
               {saved && <span style={{ fontSize: 13, color: "#22C55E", fontWeight: 600 }}>✓ Saved!</span>}
               {saveErr && <span style={{ fontSize: 13, color: "#EF4444" }}>✗ {saveErr}</span>}
             </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════
+            GUILD ORGANISER TAB
+        ════════════════════════════════════════════════════════ */}
+        {tab === "guild" && (
+          <div style={{ maxWidth: 860, margin: "0 auto" }}>
+            {guildLoad ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
+                <div className="spinner"/>
+              </div>
+            ) : (
+              <>
+                {/* Summary strip */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 24 }}>
+                  {[
+                    { label: "Total Commissions", value: `$${(parseFloat(guildData?.summary?.total_earned || 0)).toFixed(2)}`, color: "#FF6400", sub: "from completed battles" },
+                    { label: "Total Rebates", value: `$${(parseFloat(guildData?.rebates?.summary?.total_rebates || 0)).toFixed(2)}`, color: "#FFD700", sub: `${guildData?.rebates?.summary?.pending_count || 0} pending` },
+                    { label: "Monthly Bonuses", value: `$${(guildData?.rebates?.bonuses?.reduce((s:number,b:any) => s+parseFloat(b.bonus_amount||0),0)||0).toFixed(2)}`, color: "#22C55E", sub: "volume bonuses earned" },
+                  ].map(c => (
+                    <div key={c.label} style={{ background: "rgba(13,18,29,.95)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "16px 18px" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: `${c.color}99`, marginBottom: 6 }}>{c.label}</div>
+                      <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 24, fontWeight: 900, color: c.color, lineHeight: 1, letterSpacing: "-1px" }}>{c.value}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,.3)", marginTop: 4 }}>{c.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sub-tabs */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 20, borderBottom: "1px solid rgba(255,255,255,.07)", paddingBottom: 12 }}>
+                  {([
+                    { id: "commissions", label: "⚔️ Commissions" },
+                    { id: "rebates",     label: "💰 Entry Rebates" },
+                    { id: "monthly",     label: "🚀 Monthly Rewards" },
+                  ] as const).map(st => (
+                    <button key={st.id} onClick={() => setGuildTab(st.id)} style={{
+                      padding: "8px 16px", borderRadius: 8, border: "1px solid",
+                      borderColor: guildTab === st.id ? "rgba(255,215,0,.35)" : "rgba(255,255,255,.08)",
+                      background: guildTab === st.id ? "rgba(255,215,0,.08)" : "transparent",
+                      color: guildTab === st.id ? "#FFD700" : "rgba(255,255,255,.4)",
+                      fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all .15s",
+                    }}>{st.label}</button>
+                  ))}
+                </div>
+
+                {/* ── COMMISSIONS ── */}
+                {guildTab === "commissions" && (
+                  <div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,.3)", marginBottom: 14 }}>
+                      Your organiser cut from each Guild Battle you created — paid automatically when the battle ends.
+                    </div>
+                    {(!guildData?.battles || guildData.battles.length === 0) ? (
+                      <div style={{ textAlign: "center", padding: "40px 20px", border: "1px dashed rgba(255,100,0,.2)", borderRadius: 12 }}>
+                        <div style={{ fontSize: 32, marginBottom: 10 }}>🔥</div>
+                        <div style={{ fontSize: 15, color: "rgba(255,255,255,.4)", marginBottom: 16 }}>No guild battles yet</div>
+                        <Link href="/guild" className="btn btn-sm" style={{ background: "#FF6400", color: "#fff", fontWeight: 700 }}>Create Your First Battle →</Link>
+                      </div>
+                    ) : (
+                      guildData.battles.map((b: any) => {
+                        const pool = parseFloat(b.prize_pool || 0);
+                        const pct  = parseFloat(b.organiser_pct || 0);
+                        const comm = parseFloat(b.commission_earned || (pool * pct / 100) || 0);
+                        const paid = b.status === "ended";
+                        return (
+                          <div key={b.id} style={{ background: "rgba(13,18,29,.95)", border: "1px solid rgba(255,100,0,.15)", borderRadius: 12, padding: "16px 18px", marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                            <div>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                                <span style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{b.name}</span>
+                                <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: paid ? "rgba(34,197,94,.1)" : "rgba(255,215,0,.1)", color: paid ? "#22C55E" : "#FFD700", fontWeight: 700, textTransform: "capitalize" }}>{b.status}</span>
+                              </div>
+                              <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>{b.active_entries}/{b.max_entries} traders · ${b.entry_fee} entry · ${pool.toFixed(0)} pool</div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 900, color: paid ? "#22C55E" : "#FF6400", lineHeight: 1 }}>${comm.toFixed(2)}</div>
+                              <div style={{ fontSize: 10, color: "rgba(255,255,255,.3)", marginTop: 2 }}>{pct}% organiser cut{paid ? " · ✅ Paid" : " · ⏳ Pending"}</div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+
+                {/* ── REBATES ── */}
+                {guildTab === "rebates" && (
+                  <div>
+                    <div style={{ background: "rgba(255,215,0,.05)", border: "1px solid rgba(255,215,0,.15)", borderRadius: 12, padding: "14px 18px", marginBottom: 16 }}>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.7 }}>
+                        <strong style={{ color: "#FFD700" }}>How it works:</strong> When you join your own battle, a % of your entry fee is refunded based on the battle&apos;s prize pool size.
+                        This rebate comes from the winner&apos;s prize pool and is applied automatically.
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginTop: 12 }}>
+                        {[
+                          { range: "$1–$500",       pct: "15%", color: "#FFD700" },
+                          { range: "$501–$1K",      pct: "30%", color: "#FFA500" },
+                          { range: "$1K–$2K",       pct: "40%", color: "#22C55E" },
+                          { range: "$2K+",          pct: "50%", color: "#8B5CF6" },
+                        ].map(t => (
+                          <div key={t.range} style={{ background: "rgba(255,255,255,.03)", border: `1px solid ${t.color}33`, borderRadius: 8, padding: "10px 12px", textAlign: "center" }}>
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginBottom: 4 }}>{t.range}</div>
+                            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 900, color: t.color }}>{t.pct} back</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Pending rebates + request withdrawal */}
+                    {(() => {
+                      const pending = parseFloat(guildData?.rebates?.summary?.pending_rebates || 0);
+                      return pending > 0 && (
+                        <div style={{ background: "rgba(255,215,0,.06)", border: "1px solid rgba(255,215,0,.25)", borderRadius: 12, padding: "16px 18px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#FFD700", marginBottom: 4 }}>💰 Pending Rebates Ready to Withdraw</div>
+                            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, fontWeight: 900, color: "#FFD700", lineHeight: 1 }}>${pending.toFixed(2)} USDT</div>
+                          </div>
+                          <button
+                            disabled={reqLoading === "rebate"}
+                            onClick={async () => {
+                              setReqLoad("rebate"); setReqMsg(null);
+                              try {
+                                const r = await adminApi.requestRebatePayout("rebate");
+                                setReqMsg(r.message || "Withdrawal request submitted!");
+                              } catch(e: any) {
+                                setReqMsg(e?.response?.data?.error || "Error submitting request");
+                              } finally { setReqLoad(null); }
+                            }}
+                            className="btn btn-primary"
+                            style={{ minWidth: 160 }}
+                          >
+                            {reqLoading === "rebate" ? "Submitting..." : "Request Withdrawal →"}
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {reqMsg && <div style={{ padding: "10px 14px", borderRadius: 8, background: "rgba(34,197,94,.08)", border: "1px solid rgba(34,197,94,.2)", color: "#22C55E", fontSize: 13, marginBottom: 14 }}>{reqMsg}</div>}
+
+                    {(!guildData?.rebates?.rebates || guildData.rebates.rebates.length === 0) ? (
+                      <div style={{ textAlign: "center", padding: "40px 20px", border: "1px dashed rgba(255,215,0,.15)", borderRadius: 12 }}>
+                        <div style={{ fontSize: 32, marginBottom: 10 }}>💰</div>
+                        <div style={{ fontSize: 15, color: "rgba(255,255,255,.4)" }}>No rebates yet</div>
+                        <div style={{ fontSize: 13, color: "rgba(255,255,255,.25)", marginTop: 8 }}>Host battles with $500+ prize pools to earn entry rebates</div>
+                      </div>
+                    ) : (
+                      guildData.rebates.rebates.map((r: any) => (
+                        <div key={r.id} style={{ background: "rgba(13,18,29,.95)", border: "1px solid rgba(255,215,0,.12)", borderRadius: 12, padding: "14px 18px", marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{r.battle_name}</div>
+                            <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>Pool: ${parseFloat(r.prize_pool).toFixed(0)} · Entry: ${parseFloat(r.entry_fee).toFixed(0)} · {r.rebate_pct}% rebate tier</div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 900, color: r.status === "paid" ? "#22C55E" : "#FFD700", lineHeight: 1 }}>+${parseFloat(r.rebate_amount).toFixed(2)}</div>
+                            <div style={{ fontSize: 10, color: r.status === "paid" ? "rgba(34,197,94,.6)" : "rgba(255,215,0,.6)", fontWeight: 700, marginTop: 2 }}>{r.status === "paid" ? "✅ Paid" : "⏳ Pending"}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* ── MONTHLY REWARDS ── */}
+                {guildTab === "monthly" && (
+                  <div>
+                    <div style={{ background: "rgba(34,197,94,.05)", border: "1px solid rgba(34,197,94,.15)", borderRadius: 12, padding: "14px 18px", marginBottom: 16 }}>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.7 }}>
+                        <strong style={{ color: "#22C55E" }}>Volume bonuses</strong> are extra cash rewards paid monthly based on your total prize pool volume in the last 30 days.
+                        These are on top of commissions and rebates.
+                      </div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                        {[
+                          { vol: "$10K+", bonus: "$100", color: "#FFD700" },
+                          { vol: "$25K+", bonus: "$250", color: "#FFA500" },
+                          { vol: "$50K+", bonus: "$600", color: "#22C55E" },
+                          { vol: "$100K+",bonus: "$1,500",color:"#3B82F6"},
+                          { vol: "$500K+",bonus:"$10,000",color:"#8B5CF6"},
+                        ].map(t => (
+                          <div key={t.vol} style={{ background: "rgba(255,255,255,.03)", border: `1px solid ${t.color}33`, borderRadius: 8, padding: "10px 14px", textAlign: "center", flex: 1, minWidth: 80 }}>
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)", marginBottom: 4 }}>{t.vol}</div>
+                            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 16, fontWeight: 900, color: t.color }}>{t.bonus}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 30-day progress */}
+                    {(() => {
+                      const vol = parseFloat(guildData?.rebates?.currentMonth?.volume || 0);
+                      const tiers = [{min:500000,bonus:10000},{min:100000,bonus:1500},{min:50000,bonus:600},{min:25000,bonus:250},{min:10000,bonus:100}];
+                      const currentT = tiers.find(t => vol >= t.min);
+                      const nextT    = tiers.slice().reverse().find(t => vol < t.min);
+                      const pct      = nextT ? Math.min(100,(vol/nextT.min)*100) : 100;
+                      return (
+                        <div style={{ background: "rgba(13,18,29,.95)", border: "1px solid rgba(255,255,255,.07)", borderRadius: 12, padding: "18px 20px", marginBottom: 16 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(34,197,94,.5)", marginBottom: 4 }}>30-Day Volume</div>
+                              <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, fontWeight: 900, color: "#22C55E", lineHeight: 1 }}>${vol.toFixed(0)}</div>
+                            </div>
+                            {currentT && <div style={{ background: "rgba(34,197,94,.1)", border: "1px solid rgba(34,197,94,.25)", borderRadius: 8, padding: "10px 16px", textAlign: "center" }}>
+                              <div style={{ fontSize: 11, color: "rgba(34,197,94,.6)", marginBottom: 2 }}>Current Bonus Tier</div>
+                              <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 22, fontWeight: 900, color: "#22C55E" }}>+${currentT.bonus}</div>
+                            </div>}
+                          </div>
+                          {nextT && <>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,.3)", marginBottom: 6 }}>
+                              <span>Progress to ${nextT.min.toLocaleString()} tier</span>
+                              <span style={{ color: "#22C55E" }}>${(nextT.min - vol).toLocaleString()} remaining</span>
+                            </div>
+                            <div style={{ height: 6, background: "rgba(255,255,255,.06)", borderRadius: 3, overflow: "hidden" }}>
+                              <div style={{ height: "100%", borderRadius: 3, background: "linear-gradient(90deg,#22C55E,#3B82F6)", width: `${pct}%`, transition: "width .6s" }}/>
+                            </div>
+                          </>}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Pending bonus withdrawal */}
+                    {(() => {
+                      const pending = guildData?.rebates?.bonuses?.filter((b:any) => b.status === "pending").reduce((s:number,b:any) => s+parseFloat(b.bonus_amount||0), 0) || 0;
+                      return pending > 0 && (
+                        <div style={{ background: "rgba(34,197,94,.06)", border: "1px solid rgba(34,197,94,.25)", borderRadius: 12, padding: "16px 18px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#22C55E", marginBottom: 4 }}>🚀 Pending Bonus Ready to Withdraw</div>
+                            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, fontWeight: 900, color: "#22C55E", lineHeight: 1 }}>${pending.toFixed(2)} USDT</div>
+                          </div>
+                          <button
+                            disabled={reqLoading === "bonus"}
+                            onClick={async () => {
+                              setReqLoad("bonus"); setReqMsg(null);
+                              try {
+                                const r = await adminApi.requestRebatePayout("bonus");
+                                setReqMsg(r.message || "Bonus withdrawal request submitted!");
+                              } catch(e: any) {
+                                setReqMsg(e?.response?.data?.error || "Error submitting request");
+                              } finally { setReqLoad(null); }
+                            }}
+                            className="btn btn-primary"
+                            style={{ background: "#22C55E", minWidth: 160 }}
+                          >
+                            {reqLoading === "bonus" ? "Submitting..." : "Request Withdrawal →"}
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {(!guildData?.rebates?.bonuses || guildData.rebates.bonuses.length === 0) ? (
+                      <div style={{ textAlign: "center", padding: "40px 20px", border: "1px dashed rgba(34,197,94,.15)", borderRadius: 12 }}>
+                        <div style={{ fontSize: 32, marginBottom: 10 }}>🚀</div>
+                        <div style={{ fontSize: 15, color: "rgba(255,255,255,.4)" }}>No monthly bonuses yet</div>
+                        <div style={{ fontSize: 13, color: "rgba(255,255,255,.25)", marginTop: 8 }}>Generate $10,000+ in monthly prize volume to earn your first bonus</div>
+                      </div>
+                    ) : (
+                      guildData.rebates.bonuses.map((b: any) => (
+                        <div key={b.id} style={{ background: "rgba(13,18,29,.95)", border: "1px solid rgba(34,197,94,.12)", borderRadius: 12, padding: "14px 18px", marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 3 }}>Volume Bonus — {b.tier_label}</div>
+                            <div style={{ fontSize: 12, color: "rgba(255,255,255,.35)" }}>${parseFloat(b.prize_volume).toFixed(0)} volume · {new Date(b.period_start).toLocaleDateString()} – {new Date(b.period_end).toLocaleDateString()}</div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 900, color: b.status === "paid" ? "#22C55E" : "#22C55E", lineHeight: 1 }}>+${parseFloat(b.bonus_amount).toFixed(2)}</div>
+                            <div style={{ fontSize: 10, color: b.status === "paid" ? "rgba(34,197,94,.6)" : "rgba(34,197,94,.6)", fontWeight: 700, marginTop: 2 }}>{b.status === "paid" ? "✅ Paid" : "⏳ Pending"}</div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 

@@ -137,3 +137,61 @@ router.get("/rebates", authenticate, async (req, res, next) => {
     res.json({ success: true, ...data });
   } catch (err) { next(err); }
 });
+
+// POST /api/guild/rebates/request — user requests payout of pending rebates/bonuses
+router.post("/rebates/request", authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { type } = req.body; // 'rebate' | 'bonus' | 'commission'
+
+    // Get user wallet
+    const { rows: userRows } = await db.query(
+      "SELECT payout_wallet, username, email FROM users WHERE id=$1", [userId]
+    );
+    if (!userRows.length) return res.status(404).json({ error: "User not found" });
+    const user = userRows[0];
+    if (!user.payout_wallet) return res.status(400).json({ error: "Please add a payout wallet in your profile settings first." });
+
+    if (type === 'rebate') {
+      // Sum all pending rebates
+      const { rows } = await db.query(
+        "SELECT COALESCE(SUM(rebate_amount),0) AS total FROM organiser_rebates WHERE organiser_id=$1 AND status='pending'",
+        [userId]
+      );
+      const amount = parseFloat(rows[0]?.total || 0);
+      if (amount <= 0) return res.status(400).json({ error: "No pending rebates to withdraw." });
+
+      // Insert payout request
+      await db.query(`
+        INSERT INTO payout_requests (user_id, amount, type, status, wallet, notes)
+        VALUES ($1,$2,'organiser_rebate','pending',$3,'Auto-calculated entry rebate')
+        ON CONFLICT DO NOTHING
+      `, [userId, amount, user.payout_wallet]).catch(() =>
+        db.query(`
+          INSERT INTO funded_account_payouts (user_id, amount, type, status, wallet, notes, created_at)
+          VALUES ($1,$2,'organiser_rebate','pending',$3,'Entry rebate payout request', NOW())
+        `, [userId, amount, user.payout_wallet])
+      );
+
+      res.json({ success: true, amount, message: `Withdrawal request of $${amount.toFixed(2)} submitted.` });
+
+    } else if (type === 'bonus') {
+      const { rows } = await db.query(
+        "SELECT COALESCE(SUM(bonus_amount),0) AS total FROM organiser_monthly_bonuses WHERE organiser_id=$1 AND status='pending'",
+        [userId]
+      );
+      const amount = parseFloat(rows[0]?.total || 0);
+      if (amount <= 0) return res.status(400).json({ error: "No pending bonuses to withdraw." });
+
+      await db.query(`
+        INSERT INTO funded_account_payouts (user_id, amount, type, status, wallet, notes, created_at)
+        VALUES ($1,$2,'monthly_bonus','pending',$3,'Monthly volume bonus payout request', NOW())
+      `, [userId, amount, user.payout_wallet]);
+
+      res.json({ success: true, amount, message: `Bonus withdrawal request of $${amount.toFixed(2)} submitted.` });
+
+    } else {
+      res.status(400).json({ error: "Invalid type. Use: rebate | bonus" });
+    }
+  } catch (err) { next(err); }
+});

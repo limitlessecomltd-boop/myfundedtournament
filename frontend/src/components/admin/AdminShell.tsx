@@ -13,6 +13,7 @@ const NAV = [
   { href:"/admin/payouts",          icon:"💰", label:"Payouts" },
   { href:"/admin/funded-accounts",  icon:"🏆", label:"Funded" },
   { href:"/admin/violations",       icon:"⚠️", label:"Violations" },
+  { href:"/admin/rebates",           icon:"💰", label:"Rebates" },
   { href:"/admin/finance",          icon:"📈", label:"Finance" },
   { href:"/admin/settings",         icon:"⚙️", label:"Settings" },
 ];

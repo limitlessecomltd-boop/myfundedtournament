@@ -250,7 +250,7 @@ async function finalizeDueTournaments() {
         ON CONFLICT DO NOTHING
       `, [winner.id, winner.user_id, t.id, fundedSize]);
 
-      // For guild battles — record organiser payout amount
+      // For guild battles — record organiser payout amount + calculate rebate
       if ((t.tier_type === 'guild' || t.tier === 'guild') && t.organiser_id && oPct > 0) {
         const orgAmount = pool * (oPct / 100);
         await db.query(
@@ -258,10 +258,21 @@ async function finalizeDueTournaments() {
           [orgAmount, t.id]
         );
         console.log(`[Finalized] Guild organiser payout: $${orgAmount.toFixed(2)}`);
-        // Calculate entry rebate for this organiser based on prize pool tier
+        // Calculate entry rebate — deducted from winner prize pool
         try {
-          const { calculateAndSaveRebate } = require('./rebateService');
-          await calculateAndSaveRebate(t.id);
+          const { calculateAndSaveRebate, getRebateTier } = require('./rebateService');
+          const rebateTier = getRebateTier(pool);
+          if (rebateTier && t.entry_fee) {
+            const rebateAmt = parseFloat(t.entry_fee) * rebateTier.pct / 100;
+            // Reduce the funded account size by the rebate amount
+            const adjustedFundedSize = Math.max(0, fundedSize - rebateAmt);
+            await db.query(
+              `UPDATE funded_accounts SET account_size=$1 WHERE tournament_id=$2`,
+              [adjustedFundedSize, t.id]
+            );
+            console.log(`[Rebate] Pool $${pool} → tier ${rebateTier.pct}% → rebate $${rebateAmt.toFixed(2)} deducted from winner prize`);
+            await calculateAndSaveRebate(t.id);
+          }
         } catch(rebateErr) {
           console.warn('[Rebate] Could not save rebate:', rebateErr.message);
         }

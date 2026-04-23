@@ -108,6 +108,12 @@ export const adminApi = {
   getFundedAccounts: () => api.get("/api/admin/funded-accounts").then(r => r.data.data),
   updateFundedAccount: (id: string, data: any) => api.patch(`/api/admin/funded-accounts/${id}`, data).then(r => r.data.data),
   getViolations: (status = "pending_review") => api.get("/api/admin/violations", { params: { status } }).then(r => r.data.data),
+  // organiser rebates & bonuses
+  getOrganiserRebates: () => api.get("/api/admin/organiser-rebates").then(r => r.data),
+  payRebate:           (id: string) => api.patch(`/api/admin/organiser-rebates/${id}/pay`).then(r => r.data),
+  payAllRebates:       (organiserId: string, type: string) => api.patch(`/api/admin/organiser-rebates/${organiserId}/pay-all`, { type }).then(r => r.data),
+  // guild api proxy
+  requestRebatePayout: (type: string) => api.post("/api/guild/rebates/request", { type }).then(r => r.data),
   updateViolation: (id: string, data: any) => api.patch(`/api/admin/violations/${id}`, data).then(r => r.data.data),
   getEntries: (params: any) => api.get("/api/admin/entries", { params }).then(r => r.data.data),
 };

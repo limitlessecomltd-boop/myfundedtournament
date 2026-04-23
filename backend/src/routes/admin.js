@@ -750,3 +750,98 @@ router.post("/migrate", async (req, res, next) => {
     res.json({ success: true, results });
   } catch (err) { next(err); }
 });
+
+// ── Organiser Rebates & Bonuses Admin ─────────────────────────────────────────
+
+// GET /api/admin/organiser-rebates — list all pending rebates & bonuses
+router.get("/organiser-rebates", async (req, res, next) => {
+  try {
+    const [rebates, bonuses] = await Promise.all([
+      db.query(`
+        SELECT r.*, 
+          COALESCE(u.username, split_part(u.email,'@',1)) AS organiser_name,
+          u.email AS organiser_email,
+          u.payout_wallet,
+          t.name AS battle_name
+        FROM organiser_rebates r
+        LEFT JOIN users u ON u.id = r.organiser_id
+        LEFT JOIN tournaments t ON t.id = r.tournament_id
+        ORDER BY r.created_at DESC
+        LIMIT 100
+      `),
+      db.query(`
+        SELECT b.*,
+          COALESCE(u.username, split_part(u.email,'@',1)) AS organiser_name,
+          u.email AS organiser_email,
+          u.payout_wallet
+        FROM organiser_monthly_bonuses b
+        LEFT JOIN users u ON u.id = b.organiser_id
+        ORDER BY b.created_at DESC
+        LIMIT 100
+      `),
+    ]);
+
+    // Pending summary per organiser
+    const summary = await db.query(`
+      SELECT 
+        u.id AS organiser_id,
+        COALESCE(u.username, split_part(u.email,'@',1)) AS name,
+        u.email,
+        u.payout_wallet,
+        COALESCE(SUM(r.rebate_amount) FILTER (WHERE r.status='pending'), 0) AS pending_rebates,
+        COALESCE(SUM(b.bonus_amount)  FILTER (WHERE b.status='pending'), 0) AS pending_bonuses,
+        COUNT(r.id) FILTER (WHERE r.status='pending') AS rebate_count,
+        COUNT(b.id) FILTER (WHERE b.status='pending') AS bonus_count
+      FROM users u
+      LEFT JOIN organiser_rebates r ON r.organiser_id = u.id
+      LEFT JOIN organiser_monthly_bonuses b ON b.organiser_id = u.id
+      WHERE r.id IS NOT NULL OR b.id IS NOT NULL
+      GROUP BY u.id, u.username, u.email, u.payout_wallet
+      HAVING COALESCE(SUM(r.rebate_amount) FILTER (WHERE r.status='pending'),0) > 0
+          OR COALESCE(SUM(b.bonus_amount)  FILTER (WHERE b.status='pending'),0) > 0
+      ORDER BY (COALESCE(SUM(r.rebate_amount) FILTER (WHERE r.status='pending'),0) +
+                COALESCE(SUM(b.bonus_amount)  FILTER (WHERE b.status='pending'),0)) DESC
+    `);
+
+    res.json({
+      success: true,
+      rebates: rebates.rows,
+      bonuses: bonuses.rows,
+      summary: summary.rows,
+    });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/organiser-rebates/:id/pay — mark a rebate as paid
+router.patch("/organiser-rebates/:id/pay", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { tx_hash } = req.body;
+    await db.query(
+      "UPDATE organiser_rebates SET status='paid', paid_at=NOW() WHERE id=$1",
+      [id]
+    );
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/organiser-rebates/:organiserId/pay-all — pay all pending rebates for one organiser
+router.patch("/organiser-rebates/:organiserId/pay-all", async (req, res, next) => {
+  try {
+    const { organiserId } = req.params;
+    const { type } = req.body; // 'rebate' | 'bonus' | 'all'
+    if (type === 'rebate' || type === 'all') {
+      await db.query(
+        "UPDATE organiser_rebates SET status='paid', paid_at=NOW() WHERE organiser_id=$1 AND status='pending'",
+        [organiserId]
+      );
+    }
+    if (type === 'bonus' || type === 'all') {
+      await db.query(
+        "UPDATE organiser_monthly_bonuses SET status='paid', paid_at=NOW() WHERE organiser_id=$1 AND status='pending'",
+        [organiserId]
+      );
+    }
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
