@@ -8,22 +8,29 @@ import { useLeaderboardSocket } from "@/hooks/useSockets";
 const fmt  = (v: number, d = 2) => parseFloat((v||0).toFixed(d)).toLocaleString("en",{minimumFractionDigits:d,maximumFractionDigits:d});
 const col  = (v: number) => v >= 0 ? "#22C55E" : "#EF4444";
 
-const TIER_COLORS: any = { starter:"#60a5fa", pro:"#FFD700", guild:"#a78bfa" };
-const STATUS_COLORS: any = { active:"#22C55E", registration:"#FFD700", ended:"rgba(255,255,255,.4)" };
-
 function MiniBar({ pct, color }: { pct: number; color: string }) {
+  const w = Math.min(Math.abs(pct) * 2, 100);
   return (
-    <div style={{ width:60, height:4, background:"rgba(255,255,255,.07)", borderRadius:2, overflow:"hidden" }}>
-      <div style={{ height:"100%", width:`${Math.min(Math.abs(pct)*2, 100)}%`, background:color, borderRadius:2, transition:"width .6s ease" }}/>
+    <div style={{ width:56, height:3, background:"rgba(255,255,255,.07)", borderRadius:2, overflow:"hidden", marginTop:4 }}>
+      <div style={{ height:"100%", width:`${w}%`, background:color, borderRadius:2, transition:"width .6s ease" }}/>
     </div>
   );
 }
 
 function RankBadge({ pos }: { pos: number }) {
-  if (pos === 1) return <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,215,0,.15)", border:"1.5px solid rgba(255,215,0,.4)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>🥇</div>;
-  if (pos === 2) return <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(180,192,216,.1)", border:"1.5px solid rgba(180,192,216,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>🥈</div>;
-  if (pos === 3) return <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(205,127,50,.1)", border:"1.5px solid rgba(205,127,50,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>🥉</div>;
-  return <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,255,255,.05)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"rgba(255,255,255,.4)", flexShrink:0, fontFamily:"'Space Grotesk',sans-serif" }}>#{pos}</div>;
+  const medals: Record<number, string> = { 1:"🥇", 2:"🥈", 3:"🥉" };
+  if (medals[pos]) return (
+    <div style={{ width:36, height:36, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0,
+      background: pos===1?"rgba(255,215,0,.12)":pos===2?"rgba(192,192,192,.1)":"rgba(205,127,50,.1)",
+      border: pos===1?"1.5px solid rgba(255,215,0,.35)":pos===2?"1.5px solid rgba(192,192,192,.25)":"1.5px solid rgba(205,127,50,.25)" }}>
+      {medals[pos]}
+    </div>
+  );
+  return (
+    <div style={{ width:36, height:36, borderRadius:"50%", background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.08)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:"rgba(255,255,255,.3)", flexShrink:0 }}>
+      #{pos}
+    </div>
+  );
 }
 
 function LeaderboardContent() {
@@ -62,7 +69,6 @@ function LeaderboardContent() {
     }).finally(() => setLoading(false));
   }, [selected]);
 
-  // Live countdown for active tournaments
   useEffect(() => {
     if (!tournament?.end_time || tournament.status !== "active") return;
     const tick = () => {
@@ -86,222 +92,338 @@ function LeaderboardContent() {
   const winner90    = totalPrize * 0.9;
   const active_entries = parseInt(tournament?.active_entries || 0);
   const max_entries    = parseInt(tournament?.max_entries || 25);
+  const isActive       = tournament?.status === "active";
+  const fillPct        = max_entries > 0 ? Math.round((active_entries / max_entries) * 100) : 0;
 
   return (
-    <div style={{ background:"#04060d", minHeight:"100vh" }}>
+    <div style={{ background:"#030508", minHeight:"100vh", fontFamily:"'DM Sans',sans-serif" }}>
       <style>{`
-        .lb-pad{padding:0 28px;}
-        .lb-content{max-width:1100px;margin:0 auto;padding:24px 28px 60px;}
-        .lb-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px;}
-        .lb-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-        .lb-table-wrap>div{min-width:620px;}
-        @media(max-width:768px){
-          .lb-pad{padding:0 16px;}
-          .lb-content{padding:16px 16px 40px;}
-          .lb-filters button{font-size:12px !important;padding:6px 10px !important;}
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+        @keyframes lb-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.5);}}
+        @keyframes lb-shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+        @keyframes lb-fadein{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+        .lb-container{max-width:1120px;margin:0 auto;padding:0 32px;}
+        .lb-row-wrap{animation:lb-fadein .4s ease both;}
+        .lb-row-wrap:nth-child(2){animation-delay:.04s;}
+        .lb-row-wrap:nth-child(3){animation-delay:.08s;}
+        .lb-row-wrap:nth-child(4){animation-delay:.12s;}
+        .lb-row-wrap:nth-child(n+5){animation-delay:.16s;}
+        .lb-row{display:grid;grid-template-columns:52px 1fr 120px 110px 90px 80px 72px 80px;gap:0;
+          padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.04);
+          transition:background .15s;align-items:center;cursor:default;}
+        .lb-row:hover{background:rgba(255,255,255,.025);}
+        .lb-row.rank-1{background:rgba(255,215,0,.03);}
+        .lb-row.rank-1:hover{background:rgba(255,215,0,.055);}
+        .lb-th{display:grid;grid-template-columns:52px 1fr 120px 110px 90px 80px 72px 80px;gap:0;
+          padding:10px 20px;background:rgba(255,255,255,.025);border-bottom:1px solid rgba(255,255,255,.06);}
+        .lb-select{background:#0d1525;border:1px solid rgba(255,215,0,.2);border-radius:10px;
+          color:#fff;font-size:13px;padding:10px 14px;outline:none;cursor:pointer;
+          min-width:260px;font-family:inherit;transition:border-color .2s;}
+        .lb-select:focus{border-color:rgba(255,215,0,.45);}
+        .live-badge{display:inline-flex;align-items:center;gap:6px;
+          background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);
+          border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;
+          letter-spacing:.08em;text-transform:uppercase;color:#22C55E;}
+        .live-dot-sm{width:6px;height:6px;border-radius:50%;background:#22C55E;
+          animation:lb-pulse 1.5s infinite;}
+        .stat-card{background:rgba(13,18,29,.95);border:1px solid rgba(255,255,255,.07);
+          border-radius:14px;padding:18px 20px;transition:.25s;}
+        .stat-card:hover{border-color:rgba(255,215,0,.2);}
+        .fill-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:8px;}
+        .fill-bar-inner{height:100%;border-radius:2px;background:linear-gradient(90deg,#FFD700,#FFA500);transition:width .6s;}
+        .leader-card{background:linear-gradient(135deg,rgba(255,215,0,.07) 0%,rgba(255,100,0,.04) 50%,rgba(34,197,94,.03) 100%);
+          border:1px solid rgba(255,215,0,.25);border-radius:18px;padding:28px 32px;
+          position:relative;overflow:hidden;}
+        .leader-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+          background:linear-gradient(90deg,#FFD700,#FFA500,#22C55E);}
+        .leader-glow{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;
+          background:radial-gradient(circle,rgba(255,215,0,.08) 0%,transparent 70%);pointer-events:none;}
+        .trophy-icon{font-size:52px;filter:drop-shadow(0 0 16px rgba(255,215,0,.4));}
+        @media(max-width:900px){
+          .lb-container{padding:0 16px;}
+          .lb-row{grid-template-columns:44px 1fr 90px 80px;gap:0;padding:12px 14px;}
+          .lb-th{grid-template-columns:44px 1fr 90px 80px;}
+          .lb-col-hide{display:none;}
+          .lb-select{min-width:200px;}
         }
-        @media(max-width:480px){.lb-pad{padding:0 12px;}.lb-content{padding:14px 12px 40px;}}
+        @media(max-width:560px){
+          .lb-row{grid-template-columns:40px 1fr 80px;padding:10px 12px;}
+          .lb-th{grid-template-columns:40px 1fr 80px;}
+          .lb-col-hide2{display:none;}
+        }
       `}</style>
 
-      {/* ── Hero ── */}
-      <div style={{ background:"linear-gradient(135deg,rgba(255,215,0,.04),rgba(34,197,94,.02))", borderBottom:"1px solid rgba(255,255,255,.06)", padding:"28px 0 0" }}>
-        <div className="lb-pad" style={{ maxWidth:1100, margin:"0 auto" }}>
-          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20, gap:16, flexWrap:"wrap" }}>
+      {/* ── HERO HEADER ── */}
+      <div style={{ position:"relative", overflow:"hidden",
+        background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,215,0,.07) 0%,transparent 55%)",
+        borderBottom:"1px solid rgba(255,255,255,.06)", paddingTop:48, paddingBottom:0 }}>
+
+        {/* Grid overlay */}
+        <div style={{ position:"absolute", inset:0, pointerEvents:"none",
+          backgroundImage:"linear-gradient(rgba(255,215,0,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,215,0,.025) 1px,transparent 1px)",
+          backgroundSize:"60px 60px",
+          maskImage:"radial-gradient(ellipse 80% 100% at 50% 0%,black 20%,transparent 70%)" as any }}/>
+
+        <div className="lb-container" style={{ position:"relative", zIndex:1 }}>
+
+          {/* Title row */}
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:20, marginBottom:32 }}>
             <div>
-              <div style={{ fontSize:9, fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:8 }}>Live Rankings</div>
-              <div style={{ fontFamily:"'Space Grotesk',sans-serif", fontSize:28, fontWeight:900, color:"#fff", letterSpacing:"-1px", display:"flex", alignItems:"center", gap:12 }}>
-                Leaderboard
-                {tournament?.status === "active" && <span className="live-dot" style={{ width:8, height:8 }}/>}
+              <div style={{ fontSize:11, fontWeight:700, letterSpacing:".2em", textTransform:"uppercase",
+                color:"rgba(255,215,0,.6)", marginBottom:12, display:"flex", alignItems:"center", gap:10 }}>
+                <span style={{ display:"block", width:28, height:1, background:"rgba(255,215,0,.6)" }}/>
+                Live Rankings
               </div>
+              <h1 style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(48px,6vw,88px)",
+                letterSpacing:"3px", lineHeight:.9, margin:0,
+                background:"linear-gradient(135deg,#fff 30%,rgba(255,255,255,.65) 100%)",
+                WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                LEADERBOARD
+              </h1>
               {tournament && (
-                <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:6 }}>
-                  {tournament.name} · {tournament.status === "active" ? `⏱ ${countdown} remaining` : tournament.status} · {active_entries}/{max_entries} traders
+                <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+                  {isActive && (
+                    <div className="live-badge">
+                      <span className="live-dot-sm"/>
+                      LIVE
+                    </div>
+                  )}
+                  <span style={{ fontSize:14, color:"rgba(255,255,255,.45)", fontWeight:500 }}>
+                    {tournament.name}
+                  </span>
+                  {isActive && countdown && (
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:14, color:"#FFD700", fontWeight:500 }}>
+                      ⏱ {countdown}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Tournament selector */}
-            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-              <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)" }}>Select Battle</div>
-              <select value={selected} onChange={e=>setSelected(e.target.value)}
-                style={{ background:"#0d1220", border:"1px solid rgba(255,255,255,.1)", borderRadius:8, color:"#fff", fontSize:13, padding:"9px 12px", outline:"none", cursor:"pointer", minWidth:240 }}>
-                <option value="" style={{background:"#0d1220", color:"rgba(255,255,255,.4)"}}>Choose tournament...</option>
-                {allTours.map(t=>(
-                  <option key={t.id} value={t.id} style={{background:"#0d1220", color:"#fff"}}>{t.name} — {t.status}</option>
+            {/* Battle selector */}
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              <div style={{ fontSize:10, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase", color:"rgba(255,255,255,.3)" }}>
+                Select Battle
+              </div>
+              <select className="lb-select" value={selected} onChange={e => setSelected(e.target.value)}>
+                <option value="" style={{ background:"#0d1525", color:"rgba(255,255,255,.4)" }}>Choose a battle...</option>
+                {allTours.map(t => (
+                  <option key={t.id} value={t.id} style={{ background:"#0d1525", color:"#fff" }}>
+                    {t.name} — {t.status}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Stats strip — horizontally scrollable on mobile */}
+          {/* Stats cards */}
           {tournament && (
-            <div style={{ overflowX:"auto", borderRadius:"10px 10px 0 0", WebkitOverflowScrolling:"touch" }}>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(5,minmax(130px,1fr))", gap:1, background:"rgba(255,255,255,.04)", minWidth:500 }}>
-                {[
-                  { l:"Prize Pool",  v:`$${fmt(totalPrize,0)}`,                                 c:"#FFD700" },
-                  { l:"1st Prize",   v:`$${fmt(winner90,0)}`,                                   c:"#22C55E" },
-                  { l:"Entry Fee",   v:`$${fmt(parseFloat(tournament.entry_fee||0),0)}`,         c:"rgba(255,255,255,.7)" },
-                  { l:"Traders",     v:`${active_entries}/${max_entries}`,                      c:tournament.status==="active"?"#22C55E":"rgba(255,255,255,.5)" },
-                ].map((s,i)=>(
-                  <div key={i} style={{ background:"rgba(13,17,26,.9)", padding:"14px 16px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                    <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:6 }}>{s.l}</div>
-                    <div style={{ fontSize:17, fontWeight:900, color:s.c, fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px", lineHeight:1 }}>{s.v}</div>
-                  </div>
-                ))}
-                {/* Status cell — pill badge */}
-                <div style={{ background:"rgba(13,17,26,.9)", padding:"14px 16px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.28)", marginBottom:6 }}>Status</div>
-                  <div style={{ display:"flex", alignItems:"center" }}>
-                    <span style={{
-                      fontSize:11, fontWeight:800, letterSpacing:".08em", textTransform:"uppercase",
-                      color: STATUS_COLORS[tournament.status] || "#fff",
-                      background: `${STATUS_COLORS[tournament.status] || "#fff"}18`,
-                      border: `1px solid ${STATUS_COLORS[tournament.status] || "#fff"}40`,
-                      borderRadius:6, padding:"4px 10px", whiteSpace:"nowrap",
-                      display:"inline-block"
-                    }}>
-                      {tournament.status}
-                    </span>
-                  </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:12, paddingBottom:32 }}>
+              {[
+                { label:"Prize Pool",  value:`$${fmt(totalPrize,0)}`,  color:"#FFD700",  sub:"Total pool" },
+                { label:"1st Prize",   value:`$${fmt(winner90,0)}`,    color:"#22C55E",  sub:"90% to winner" },
+                { label:"Entry Fee",   value:`$${fmt(parseFloat(tournament.entry_fee||0),0)}`, color:"rgba(255,255,255,.75)", sub:"USDT per trader" },
+                { label:"Traders",     value:`${active_entries}/${max_entries}`, color:isActive?"#22C55E":"rgba(255,255,255,.6)", sub:`${fillPct}% filled` },
+                { label:"Status",      value:tournament.status?.toUpperCase(), color:isActive?"#22C55E":tournament.status==="registration"?"#FFD700":"rgba(255,255,255,.45)", sub:isActive?`${countdown} left`:"" },
+              ].map(s => (
+                <div key={s.label} className="stat-card">
+                  <div style={{ fontSize:10, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase",
+                    color:"rgba(255,255,255,.3)", marginBottom:8 }}>{s.label}</div>
+                  <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, letterSpacing:"1px",
+                    lineHeight:1, color:s.color, marginBottom:4 }}>{s.value}</div>
+                  {s.sub && <div style={{ fontSize:11, color:"rgba(255,255,255,.25)" }}>{s.sub}</div>}
+                  {s.label === "Traders" && (
+                    <div className="fill-bar"><div className="fill-bar-inner" style={{ width:`${fillPct}%` }}/></div>
+                  )}
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </div>
       </div>
 
-      <div className="lb-content">
+      {/* ── MAIN CONTENT ── */}
+      <div className="lb-container" style={{ paddingTop:32, paddingBottom:64 }}>
 
-        {/* ── Leader spotlight ── */}
+        {/* Leader spotlight */}
         {!loading && leader && (
-          <div style={{ background:"linear-gradient(135deg,rgba(255,215,0,.06),rgba(34,197,94,.03))", border:"1px solid rgba(255,215,0,.2)", borderRadius:14, padding:"20px 24px", marginBottom:20, display:"flex", gap:20, alignItems:"center", flexWrap:"wrap" }}>
-            <div style={{ fontSize:36 }}>🏆</div>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:9, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"#FFD700", marginBottom:4 }}>Current Leader</div>
-              <div style={{ fontSize:20, fontWeight:900, color:"#fff", fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px" }}>{leader.display_name || leader.username || `Trader #${leader.entry_number}`}</div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,.35)", marginTop:2 }}>
-                <span style={{ textTransform:"capitalize" }}>{leader.broker||"Exness"}</span>
-                {" · "}
-                <span style={{ fontFamily:"'DM Mono',monospace" }}>
-                  {leader.mt5_login ? `MT5 ***${String(leader.mt5_login).slice(-3)}` : `Entry #${leader.entry_number}`}
-                </span>
-              </div>
-            </div>
-            <div style={{ display:"flex", gap:20, flexWrap:"wrap" }}>
-              {[
-                { l:"Gain",        v:`${leaderPct>=0?"+":""}${fmt(leaderPct)}%`, c:"#22C55E" },
-                { l:"Net Profit",  v:`$${fmt(Math.abs(parseFloat(leader.profit_abs||0)))}`, c:"#FFD700" },
-                { l:"Win Rate",    v:`${leader.win_rate||0}%`, c:"rgba(255,255,255,.7)" },
-                { l:"Trades",      v:leader.total_trades||0, c:"rgba(255,255,255,.7)" },
-              ].map(s=>(
-                <div key={s.l} style={{ textAlign:"center" }}>
-                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.3)", marginBottom:4 }}>{s.l}</div>
-                  <div style={{ fontSize:18, fontWeight:900, color:s.c, fontFamily:"'Space Grotesk',sans-serif" }}>{s.v}</div>
+          <div className="leader-card" style={{ marginBottom:24, animation:"lb-fadein .5s ease both" }}>
+            <div className="leader-glow"/>
+            <div style={{ display:"flex", gap:24, alignItems:"center", flexWrap:"wrap", position:"relative", zIndex:1 }}>
+              <div className="trophy-icon">🏆</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:11, fontWeight:700, letterSpacing:".15em", textTransform:"uppercase",
+                  color:"rgba(255,215,0,.7)", marginBottom:6 }}>Current Leader</div>
+                <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"clamp(28px,4vw,44px)",
+                  letterSpacing:"2px", lineHeight:1, color:"#fff", marginBottom:6 }}>
+                  {(leader.display_name || leader.username || `Trader #${leader.entry_number}`).toUpperCase()}
                 </div>
-              ))}
+                <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:12,
+                    background:"rgba(255,215,0,.1)", border:"1px solid rgba(255,215,0,.2)",
+                    borderRadius:20, padding:"3px 10px", color:"rgba(255,215,0,.8)", textTransform:"capitalize" }}>
+                    {leader.broker||"Exness"}
+                  </span>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:12, color:"rgba(255,255,255,.35)" }}>
+                    {leader.mt5_login ? `MT5 ***${String(leader.mt5_login).slice(-3)}` : `Entry #${leader.entry_number}`}
+                  </span>
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:28, flexWrap:"wrap" }}>
+                {[
+                  { label:"% GAIN",     value:`${leaderPct>=0?"+":""}${fmt(leaderPct)}%`,  color:"#22C55E",  big:true },
+                  { label:"NET PROFIT", value:`$${fmt(Math.abs(parseFloat(leader.profit_abs||0)))}`, color:"#FFD700", big:false },
+                  { label:"WIN RATE",   value:`${leader.win_rate||0}%`,                   color:"rgba(255,255,255,.7)", big:false },
+                  { label:"TRADES",     value:String(leader.total_trades||0),             color:"rgba(255,255,255,.5)", big:false },
+                ].map(s => (
+                  <div key={s.label} style={{ textAlign:"center" }}>
+                    <div style={{ fontSize:9, fontWeight:700, letterSpacing:".15em", color:"rgba(255,255,255,.3)", marginBottom:6 }}>{s.label}</div>
+                    <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:s.big?38:24, letterSpacing:"1px", lineHeight:1, color:s.color }}>{s.value}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* ── Table ── */}
-        <div className="lb-table-wrap">
-        <div style={{ background:"rgba(13,17,26,.9)", border:"1px solid rgba(255,255,255,.07)", borderRadius:12, overflow:"hidden", minWidth:620 }}>
+        {/* Table */}
+        <div style={{ background:"rgba(8,13,21,.95)", border:"1px solid rgba(255,255,255,.07)", borderRadius:16, overflow:"hidden" }}>
+
           {/* Table header */}
-          <div style={{ display:"grid", gridTemplateColumns:"44px 1fr 110px 100px 80px 80px 80px 80px", gap:0, padding:"10px 20px", borderBottom:"1px solid rgba(255,255,255,.05)", background:"rgba(255,255,255,.02)" }}>
-            {["#","Trader","% Gain","Net Profit","Balance","Win Rate","Trades","Status"].map(h=>(
-              <div key={h} style={{ fontSize:9, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(255,255,255,.25)" }}>{h}</div>
+          <div className="lb-th">
+            {["#", "TRADER", "% GAIN", "NET PROFIT", "BALANCE", "WIN RATE", "TRADES", "STATUS"].map((h, i) => (
+              <div key={h} className={i >= 4 ? "lb-col-hide" : i === 6 ? "lb-col-hide lb-col-hide2" : ""}
+                style={{ fontSize:9, fontWeight:700, letterSpacing:".12em", color:"rgba(255,255,255,.22)" }}>
+                {h}
+              </div>
             ))}
           </div>
 
           {loading ? (
-            <div style={{ padding:"48px 0", textAlign:"center" }}><div className="spinner" style={{ margin:"0 auto" }}/></div>
-          ) : leaders.length === 0 ? (
-            <div style={{ padding:"60px 24px", textAlign:"center" }}>
-              <div style={{ fontSize:36, marginBottom:12 }}>📊</div>
-              <div style={{ fontSize:15, fontWeight:700, color:"rgba(255,255,255,.4)", marginBottom:8 }}>No entries yet</div>
-              <div style={{ fontSize:13, color:"rgba(255,255,255,.25)", marginBottom:20 }}>Be the first to join this tournament!</div>
-              <Link href="/tournaments" className="btn btn-primary btn-sm">Join a Battle</Link>
+            <div style={{ padding:"60px 0", textAlign:"center" }}>
+              <div className="spinner" style={{ margin:"0 auto" }}/>
             </div>
-          ) : leaders.map((entry: any, i: number) => {
-            const pos  = parseInt(entry.position || i+1);
-            const pct  = parseFloat(entry.profit_pct || 0);
-            const bal  = parseFloat(entry.current_balance || 1000);
-            const wr   = parseInt(entry.win_rate || 0);
-            const isMe = false; // TODO: highlight logged-in user
-            return (
-              <div key={entry.id} style={{ display:"grid", gridTemplateColumns:"44px 1fr 110px 100px 80px 80px 80px 80px", gap:0, padding:"13px 20px", borderBottom:"1px solid rgba(255,255,255,.04)", background:pos===1?"rgba(255,215,0,.02)":isMe?"rgba(96,165,250,.03)":"transparent", transition:"background .1s" }}>
-                {/* Rank */}
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <RankBadge pos={pos}/>
-                </div>
+          ) : leaders.length === 0 ? (
+            <div style={{ padding:"72px 24px", textAlign:"center", animation:"lb-fadein .5s ease both" }}>
+              <div style={{ fontSize:48, marginBottom:16 }}>⚔️</div>
+              <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:28, letterSpacing:"2px", color:"rgba(255,255,255,.4)", marginBottom:8 }}>
+                NO TRADERS YET
+              </div>
+              <div style={{ fontSize:14, color:"rgba(255,255,255,.22)", marginBottom:24 }}>
+                Be the first to join this battle
+              </div>
+              <Link href="/tournaments" className="btn btn-primary">
+                Join a Battle →
+              </Link>
+            </div>
+          ) : (
+            leaders.map((entry: any, i: number) => {
+              const pos  = parseInt(entry.position || i + 1);
+              const pct  = parseFloat(entry.profit_pct || 0);
+              const bal  = parseFloat(entry.current_balance || 1000);
+              const wr   = parseInt(entry.win_rate || 0);
+              const profAbs = parseFloat(entry.profit_abs || 0);
+              const initial = (entry.display_name || entry.username || "T")[0].toUpperCase();
+              const tierColor = pos===1?"#FFD700":pos===2?"rgba(192,192,192,.8)":pos===3?"rgba(205,127,50,.8)":"rgba(255,255,255,.4)";
 
-                {/* Trader info */}
-                <div style={{ display:"flex", alignItems:"center", gap:10, minWidth:0 }}>
-                  <div style={{ width:32, height:32, borderRadius:"50%", background:`${TIER_COLORS[entry.tier||"starter"]||"#fff"}18`, border:`1px solid ${TIER_COLORS[entry.tier||"starter"]||"#fff"}30`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:TIER_COLORS[entry.tier||"starter"]||"#fff", flexShrink:0 }}>
-                    {(entry.display_name||entry.username||"T")[0].toUpperCase()}
-                  </div>
-                  <div style={{ minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{entry.display_name || entry.username || `Trader #${entry.entry_number}`}</div>
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,.28)", display:"flex", alignItems:"center", gap:4 }}>
-                      <span style={{ textTransform:"capitalize" }}>{entry.broker||"Exness"}</span>
-                      <span style={{ opacity:.4 }}>·</span>
-                      <span style={{ fontFamily:"'DM Mono',monospace", letterSpacing:".04em" }}>
-                        {entry.mt5_login ? `***${String(entry.mt5_login).slice(-3)}` : `Entry #${entry.entry_number}`}
+              return (
+                <div key={entry.id} className={`lb-row-wrap`}>
+                  <div className={`lb-row ${pos===1?"rank-1":""}`}>
+
+                    {/* Rank */}
+                    <div style={{ display:"flex", alignItems:"center" }}>
+                      <RankBadge pos={pos}/>
+                    </div>
+
+                    {/* Trader */}
+                    <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
+                      <div style={{ width:36, height:36, borderRadius:"50%", flexShrink:0,
+                        background:`${tierColor}18`, border:`1.5px solid ${tierColor}40`,
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontFamily:"'Bebas Neue',sans-serif", fontSize:15, color:tierColor }}>
+                        {initial}
+                      </div>
+                      <div style={{ minWidth:0 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:"#fff",
+                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                          {entry.display_name || entry.username || `Trader #${entry.entry_number}`}
+                        </div>
+                        <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:2 }}>
+                          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10,
+                            background:"rgba(255,255,255,.06)", border:"1px solid rgba(255,255,255,.08)",
+                            borderRadius:20, padding:"1px 8px", color:"rgba(255,255,255,.45)",
+                            textTransform:"capitalize" }}>
+                            {entry.broker||"Exness"}
+                          </span>
+                          <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:"rgba(255,255,255,.28)", letterSpacing:".04em" }}>
+                            {entry.mt5_login ? `***${String(entry.mt5_login).slice(-3)}` : `#${entry.entry_number}`}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* % Gain */}
+                    <div>
+                      <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:20, letterSpacing:"1px",
+                        color:col(pct), lineHeight:1 }}>
+                        {pct>=0?"+":""}{fmt(pct)}%
+                      </div>
+                      <MiniBar pct={pct} color={col(pct)}/>
+                    </div>
+
+                    {/* Net Profit */}
+                    <div className="lb-col-hide2" style={{ fontFamily:"'DM Mono',monospace", fontSize:13, fontWeight:500, color:col(profAbs) }}>
+                      {profAbs>=0?"+":""}{fmt(Math.abs(profAbs))}
+                    </div>
+
+                    {/* Balance */}
+                    <div className="lb-col-hide" style={{ fontFamily:"'DM Mono',monospace", fontSize:12, color:"rgba(255,255,255,.55)" }}>
+                      ${fmt(bal,0)}
+                    </div>
+
+                    {/* Win Rate */}
+                    <div className="lb-col-hide" style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:18, letterSpacing:".5px",
+                      color:wr>=50?"#22C55E":wr>0?"#fbbf24":"rgba(255,255,255,.25)" }}>
+                      {wr>0?`${wr}%`:"—"}
+                    </div>
+
+                    {/* Trades */}
+                    <div className="lb-col-hide" style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>
+                      {entry.total_trades||0}
+                    </div>
+
+                    {/* Status */}
+                    <div className="lb-col-hide">
+                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:9, padding:"3px 10px",
+                        borderRadius:20, fontWeight:600, letterSpacing:".06em", textTransform:"uppercase",
+                        background:entry.status==="active"?"rgba(34,197,94,.1)":"rgba(255,255,255,.04)",
+                        color:entry.status==="active"?"#22C55E":"rgba(255,255,255,.35)",
+                        border:`1px solid ${entry.status==="active"?"rgba(34,197,94,.2)":"rgba(255,255,255,.07)"}` }}>
+                        {entry.status}
                       </span>
                     </div>
+
                   </div>
                 </div>
-
-                {/* % Gain */}
-                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div>
-                    <div style={{ fontSize:15, fontWeight:900, color:col(pct), fontFamily:"'Space Grotesk',sans-serif", letterSpacing:"-.5px" }}>{pct>=0?"+":""}{fmt(pct)}%</div>
-                    <MiniBar pct={pct} color={col(pct)}/>
-                  </div>
-                </div>
-
-                {/* Net Profit */}
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:col(parseFloat(entry.profit_abs||0)), fontFamily:"'Space Grotesk',sans-serif" }}>
-                    {parseFloat(entry.profit_abs||0)>=0?"+":""}${fmt(Math.abs(parseFloat(entry.profit_abs||0)))}
-                  </div>
-                </div>
-
-                {/* Balance */}
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,.65)", fontFamily:"'Space Grotesk',sans-serif" }}>${fmt(bal,0)}</div>
-                </div>
-
-                {/* Win Rate */}
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:wr>=50?"#22C55E":wr>0?"#fbbf24":"rgba(255,255,255,.35)" }}>{wr>0?`${wr}%`:"—"}</div>
-                </div>
-
-                {/* Trades */}
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,.5)" }}>{entry.total_trades||0}</div>
-                </div>
-
-                {/* Status */}
-                <div style={{ display:"flex", alignItems:"center" }}>
-                  <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, fontWeight:700, background:entry.status==="active"?"rgba(34,197,94,.1)":"rgba(255,255,255,.05)", color:entry.status==="active"?"#22C55E":"rgba(255,255,255,.4)", border:`1px solid ${entry.status==="active"?"rgba(34,197,94,.2)":"rgba(255,255,255,.08)"}` }}>
-                    {entry.status}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
-        </div>{/* end lb-table-wrap */}
 
         {/* Footer */}
         {leaders.length > 0 && (
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, fontSize:11, color:"rgba(255,255,255,.25)" }}>
-            <span>{leaders.length} traders ranked · ranked by % gain on starting $1,000</span>
-            <span>{lastUpd ? `Updated ${lastUpd.toLocaleTimeString()}` : ""}</span>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+            marginTop:14, fontSize:11, color:"rgba(255,255,255,.2)", flexWrap:"wrap", gap:8 }}>
+            <span>{leaders.length} traders · ranked by % gain on starting $1,000</span>
+            {lastUpd && (
+              <span style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <span style={{ width:6, height:6, borderRadius:"50%", background:"#22C55E",
+                  display:"inline-block", animation:"lb-pulse 2s infinite" }}/>
+                Updated {lastUpd.toLocaleTimeString()}
+              </span>
+            )}
           </div>
         )}
-
       </div>
     </div>
   );
@@ -309,7 +431,11 @@ function LeaderboardContent() {
 
 export default function LeaderboardPage() {
   return (
-    <Suspense fallback={<div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"60vh" }}><div className="spinner"/></div>}>
+    <Suspense fallback={
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"60vh", background:"#030508" }}>
+        <div className="spinner"/>
+      </div>
+    }>
       <LeaderboardContent />
     </Suspense>
   );
