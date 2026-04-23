@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MFT Organiser Rewards — Rebates, Bonuses & Commissions</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#FFD700;--gold2:#FFA500;--green:#22C55E;--red:#EF4444;
+  --purple:#8B5CF6;--blue:#3B82F6;--orange:#FF6400;
+  --bg:#030508;--bg2:#080d15;--bg3:#0d1525;
+  --text:#fff;--text2:rgba(255,255,255,.6);--text3:rgba(255,255,255,.35);
+  --border:rgba(255,255,255,.08);
+}
+html{scroll-behavior:smooth;background:#030508;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+.cursor-glow{position:fixed;width:450px;height:450px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,215,0,.04) 0%,transparent 70%);
+  pointer-events:none;transform:translate(-50%,-50%);z-index:0;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;
+  align-items:center;padding:20px 60px;
+  background:linear-gradient(180deg,rgba(3,5,8,.97) 0%,transparent 100%);backdrop-filter:blur(10px);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-cta{background:var(--gold);color:#000;font-weight:700;font-size:13px;padding:10px 24px;
+  border-radius:6px;text-decoration:none;letter-spacing:.05em;transition:all .2s;}
+.nav-cta:hover{background:#fff;transform:translateY(-1px);}
+
+/* TICKER */
+.ticker{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:13px 0;overflow:hidden;margin-top:72px;}
+.ticker-inner{display:flex;gap:60px;animation:ticker 40s linear infinite;white-space:nowrap;}
+.ticker-item{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ticker-item span{color:var(--gold);}
+@keyframes ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding:100px 60px 60px;text-align:center;}
+.hero-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,215,0,.08) 0%,transparent 55%),
+             radial-gradient(ellipse 40% 50% at 85% 60%,rgba(255,100,0,.05) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 60% at 10% 80%,rgba(34,197,94,.04) 0%,transparent 60%);}
+.hero-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,215,0,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,215,0,.025) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 10%,transparent 80%);}
+.hero-content{position:relative;z-index:1;max-width:980px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);
+  border-radius:100px;padding:8px 20px;font-size:12px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:28px;
+  animation:fadeDown .8s ease both;}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(1.4);}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8.5vw,120px);
+  line-height:.92;letter-spacing:2px;margin-bottom:24px;animation:fadeUp .9s .1s ease both;}
+.hero h1 .l1{display:block;color:var(--text);}
+.hero h1 .l2{display:block;
+  background:linear-gradient(135deg,#FFD700 0%,#FF6400 50%,#FFD700 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fadeUp .9s .2s ease both,shimmer 4s linear 1s infinite;}
+.hero h1 .l3{display:block;color:rgba(255,255,255,.7);}
+@keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
+.hero-sub{font-size:18px;color:var(--text2);line-height:1.75;max-width:660px;margin:0 auto 44px;
+  font-weight:300;animation:fadeUp .9s .3s ease both;}
+.hero-sub strong{color:#fff;font-weight:600;}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fadeUp .9s .4s ease both;}
+.btn-primary{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;font-weight:700;
+  font-size:15px;padding:16px 40px;border-radius:8px;text-decoration:none;letter-spacing:.05em;
+  transition:all .25s;box-shadow:0 0 40px rgba(255,215,0,.25);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(255,215,0,.4);}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600;
+  font-size:15px;padding:16px 40px;border-radius:8px;text-decoration:none;letter-spacing:.05em;transition:all .25s;}
+.btn-ghost:hover{border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.05);}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+
+/* HERO STATS */
+.hero-stats{display:flex;gap:0;justify-content:center;margin-top:60px;
+  background:var(--bg3);border:1px solid rgba(255,215,0,.15);border-radius:16px;
+  overflow:hidden;max-width:900px;margin-left:auto;margin-right:auto;
+  animation:fadeUp .9s .5s ease both;}
+.hs-item{flex:1;padding:24px 16px;text-align:center;border-right:1px solid var(--border);}
+.hs-item:last-child{border-right:none;}
+.hs-val{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.hs-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-top:4px;}
+
+/* SECTIONS */
+section{padding:110px 60px;}
+.container{max-width:1180px;margin:0 auto;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'';display:block;width:30px;height:1px;background:var(--gold);}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(38px,5vw,68px);
+  line-height:1;letter-spacing:2px;margin-bottom:18px;}
+.section-sub{font-size:17px;color:var(--text2);line-height:1.7;max-width:560px;}
+
+/* NUMBERS BAR */
+.numbers-section{background:linear-gradient(135deg,rgba(255,215,0,.04),transparent,rgba(255,100,0,.03));
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.numbers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
+.number-cell{background:var(--bg);padding:52px 32px;text-align:center;transition:.3s;}
+.number-cell:hover{background:var(--bg2);}
+.n-value{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;margin-bottom:8px;}
+.n-label{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);}
+.n-sub{font-size:13px;color:var(--text2);margin-top:5px;}
+
+/* HOW IT WORKS — 3 STREAMS */
+.streams-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px;}
+.stream-card{background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+  padding:36px 28px;position:relative;overflow:hidden;transition:all .3s;}
+.stream-card:hover{transform:translateY(-4px);}
+.stream-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--stream-color,#FFD700);}
+.stream-icon{font-size:40px;margin-bottom:18px;}
+.stream-num{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.2em;
+  color:var(--text3);margin-bottom:8px;}
+.stream-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:8px;}
+.stream-rate{font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:1px;
+  background:linear-gradient(135deg,var(--stream-color,#FFD700),#FFA500);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:4px;}
+.stream-rate-label{font-size:13px;color:var(--text3);margin-bottom:18px;}
+.stream-desc{font-size:14px;color:var(--text2);line-height:1.65;}
+
+/* REBATE TIERS */
+.tiers-section{background:var(--bg2);}
+.tiers-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:64px;}
+.tier-table{background:var(--bg3);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+.tier-table-header{padding:20px 24px;border-bottom:1px solid var(--border);}
+.tier-table-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px;}
+.tier-table-sub{font-size:13px;color:var(--text3);}
+.tier-row{display:flex;justify-content:space-between;align-items:center;
+  padding:14px 24px;border-bottom:1px solid var(--border);transition:.2s;}
+.tier-row:last-child{border-bottom:none;}
+.tier-row:hover{background:rgba(255,255,255,.03);}
+.tier-row.active{background:rgba(255,215,0,.06);}
+.tier-label{font-size:14px;color:var(--text2);}
+.tier-value{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;}
+
+/* EARNINGS CALCULATOR */
+.calc-section{background:var(--bg);}
+.calc-wrapper{max-width:960px;margin:60px auto 0;
+  background:var(--bg3);border:1px solid var(--border);border-radius:24px;padding:56px;}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;}
+.calc-inputs{display:flex;flex-direction:column;gap:28px;}
+.calc-input-group label{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);display:flex;justify-content:space-between;margin-bottom:12px;}
+.calc-input-group label span{color:var(--gold);font-family:'DM Mono',monospace;font-size:14px;}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;
+  background:rgba(255,255,255,.1);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+  border-radius:50%;background:linear-gradient(135deg,#FFD700,#FFA500);cursor:pointer;
+  box-shadow:0 0 12px rgba(255,215,0,.4);}
+.calc-result{position:sticky;top:100px;}
+.calc-total-label{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.calc-total{font-family:'Bebas Neue',sans-serif;font-size:80px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.calc-sub{font-size:13px;color:var(--text3);margin-top:4px;margin-bottom:28px;}
+.calc-rows{display:flex;flex-direction:column;gap:9px;}
+.calc-row{display:flex;justify-content:space-between;font-size:13px;
+  padding:10px 14px;background:rgba(255,255,255,.03);border-radius:8px;}
+.calc-row .cv{color:var(--gold);font-family:'DM Mono',monospace;font-weight:500;}
+.calc-row.highlight{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);}
+.calc-row.highlight .cv{color:var(--green);}
+.calc-row.red-row .cv{color:var(--red);}
+
+/* SCENARIO CARDS */
+.scenarios-section{background:var(--bg2);}
+.scenarios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:64px;}
+.scenario-card{background:var(--bg3);border:1px solid var(--border);border-radius:18px;
+  overflow:hidden;transition:all .3s;}
+.scenario-card:hover{border-color:rgba(255,215,0,.25);transform:translateY(-3px);}
+.scenario-card.featured{border-color:rgba(255,215,0,.35);
+  background:linear-gradient(135deg,rgba(255,215,0,.06) 0%,var(--bg3) 60%);}
+.sc-header{padding:22px 24px;border-bottom:1px solid var(--border);}
+.sc-type{font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:6px;}
+.sc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px;}
+.sc-desc{font-size:13px;color:var(--text3);}
+.sc-body{padding:20px 24px;}
+.sc-row{display:flex;justify-content:space-between;font-size:13px;
+  padding:8px 0;border-bottom:1px solid var(--border);}
+.sc-row:last-child{border-bottom:none;}
+.sc-row .sv{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--gold);}
+.sc-total{margin-top:16px;padding:16px;background:rgba(255,215,0,.06);
+  border:1px solid rgba(255,215,0,.15);border-radius:10px;text-align:center;}
+.sc-total-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.sc-total-val{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+
+/* VOLUME PROGRESS VISUAL */
+.volume-section{background:var(--bg);}
+.volume-ladder{max-width:800px;margin:64px auto 0;position:relative;}
+.volume-ladder::before{content:'';position:absolute;left:28px;top:0;bottom:0;
+  width:2px;background:linear-gradient(180deg,#FFD700,#FFA500,#22C55E,#3B82F6,#8B5CF6);}
+.volume-tier{display:flex;gap:24px;margin-bottom:4px;position:relative;}
+.vt-dot{width:58px;height:58px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  position:relative;z-index:1;border:2px solid;}
+.vt-body{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:14px;
+  padding:16px 20px;margin-bottom:12px;transition:.3s;}
+.vt-body:hover{border-color:rgba(255,215,0,.2);}
+.vt-vol{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:2px;}
+.vt-bonus{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--green);}
+.vt-note{font-size:12px;color:var(--text3);margin-top:4px;}
+
+/* WHY CARDS */
+.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:64px;}
+.why-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:28px;display:flex;gap:18px;}
+.why-card.wide{grid-column:span 2;}
+.why-icon{font-size:26px;flex-shrink:0;}
+.why-title{font-size:16px;font-weight:700;margin-bottom:7px;}
+.why-desc{font-size:14px;color:var(--text2);line-height:1.6;}
+.why-tag{display:inline-block;margin-top:10px;background:rgba(34,197,94,.1);
+  border:1px solid rgba(34,197,94,.25);color:var(--green);font-size:11px;
+  font-weight:700;letter-spacing:.08em;padding:3px 12px;border-radius:20px;}
+
+/* QUOTE */
+.quote-section{background:var(--bg2);text-align:center;padding:100px 60px;}
+.big-quote{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,66px);
+  letter-spacing:2px;line-height:1.1;max-width:960px;margin:0 auto 32px;}
+.big-quote span{background:linear-gradient(135deg,#FFD700,#FFA500);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.quote-sub{font-size:16px;color:var(--text2);max-width:520px;margin:0 auto;}
+
+/* CTA */
+.cta-section{padding:130px 60px;text-align:center;position:relative;overflow:hidden;}
+.cta-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(255,215,0,.06) 0%,transparent 70%);}
+.cta-section .section-title{font-size:clamp(44px,6vw,88px);margin-bottom:20px;}
+.cta-section .section-sub{margin:0 auto 44px;text-align:center;}
+.cta-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+.contact-options{display:flex;gap:32px;justify-content:center;margin-top:40px;flex-wrap:wrap;}
+.contact-opt{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2);}
+.contact-opt a{color:var(--gold);text-decoration:none;font-weight:600;}
+footer{padding:36px 60px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.footer-text{font-size:11px;color:var(--text3);}
+
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .65s ease,transform .65s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:900px){
+  nav{padding:16px 20px;}section{padding:80px 20px;}.hero{padding:90px 20px 60px;}
+  .streams-grid,.scenarios-grid,.why-grid{grid-template-columns:1fr;}
+  .why-card.wide{grid-column:span 1;}
+  .tiers-grid,.calc-grid{grid-template-columns:1fr;}
+  .numbers-grid{grid-template-columns:1fr 1fr;}
+  .hero-stats{flex-direction:column;}
+  .hs-item{border-right:none;border-bottom:1px solid var(--border);}
+  .hs-item:last-child{border-bottom:none;}
+  footer{flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+<div class="cursor-glow" id="glow"></div>
+
+<nav>
+  <div class="nav-logo">MFT</div>
+  <a href="https://www.myfundedtournament.com/guild" target="_blank" class="nav-cta">Start Organising →</a>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="ticker-item">💰 Commission <span>UP TO 40% PER BATTLE</span></div>
+    <div class="ticker-item">🔄 Entry Rebates <span>UP TO 50% BACK</span></div>
+    <div class="ticker-item">🚀 Monthly Bonuses <span>UP TO $10,000</span></div>
+    <div class="ticker-item">⚔️ Guild Battles <span>YOU SET THE RULES</span></div>
+    <div class="ticker-item">💵 Auto-Paid <span>ON BATTLE END</span></div>
+    <div class="ticker-item">🌍 Any Entry Fee <span>$1 – $10,000</span></div>
+    <div class="ticker-item">💰 Commission <span>UP TO 40% PER BATTLE</span></div>
+    <div class="ticker-item">🔄 Entry Rebates <span>UP TO 50% BACK</span></div>
+    <div class="ticker-item">🚀 Monthly Bonuses <span>UP TO $10,000</span></div>
+    <div class="ticker-item">⚔️ Guild Battles <span>YOU SET THE RULES</span></div>
+    <div class="ticker-item">💵 Auto-Paid <span>ON BATTLE END</span></div>
+    <div class="ticker-item">🌍 Any Entry Fee <span>$1 – $10,000</span></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div><div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Organiser Rewards Program — 3 Ways to Earn</div>
+    <h1>
+      <span class="l1">HOST BATTLES.</span>
+      <span class="l2">STACK REWARDS.</span>
+      <span class="l3">GET PAID THREE WAYS.</span>
+    </h1>
+    <p class="hero-sub">
+      As an MFT Guild Battle organiser you earn a <strong>commission on every entry</strong>,
+      a <strong>rebate on your own entry fee</strong> based on prize pool size,
+      and a <strong>monthly cash bonus</strong> based on your total volume.
+      The bigger you run, the more you earn — automatically.
+    </p>
+    <div class="hero-actions">
+      <a href="https://www.myfundedtournament.com/guild" target="_blank" class="btn-primary">Create Your Battle →</a>
+      <a href="#calculator" class="btn-ghost">Calculate My Earnings ↓</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hs-item"><div class="hs-val">40%</div><div class="hs-label">Max Organiser Cut</div></div>
+      <div class="hs-item"><div class="hs-val">50%</div><div class="hs-label">Max Entry Rebate</div></div>
+      <div class="hs-item"><div class="hs-val">$10K</div><div class="hs-label">Max Monthly Bonus</div></div>
+      <div class="hs-item"><div class="hs-val">3</div><div class="hs-label">Earning Streams</div></div>
+      <div class="hs-item"><div class="hs-val">Auto</div><div class="hs-label">Paid on Battle End</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 STREAMS -->
+<section>
+  <div class="container">
+    <div class="section-label reveal">How You Earn</div>
+    <h2 class="section-title reveal">THREE STREAMS.<br/>ONE PLATFORM.</h2>
+    <p class="section-sub reveal">Every battle you host earns you money in three distinct ways — simultaneously. Each stream is automatic, transparent, and paid on-chain.</p>
+    <div class="streams-grid reveal">
+      <div class="stream-card" style="--stream-color:#FF6400;">
+        <div class="stream-icon">⚔️</div>
+        <div class="stream-num">STREAM 01</div>
+        <div class="stream-name">Organiser Commission</div>
+        <div class="stream-rate">5–40%</div>
+        <div class="stream-rate-label" style="color:rgba(255,100,0,.5);">of total prize pool — you set it</div>
+        <div class="stream-desc">
+          When you create a Guild Battle, you choose your organiser percentage between 5% and 40%.
+          Every entry fee from every trader goes into the pool. When the battle ends, your cut is
+          automatically transferred to your wallet. 50 traders × $20 entry × 10% organiser cut = $100 yours.
+          <br/><br/>
+          <strong style="color:#fff;">This is the core — and it starts from your very first battle.</strong>
+        </div>
+      </div>
+      <div class="stream-card" style="--stream-color:#FFD700;">
+        <div class="stream-icon">💰</div>
+        <div class="stream-num">STREAM 02</div>
+        <div class="stream-name">Entry Rebates</div>
+        <div class="stream-rate">15–50%</div>
+        <div class="stream-rate-label" style="color:rgba(255,215,0,.5);">of YOUR entry fee back — per battle</div>
+        <div class="stream-desc">
+          When you join your own battle as a participant, the size of your prize pool determines
+          how much of your entry fee you get back as a rebate. Bigger battles = bigger rebate tier.
+          Run a $2,000+ prize pool and get <strong style="color:#FFD700;">50% of your entry fee refunded</strong>
+          back to your wallet automatically when the battle ends.
+          <br/><br/>
+          <strong style="color:#fff;">The more you grow your community, the cheaper your own entry gets.</strong>
+        </div>
+      </div>
+      <div class="stream-card" style="--stream-color:#22C55E;">
+        <div class="stream-icon">🚀</div>
+        <div class="stream-num">STREAM 03</div>
+        <div class="stream-name">Monthly Volume Bonus</div>
+        <div class="stream-rate">$100–$10K</div>
+        <div class="stream-rate-label" style="color:rgba(34,197,94,.5);">extra cash every 30 days</div>
+        <div class="stream-desc">
+          Separate from commissions and rebates, MFT pays you a cash bonus based on the total
+          prize pool volume your battles generate in any rolling 30-day window. Hit $10K in
+          monthly volume and earn +$100 extra. Hit $500K and earn +$10,000 on top of everything else.
+          <br/><br/>
+          <strong style="color:#fff;">The bonus is net of lower tiers — it rewards scale, not repetition.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUMBERS -->
+<div class="numbers-section reveal">
+  <div class="numbers-grid">
+    <div class="number-cell"><div class="n-value">$0</div><div class="n-label">Setup Fee</div><div class="n-sub">Free to start organising</div></div>
+    <div class="number-cell"><div class="n-value">24H</div><div class="n-label">Payout Speed</div><div class="n-sub">USDT straight to your wallet</div></div>
+    <div class="number-cell"><div class="n-value">200</div><div class="n-label">Max Traders/Battle</div><div class="n-sub">Your community, your scale</div></div>
+    <div class="number-cell"><div class="n-value">∞</div><div class="n-label">Battles Per Month</div><div class="n-sub">No caps, no limits</div></div>
+  </div>
+</div>
+
+<!-- REBATE TIERS -->
+<section class="tiers-section">
+  <div class="container">
+    <div class="section-label reveal">The Tier Tables</div>
+    <h2 class="section-title reveal">EXACTLY HOW MUCH<br/>YOU EARN AT EVERY LEVEL</h2>
+    <p class="section-sub reveal">No guesswork. No surprises. Every tier is fixed, transparent, and applied automatically when your battle ends.</p>
+    <div class="tiers-grid reveal">
+
+      <!-- Entry Rebate Tiers -->
+      <div class="tier-table">
+        <div class="tier-table-header" style="background:rgba(255,215,0,.06);border-bottom:1px solid rgba(255,215,0,.15);">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,215,0,.6);margin-bottom:6px;">💰 Stream 02</div>
+          <div class="tier-table-title">Entry Rebate Tiers</div>
+          <div class="tier-table-sub">Prize pool per individual battle · Applied to YOUR entry fee</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Prize Pool: <strong style="color:#fff;">$1 – $500</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Starter battles — small community</div>
+          </div>
+          <div class="tier-value" style="color:#FFD700;">15% back</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Prize Pool: <strong style="color:#fff;">$501 – $1,000</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Growing community — mid-tier</div>
+          </div>
+          <div class="tier-value" style="color:#FFA500;">30% back</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Prize Pool: <strong style="color:#fff;">$1,001 – $2,000</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Active organiser — high volume</div>
+          </div>
+          <div class="tier-value" style="color:#22C55E;">40% back</div>
+        </div>
+        <div class="tier-row" style="background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.15);">
+          <div>
+            <div class="tier-label">Prize Pool: <strong style="color:#fff;">$2,001+</strong></div>
+            <div style="font-size:11px;color:rgba(139,92,246,.7);margin-top:2px;">⚡ Top tier — power organiser</div>
+          </div>
+          <div class="tier-value" style="color:#8B5CF6;">50% back</div>
+        </div>
+        <div style="padding:16px 24px;background:rgba(255,215,0,.04);">
+          <div style="font-size:12px;color:var(--text3);line-height:1.65;">
+            Example: You enter your own $50 battle. Prize pool reaches $1,500.<br/>
+            You're in the 40% tier. <strong style="color:#FFD700;">You get $20 back automatically.</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Volume Tiers -->
+      <div class="tier-table">
+        <div class="tier-table-header" style="background:rgba(34,197,94,.06);border-bottom:1px solid rgba(34,197,94,.15);">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(34,197,94,.6);margin-bottom:6px;">🚀 Stream 03</div>
+          <div class="tier-table-title">Monthly Volume Bonuses</div>
+          <div class="tier-table-sub">Rolling 30-day prize pool total · Net of previous tier</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Volume: <strong style="color:#fff;">$10,000+</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">~5 battles × 20 traders × $100</div>
+          </div>
+          <div class="tier-value" style="color:#FFD700;">+$100 cash</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Volume: <strong style="color:#fff;">$25,000+</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Net: $150 extra above $10K tier</div>
+          </div>
+          <div class="tier-value" style="color:#FFA500;">+$250 cash</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Volume: <strong style="color:#fff;">$50,000+</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Net: $350 extra above $25K tier</div>
+          </div>
+          <div class="tier-value" style="color:#22C55E;">+$600 cash</div>
+        </div>
+        <div class="tier-row">
+          <div>
+            <div class="tier-label">Volume: <strong style="color:#fff;">$100,000+</strong></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Net: $900 extra above $50K tier</div>
+          </div>
+          <div class="tier-value" style="color:#3B82F6;">+$1,500 cash</div>
+        </div>
+        <div class="tier-row" style="background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.15);">
+          <div>
+            <div class="tier-label">Volume: <strong style="color:#fff;">$500,000+</strong></div>
+            <div style="font-size:11px;color:rgba(139,92,246,.7);margin-top:2px;">⚡ Elite — net: $8,500 above $100K</div>
+          </div>
+          <div class="tier-value" style="color:#8B5CF6;">+$10,000 cash</div>
+        </div>
+        <div style="padding:16px 24px;background:rgba(34,197,94,.04);">
+          <div style="font-size:12px;color:var(--text3);line-height:1.65;">
+            Bonuses are in <strong style="color:#fff;">addition to all commissions and rebates.</strong><br/>
+            Paid monthly. Net calculation means no double-counting.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULATOR -->
+<section class="calc-section" id="calculator">
+  <div class="container">
+    <div style="text-align:center;" class="reveal">
+      <div class="section-label" style="justify-content:center;"><span></span>Earnings Calculator</div>
+      <h2 class="section-title">HOW MUCH WILL YOU MAKE?</h2>
+      <p class="section-sub" style="margin:0 auto;">Drag the sliders and watch all 3 income streams add up in real time.</p>
+    </div>
+    <div class="calc-wrapper reveal">
+      <div class="calc-grid">
+        <div class="calc-inputs">
+          <div class="calc-input-group">
+            <label>Battles Per Month <span id="lv-b">8 battles</span></label>
+            <input type="range" min="1" max="60" value="8" id="sl-b"/>
+          </div>
+          <div class="calc-input-group">
+            <label>Traders Per Battle <span id="lv-t">20 traders</span></label>
+            <input type="range" min="5" max="200" value="20" step="5" id="sl-t"/>
+          </div>
+          <div class="calc-input-group">
+            <label>Entry Fee Per Trader <span id="lv-f">$50 USDT</span></label>
+            <input type="range" min="10" max="500" value="50" step="10" id="sl-f"/>
+          </div>
+          <div class="calc-input-group">
+            <label>Your Organiser Cut <span id="lv-o">10%</span></label>
+            <input type="range" min="5" max="40" value="10" step="5" id="sl-o"/>
+          </div>
+          <div style="padding:16px;background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.1);
+            border-radius:10px;font-size:13px;color:var(--text2);line-height:1.75;">
+            💡 <strong style="color:#fff;">Tip:</strong> A Telegram group of 100 active traders running 2 battles/week
+            at $50 entry can generate <strong style="color:var(--gold);">$3,200+/month</strong> in commission alone —
+            before rebates and bonuses.
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-total-label">Your Monthly Total</div>
+          <div class="calc-total" id="cv-total">$1,280</div>
+          <div class="calc-sub">commission + rebates + monthly bonus</div>
+          <div class="calc-rows">
+            <div class="calc-row"><span>Prize pool per battle</span><span class="cv" id="cv-pool">$1,000</span></div>
+            <div class="calc-row"><span>Monthly prize volume</span><span class="cv" id="cv-vol">$8,000</span></div>
+            <div class="calc-row"><span>Commission (<span id="cv-opct">10</span>% × volume)</span><span class="cv" id="cv-comm">$800</span></div>
+            <div class="calc-row"><span>MFT platform fee (10%)</span><span class="cv" id="cv-mft" style="color:var(--red);">−$800</span></div>
+            <div class="calc-row"><span>Entry rebate tier</span><span class="cv" id="cv-rtier">30%</span></div>
+            <div class="calc-row"><span>Monthly rebate on your entries</span><span class="cv" id="cv-reb">$120</span></div>
+            <div class="calc-row"><span>Monthly volume bonus tier</span><span class="cv" id="cv-btier">—</span></div>
+            <div class="calc-row"><span>Monthly bonus cash</span><span class="cv" id="cv-bonus">$0</span></div>
+            <div class="calc-row highlight"><span><strong>Monthly earnings total</strong></span><span class="cv" id="cv-grand">$1,280</span></div>
+            <div class="calc-row"><span>Annual projection</span><span class="cv" id="cv-annual">$15,360/yr</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENARIOS -->
+<section class="scenarios-section">
+  <div class="container">
+    <div class="section-label reveal">Real World Scenarios</div>
+    <h2 class="section-title reveal">WHAT 3 TYPES OF<br/>ORGANISERS ACTUALLY EARN</h2>
+    <p class="section-sub reveal">From a small Discord group to a professional trading community — here's the complete earnings picture.</p>
+    <div class="scenarios-grid reveal">
+
+      <!-- Starter -->
+      <div class="scenario-card">
+        <div class="sc-header">
+          <div class="sc-type">Scenario 01 — Small Community</div>
+          <div class="sc-name">The Telegram Starter</div>
+          <div class="sc-desc">100-person group · 4 battles/month · $25 entry · 15 traders each</div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-row"><span>Prize pool per battle</span><span class="sv">$375</span></div>
+          <div class="sc-row"><span>Monthly prize volume</span><span class="sv">$1,500</span></div>
+          <div class="sc-row"><span>Commission (10% cut)</span><span class="sv">$150</span></div>
+          <div class="sc-row"><span>Entry rebate (15% tier)</span><span class="sv">$15</span></div>
+          <div class="sc-row"><span>Monthly volume bonus</span><span class="sv">—</span></div>
+          <div class="sc-row"><span style="color:rgba(255,255,255,.35);">MFT fee (10%)</span><span style="color:var(--red);font-family:'DM Mono',monospace;">−$150</span></div>
+          <div class="sc-total">
+            <div class="sc-total-label">Monthly Earnings</div>
+            <div class="sc-total-val">$165</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">$1,980/yr from 4 battles/mo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Growing -->
+      <div class="scenario-card featured">
+        <div class="sc-header">
+          <div class="sc-type">Scenario 02 — Active Organiser ⭐</div>
+          <div class="sc-name">The Guild Master</div>
+          <div class="sc-desc">500-person community · 8 battles/month · $50 entry · 25 traders each</div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-row"><span>Prize pool per battle</span><span class="sv">$1,250</span></div>
+          <div class="sc-row"><span>Monthly prize volume</span><span class="sv">$10,000</span></div>
+          <div class="sc-row"><span>Commission (10% cut)</span><span class="sv">$1,000</span></div>
+          <div class="sc-row"><span>Entry rebate (40% tier)</span><span class="sv">$160</span></div>
+          <div class="sc-row"><span style="color:var(--green);">Monthly volume bonus 🎯</span><span class="sv" style="color:var(--green);">+$100</span></div>
+          <div class="sc-row"><span style="color:rgba(255,255,255,.35);">MFT fee (10%)</span><span style="color:var(--red);font-family:'DM Mono',monospace;">−$1,000</span></div>
+          <div class="sc-total">
+            <div class="sc-total-label">Monthly Earnings</div>
+            <div class="sc-total-val">$1,260</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">$15,120/yr — part-time income</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Power -->
+      <div class="scenario-card">
+        <div class="sc-header">
+          <div class="sc-type">Scenario 03 — Power Organiser</div>
+          <div class="sc-name">The Professional</div>
+          <div class="sc-desc">2,000-person community · 20 battles/month · $100 entry · 50 traders each</div>
+        </div>
+        <div class="sc-body">
+          <div class="sc-row"><span>Prize pool per battle</span><span class="sv">$5,000</span></div>
+          <div class="sc-row"><span>Monthly prize volume</span><span class="sv">$100,000</span></div>
+          <div class="sc-row"><span>Commission (10% cut)</span><span class="sv">$10,000</span></div>
+          <div class="sc-row"><span>Entry rebate (50% tier)</span><span class="sv">$1,000</span></div>
+          <div class="sc-row"><span style="color:var(--green);">Monthly volume bonus 🏆</span><span class="sv" style="color:var(--green);">+$1,500</span></div>
+          <div class="sc-row"><span style="color:rgba(255,255,255,.35);">MFT fee (10%)</span><span style="color:var(--red);font-family:'DM Mono',monospace;">−$10,000</span></div>
+          <div class="sc-total">
+            <div class="sc-total-label">Monthly Earnings</div>
+            <div class="sc-total-val">$12,500</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">$150,000/yr — full-time business</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- VOLUME LADDER -->
+<section class="volume-section">
+  <div class="container">
+    <div class="section-label reveal">Volume Ladder</div>
+    <h2 class="section-title reveal">THE MORE YOU GROW,<br/>THE MORE WE PAY YOU.</h2>
+    <p class="section-sub reveal">Monthly volume bonuses are designed to reward organiser loyalty and scale. Every tier you unlock stays unlocked while your volume holds.</p>
+    <div class="volume-ladder reveal">
+      <div class="volume-tier">
+        <div class="vt-dot" style="background:rgba(255,215,0,.1);border-color:#FFD700;">🏅</div>
+        <div class="vt-body">
+          <div class="vt-vol" style="color:#FFD700;">$10,000+ volume</div>
+          <div class="vt-bonus">+$100 / month</div>
+          <div class="vt-note">~4 battles × 25 traders × $100 entry</div>
+        </div>
+      </div>
+      <div class="volume-tier">
+        <div class="vt-dot" style="background:rgba(255,165,0,.1);border-color:#FFA500;">🥈</div>
+        <div class="vt-body">
+          <div class="vt-vol" style="color:#FFA500;">$25,000+ volume</div>
+          <div class="vt-bonus">+$250 / month</div>
+          <div class="vt-note">Net of previous tier (+$150 incremental)</div>
+        </div>
+      </div>
+      <div class="volume-tier">
+        <div class="vt-dot" style="background:rgba(34,197,94,.1);border-color:#22C55E;">🥇</div>
+        <div class="vt-body">
+          <div class="vt-vol" style="color:#22C55E;">$50,000+ volume</div>
+          <div class="vt-bonus">+$600 / month</div>
+          <div class="vt-note">Net of previous tier (+$350 incremental)</div>
+        </div>
+      </div>
+      <div class="volume-tier">
+        <div class="vt-dot" style="background:rgba(59,130,246,.1);border-color:#3B82F6;">💎</div>
+        <div class="vt-body">
+          <div class="vt-vol" style="color:#3B82F6;">$100,000+ volume</div>
+          <div class="vt-bonus">+$1,500 / month</div>
+          <div class="vt-note">Net of previous tier (+$900 incremental)</div>
+        </div>
+      </div>
+      <div class="volume-tier">
+        <div class="vt-dot" style="background:rgba(139,92,246,.15);border-color:#8B5CF6;box-shadow:0 0 16px rgba(139,92,246,.3);">👑</div>
+        <div class="vt-body" style="border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.06);">
+          <div class="vt-vol" style="color:#8B5CF6;">$500,000+ volume</div>
+          <div class="vt-bonus" style="color:#8B5CF6;">+$10,000 / month</div>
+          <div class="vt-note">Elite tier · Net of all previous (+$8,500 incremental)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY IT WORKS -->
+<section style="background:var(--bg2);">
+  <div class="container">
+    <div class="section-label reveal">Why It Works</div>
+    <h2 class="section-title reveal">DESIGNED SO YOUR GROWTH<br/>IS OUR GROWTH.</h2>
+    <div class="why-grid reveal">
+      <div class="why-card wide">
+        <div class="why-icon">🔄</div>
+        <div>
+          <div class="why-title">All Three Streams Stack — They Don't Compete</div>
+          <div class="why-desc">Commission pays you for running battles. Rebates reduce your cost to participate. Bonuses reward your scale. All three happen simultaneously on every battle. A power organiser running 20 battles/month earns commission on the volume, a 50% rebate on their own entries, AND a $1,500 monthly bonus — every single month, automatically, without doing anything extra.</div>
+          <span class="why-tag">✓ Compounding income, not linear</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">⛓️</div>
+        <div>
+          <div class="why-title">All Payments On-Chain</div>
+          <div class="why-desc">Every commission, every rebate, every bonus is paid in USDT and recorded on TronScan. You can verify every payment publicly. No trust required — the blockchain is the receipts.</div>
+          <span class="why-tag">✓ 100% transparent</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">⚡</div>
+        <div>
+          <div class="why-title">Automatic — Zero Admin</div>
+          <div class="why-desc">Everything is calculated and paid automatically when each battle ends. No invoicing. No manual claims. No support tickets. Your wallet fills up while you sleep.</div>
+          <span class="why-tag">✓ Fully automated</span>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📊</div>
+        <div>
+          <div class="why-title">Full Dashboard Visibility</div>
+          <div class="why-desc">The Organiser Rebates dashboard inside your Guild Master panel shows every rebate, every bonus, your current monthly volume, your progress to the next tier, and your full history.</div>
+          <span class="why-tag">✓ Complete transparency</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<div class="quote-section reveal">
+  <p class="big-quote">
+    "EVERY BATTLE YOU HOST PAYS YOU <span>THREE TIMES.</span><br/>
+    ONCE WHEN IT ENDS.<br/>
+    ONCE FOR YOUR OWN ENTRY.<br/>
+    ONCE FOR YOUR MONTHLY VOLUME."
+  </p>
+  <p class="quote-sub">This is the most rewarding organiser program in trading. The bigger your community, the more all three streams pay — automatically, forever.</p>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="reveal">
+      <div class="section-label" style="justify-content:center;"><span></span>Start Today</div>
+      <h2 class="section-title">YOUR NEXT BATTLE<br/>EARNS YOU THREE WAYS.</h2>
+      <p class="section-sub">Free to start. No approval. No setup fee. Create your Guild Battle in 60 seconds, share the link with your community, and start earning commission, rebates and bonuses automatically.</p>
+      <div class="cta-actions">
+        <a href="https://www.myfundedtournament.com/guild" target="_blank" class="btn-primary" style="font-size:16px;padding:18px 48px;">
+          Create Your Battle →
+        </a>
+        <a href="https://www.myfundedtournament.com/register" target="_blank" class="btn-ghost" style="font-size:16px;padding:18px 48px;">
+          Create Free Account
+        </a>
+      </div>
+      <div class="contact-options">
+        <div class="contact-opt">📧 <a href="mailto:limitlessecomltd@gmail.com">limitlessecomltd@gmail.com</a></div>
+        <div class="contact-opt">🌐 <a href="https://www.myfundedtournament.com" target="_blank">myfundedtournament.com</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">MYFUNDEDTOURNAMENT</div>
+  <div class="footer-text">Organiser Rewards — Commission · Entry Rebates · Monthly Bonuses</div>
+  <div class="footer-text">© 2026 MyFundedTournament. All rights reserved.</div>
+</footer>
+
+<script>
+// Cursor glow
+const glow = document.getElementById('glow');
+document.addEventListener('mousemove', e => { glow.style.left=e.clientX+'px'; glow.style.top=e.clientY+'px'; });
+
+// Rebate tier helper
+const REBATE_TIERS = [
+  { min:2001, pct:50, label:'50% (Top tier)' },
+  { min:1001, pct:40, label:'40%' },
+  { min:501,  pct:30, label:'30%' },
+  { min:1,    pct:15, label:'15%' },
+];
+const MONTHLY_TIERS = [
+  { min:500000, bonus:10000, label:'$500K+ ($10,000)' },
+  { min:100000, bonus:1500,  label:'$100K+ ($1,500)'  },
+  { min:50000,  bonus:600,   label:'$50K+ ($600)'     },
+  { min:25000,  bonus:250,   label:'$25K+ ($250)'     },
+  { min:10000,  bonus:100,   label:'$10K+ ($100)'     },
+];
+function getRebate(pool) { return REBATE_TIERS.find(t => pool >= t.min) || null; }
+function getBonus(vol)   { return MONTHLY_TIERS.find(t => vol >= t.min) || null; }
+
+function calc() {
+  const b  = +document.getElementById('sl-b').value;
+  const t  = +document.getElementById('sl-t').value;
+  const f  = +document.getElementById('sl-f').value;
+  const o  = +document.getElementById('sl-o').value;
+  const pool   = t * f;
+  const vol    = b * pool;
+  const commGross = vol * (o / 100);
+  const mftFee    = vol * 0.10;
+  const commNet   = commGross;        // organiser gets o%, MFT gets 10%, winner gets rest
+  const rebTier   = getRebate(pool);
+  const rebAmt    = rebTier ? (f * rebTier.pct / 100) * b : 0;
+  const bonTier   = getBonus(vol);
+  const bonAmt    = bonTier ? bonTier.bonus : 0;
+  const grand     = commNet + rebAmt + bonAmt;
+
+  document.getElementById('lv-b').textContent   = b + ' battles';
+  document.getElementById('lv-t').textContent   = t + ' traders';
+  document.getElementById('lv-f').textContent   = '$' + f + ' USDT';
+  document.getElementById('lv-o').textContent   = o + '%';
+  document.getElementById('cv-total').textContent  = '$' + Math.round(grand).toLocaleString();
+  document.getElementById('cv-pool').textContent   = '$' + pool.toLocaleString();
+  document.getElementById('cv-vol').textContent    = '$' + vol.toLocaleString();
+  document.getElementById('cv-opct').textContent   = o;
+  document.getElementById('cv-comm').textContent   = '$' + Math.round(commNet).toLocaleString();
+  document.getElementById('cv-mft').textContent    = '−$' + Math.round(mftFee).toLocaleString();
+  document.getElementById('cv-rtier').textContent  = rebTier ? rebTier.label : 'None ($1–$500 min)';
+  document.getElementById('cv-reb').textContent    = '$' + Math.round(rebAmt).toLocaleString();
+  document.getElementById('cv-btier').textContent  = bonTier ? bonTier.label : '—';
+  document.getElementById('cv-bonus').textContent  = bonAmt > 0 ? '+$' + bonAmt.toLocaleString() : '$0';
+  document.getElementById('cv-grand').textContent  = '$' + Math.round(grand).toLocaleString();
+  document.getElementById('cv-annual').textContent = '$' + Math.round(grand * 12).toLocaleString() + '/yr';
+}
+['sl-b','sl-t','sl-f','sl-o'].forEach(id => document.getElementById(id).addEventListener('input', calc));
+calc();
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

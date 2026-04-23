@@ -56,6 +56,13 @@ export default function Navbar() {
       desc: "Open a trading battle café franchise",
       color: "#22C55E",
     },
+    {
+      href: "/mft-organiser-rewards.html",
+      icon: "💰",
+      label: "Organiser Rewards",
+      desc: "Rebates, bonuses & commissions",
+      color: "#8B5CF6",
+    },
   ];
 
   return (
