@@ -135,6 +135,33 @@ async function checkAndStartFullBattles() {
       if (participants.length) console.log(`[Email] Battle-starting sent to ${participants.length} traders`);
     } catch(e) { console.warn('[Email] sendBattleStarting error:', e.message); }
 
+    // ── Enable trading for ALL battle accounts via Manager Bridge ──────────
+    try {
+      const BRIDGE = process.env.MT5_BRIDGE_URL || 'http://38.60.196.145:5099';
+      const SECRET = process.env.BRIDGE_SECRET  || 'mft_bridge_secret_2024';
+
+      // Get all MT5 logins for this battle
+      const { rows: battleEntries } = await db.query(
+        `SELECT mt5_login FROM entries WHERE tournament_id=$1 AND status='active' AND mt5_login IS NOT NULL`,
+        [t.id]
+      );
+
+      if (battleEntries.length > 0) {
+        const logins = battleEntries.map(e => String(e.mt5_login));
+        const r = await fetch(`${BRIDGE}/enable-battle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ logins, secret: SECRET }),
+          signal: AbortSignal.timeout(10000),
+        });
+        const result = await r.json();
+        console.log(`[AutoStart] Manager Bridge: enabled trading for ${result.enabled}/${logins.length} accounts`);
+      }
+    } catch(bridgeErr) {
+      console.warn('[AutoStart] Failed to enable trading via bridge:', bridgeErr.message);
+      // Non-fatal — accounts can be manually enabled from admin
+    }
+
     console.log(`[AutoStart] Battle full → Started: ${t.name} (${t.active_entries}/${t.max_entries})`);
 
     // Immediately create 2 replacement registration slots
