@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>Mt5BridgeServer</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Official MetaQuotes Manager API .NET wrapper -->
+    <Reference Include="MetaQuotes.MT5ManagerAPI64">
+      <HintPath>MetaQuotes.MT5ManagerAPI64.dll</HintPath>
+    </Reference>
+    <Reference Include="MetaQuotes.MT5CommonAPI64">
+      <HintPath>MetaQuotes.MT5CommonAPI64.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
