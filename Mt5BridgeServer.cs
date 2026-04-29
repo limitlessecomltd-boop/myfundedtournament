@@ -12,7 +12,7 @@ namespace MftBridge {
 class Program {
 
     // ── Config ────────────────────────────────────────────────────────────────
-    const string MGR_SERVER   = "190.2.155.207:443";
+    const string MGR_SERVER   = "51.195.4.87:443";
     const ulong  MGR_LOGIN    = 10007;
     const string MGR_PASSWORD = "Noman@2026";
     const int    HPORT        = 5099;
