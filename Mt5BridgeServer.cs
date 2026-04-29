@@ -47,7 +47,12 @@ class Program {
 
                 Console.WriteLine("[MGR] Creating manager via SMTManagerAPIFactory...");
                 // SMTManagerAPIFactory.CreateManager(uint version, out MTRetCode retcode)
-                _mgr = SMTManagerAPIFactory.CreateManager(SMTManagerAPIFactory.ManagerAPIVersion(), out MTRetCode rc);
+                // GetVersion(out UInt32 version) — get the API version first
+                uint apiVer = 0;
+                SMTManagerAPIFactory.GetVersion(ref apiVer);
+                if(apiVer == 0) apiVer = 3900; // fallback
+                Console.WriteLine("[MGR] API version: " + apiVer);
+                _mgr = SMTManagerAPIFactory.CreateManager(apiVer, out MTRetCode rc);
                 if(_mgr == null){ Console.WriteLine("[MGR] CreateManager failed: " + rc); return; }
 
                 Console.WriteLine("[MGR] Connecting to " + MGR_SERVER + " ...");
