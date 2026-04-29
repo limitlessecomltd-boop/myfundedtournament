@@ -352,7 +352,7 @@ class Program {
 
     // DealerBalance(UInt64 login, Double value, UInt32 type, String comment, UInt64& deal_id) ✅ confirmed
     static string GetGroups() {
-        lock(_lock){ if(!_connected||_mgr==null)return"{"error":"not connected"}";
+        lock(_lock){ if(!_connected||_mgr==null)return"{\"error\":\"not connected\"}";
             try{
                 var sb=new StringBuilder();sb.Append("[");bool first=true;
                 uint total=_mgr.GroupTotal();
@@ -364,7 +364,7 @@ class Program {
                     g.Dispose();
                 }
                 sb.Append("]");return sb.ToString();
-            }catch(Exception ex){return"{"error":""+Esc(ex.Message)+""}";}}
+            }catch(Exception ex){return"{\"error\":\""+Esc(ex.Message)+"\"}";;}}
     }
 
     static bool Deposit(ulong login,double amount,string comment) {
