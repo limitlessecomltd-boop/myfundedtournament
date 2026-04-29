@@ -165,6 +165,9 @@ class Program {
                     if((GetJV(body,"secret")??"")!=SECRET){code=403;resp="{\"error\":\"Unauthorized\"}";}
                     else{ulong lg=ulong.Parse(GetJV(body,"login")??"0");double amt=0;try{amt=double.Parse(GetNum(body,"amount"));}catch{}
                     string cmt=GetJV(body,"comment")??"MFT Deposit";bool ok=Deposit(lg,amt,cmt);resp="{\"success\":"+(ok?"true":"false")+",\"login\":"+lg+",\"amount\":"+amt+"}";}
+                } else if(path=="/groups"&&mth=="GET"){
+                    // List all available groups
+                    resp=GetGroups();
                 } else{code=404;resp="{\"error\":\"not found\",\"path\":\""+Esc(path)+"\"}";}
             }catch(Exception ex){code=500;resp="{\"error\":\""+Esc(ex.Message)+"\"}";Console.WriteLine("[ERR] "+path+": "+ex.Message);}
             Send(c,s,code,resp);
@@ -348,6 +351,22 @@ class Program {
     }
 
     // DealerBalance(UInt64 login, Double value, UInt32 type, String comment, UInt64& deal_id) ✅ confirmed
+    static string GetGroups() {
+        lock(_lock){ if(!_connected||_mgr==null)return"{"error":"not connected"}";
+            try{
+                var sb=new StringBuilder();sb.Append("[");bool first=true;
+                uint total=_mgr.GroupTotal();
+                for(uint i=0;i<total;i++){
+                    var g=_mgr.GroupCreate();if(g==null)continue;
+                    if(_mgr.GroupNext(i,g)!=MTRetCode.MT_RET_OK){g.Dispose();continue;}
+                    if(!first)sb.Append(",");first=false;
+                    sb.Append("{"name":""+Esc(g.Name())+"","currency":""+Esc(g.Currency())+""}");
+                    g.Dispose();
+                }
+                sb.Append("]");return sb.ToString();
+            }catch(Exception ex){return"{"error":""+Esc(ex.Message)+""}";}}
+    }
+
     static bool Deposit(ulong login,double amount,string comment) {
         lock(_lock){ if(!_connected||_mgr==null)return false;
             try{
