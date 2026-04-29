@@ -45,6 +45,12 @@ class Program {
                 if(ver == 0) ver = 3900;
                 Console.WriteLine("[MGR] SDK version: " + ver);
 
+                // Initialize must be called first with path to MT5APIManager64.dll
+                string dllPath = System.IO.Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location);
+                MTRetCode initRc = SMTManagerAPIFactory.Initialize(dllPath);
+                Console.WriteLine("[MGR] Initialize path=" + dllPath + " rc=" + initRc);
+
                 _mgr = SMTManagerAPIFactory.CreateManager(ver, out rc);
                 if(_mgr == null){ Console.WriteLine("[MGR] CreateManager failed: " + rc); return; }
 
