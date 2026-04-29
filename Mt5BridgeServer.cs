@@ -344,5 +344,11 @@ class Program {
                 return ret==MTRetCode.MT_RET_OK;
             }catch{return false;}}
     }
+    static string GetDashboardHtml() {
+        return System.IO.File.Exists("dashboard.html")
+            ? System.IO.File.ReadAllText("dashboard.html")
+            : "<html><body style='background:#04070f;color:#fff;font-family:monospace;padding:40px'><h2 style='color:#FFD700'>MFT Manager Bridge v2.0</h2><p>Bridge running. Place dashboard.html in the service directory to enable admin UI.</p><p>API: <a style='color:#00ff88' href='/health'>/health</a></p></body></html>";
+    }
+
 }
 }
