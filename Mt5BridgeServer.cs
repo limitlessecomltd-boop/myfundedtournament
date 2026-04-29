@@ -15,7 +15,7 @@ class Program {
     const string MGR_PASSWORD  = "Noman@2026";
     const int    HPORT         = 5099;
     const string SECRET        = "mft_bridge_secret_2024";
-    const string DEFAULT_GROUP = "demo\\contest";
+    const string DEFAULT_GROUP = "demo\\Pro";
 
     static CIMTManagerAPI _mgr       = null;
     static bool     _connected       = false;
