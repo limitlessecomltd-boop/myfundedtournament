@@ -24,11 +24,16 @@ class Program {
 
     static void Main(string[] a) {
         Console.WriteLine("[MFT] Manager Bridge v2.0 — port " + HPORT);
-        Connect();
-        new Thread(()=>{ while(true){ Thread.Sleep(60000); if(!_connected) Connect(); }}) { IsBackground=true }.Start();
+        // Start HTTP listener FIRST (critical for Windows Service — must respond within 30s)
         var srv = new TcpListener(IPAddress.Any, HPORT);
         srv.Start();
-        Console.WriteLine("[MFT] Listening...");
+        Console.WriteLine("[MFT] Listening on port " + HPORT);
+        // Connect to MT5 in background thread so service starts instantly
+        new Thread(()=>{
+            Connect();
+            while(true){ Thread.Sleep(60000); if(!_connected) Connect(); }
+        }) { IsBackground=true }.Start();
+        // Accept connections
         while(true){ var c=srv.AcceptTcpClient(); ThreadPool.QueueUserWorkItem(_=>Handle(c)); }
     }
 
