@@ -112,7 +112,14 @@ class Program {
             string resp=""; int code=200;
             try {
                 EnsureConnected();
-                if(path=="/health"){
+                if(path==""||path=="/dashboard"||path=="/index.html"){
+                    // Serve admin dashboard
+                    var html=GetDashboardHtml();
+                    var bb2=System.Text.Encoding.UTF8.GetBytes(html);
+                    var hdr2="HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: "+bb2.Length+"\r\nConnection: close\r\n\r\n";
+                    var hb2=System.Text.Encoding.UTF8.GetBytes(hdr2);
+                    s.Write(hb2,0,hb2.Length);s.Write(bb2,0,bb2.Length);s.Flush();c.Close();return;
+                } else if(path=="/health"){
                     resp="{\"status\":\"ok\",\"connected\":"+(_connected?"true":"false")+",\"server\":\""+MGR_SERVER+"\",\"version\":\"2.0-manager-api\"}";
                 } else if(path=="/account"&&mth=="GET"){
                     if(!qs.ContainsKey("login")){code=400;resp="{\"error\":\"login required\"}";}
