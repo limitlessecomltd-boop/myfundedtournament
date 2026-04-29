@@ -20,8 +20,8 @@ class Program {
     const string DEFAULT_GROUP = "demo\\contest"; // update after checking Groups in MT5 Manager
 
     // ── Manager state ─────────────────────────────────────────────────────────
-    static CIMTManagerAPI _factory = null;
-    static CIMTManagerAPI.Manager _mgr = null;
+    static IMTManagerAPI _factory = null;
+    static IMTManagerAPI _mgr = null;
     static bool   _connected    = false;
     static DateTime _lastConnect = DateTime.MinValue;
     static readonly object _lock = new object();
@@ -60,7 +60,7 @@ class Program {
                 _lastConnect = DateTime.UtcNow;
                 Console.WriteLine("[MGR] Creating factory...");
 
-                _factory = CIMTManagerAPI.CreateManagerAPI();
+                _factory = IMTManagerAPI.CreateManagerAPI();
                 if (_factory == null) {
                     Console.WriteLine("[MGR] ERROR: CreateManagerAPI() returned null");
                     Console.WriteLine("[MGR] Make sure MT5APIManager64.dll is in the same folder as this exe");
@@ -75,13 +75,13 @@ class Program {
 
                 Console.WriteLine("[MGR] Connecting to " + MGR_SERVER + "...");
                 uint ret = _mgr.Connect(MGR_SERVER);
-                if (ret != CIMTManagerAPI.MT_RET_OK) {
+                if (ret != IMTManagerAPI.MT_RET_OK) {
                     Console.WriteLine("[MGR] Connect failed: " + ret);
                     return;
                 }
 
                 ret = _mgr.Authorize(MGR_LOGIN, MGR_PASSWORD);
-                if (ret != CIMTManagerAPI.MT_RET_OK) {
+                if (ret != IMTManagerAPI.MT_RET_OK) {
                     Console.WriteLine("[MGR] Authorize failed: " + ret);
                     return;
                 }
@@ -317,7 +317,7 @@ class Program {
             try {
                 var user=_mgr.UserCreate();
                 if(user==null) return null;
-                if(_mgr.UserGet(login,user)!=CIMTManagerAPI.MT_RET_OK){user.Dispose();return null;}
+                if(_mgr.UserGet(login,user)!=IMTManagerAPI.MT_RET_OK){user.Dispose();return null;}
 
                 var acc=_mgr.AccountCreate();
                 if(acc==null){user.Dispose();return null;}
@@ -421,7 +421,7 @@ class Program {
                         req.Comment("MFT Battle End - Force Close");
                         var res=_mgr.DealerResultCreate();
                         uint ret=_mgr.DealerDeal(req,res);
-                        if(ret==CIMTManagerAPI.MT_RET_OK) closed++; else failed++;
+                        if(ret==IMTManagerAPI.MT_RET_OK) closed++; else failed++;
                         req.Dispose(); if(res!=null) res.Dispose();
                     } catch { failed++; }
                 }
@@ -445,7 +445,7 @@ class Program {
                 user.Comment("MFT Battle "+DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"));
 
                 uint ret=_mgr.UserAdd(user);
-                if(ret!=CIMTManagerAPI.MT_RET_OK){user.Dispose();return "{\"error\":\"UserAdd failed code "+ret+". Check group name: "+Esc(group)+"\"}";}
+                if(ret!=IMTManagerAPI.MT_RET_OK){user.Dispose();return "{\"error\":\"UserAdd failed code "+ret+". Check group name: "+Esc(group)+"\"}";}
 
                 ulong newLogin=user.Login(); user.Dispose();
                 string pw=MakePassword();
@@ -471,12 +471,12 @@ class Program {
             if(!_connected||_mgr==null) return false;
             try {
                 var user=_mgr.UserCreate(); if(user==null) return false;
-                if(_mgr.UserGet(login,user)!=CIMTManagerAPI.MT_RET_OK){user.Dispose();return false;}
+                if(_mgr.UserGet(login,user)!=IMTManagerAPI.MT_RET_OK){user.Dispose();return false;}
                 user.TradeAllowed(enable?1u:0u);
                 uint ret=_mgr.UserUpdate(user); user.Dispose();
-                if(ret==CIMTManagerAPI.MT_RET_OK) lock(_tradingState){_tradingState[login]=enable;}
+                if(ret==IMTManagerAPI.MT_RET_OK) lock(_tradingState){_tradingState[login]=enable;}
                 Console.WriteLine("[SetTrading] login="+login+" enable="+enable+" ret="+ret);
-                return ret==CIMTManagerAPI.MT_RET_OK;
+                return ret==IMTManagerAPI.MT_RET_OK;
             } catch(Exception ex){Console.WriteLine("[SetTrading] "+ex.Message);return false;}
         }
     }
@@ -489,7 +489,7 @@ class Program {
                 deal.Login(login); deal.Action(CIMTDeal.EnDealAction.DEAL_BALANCE);
                 deal.Profit(amount); deal.Comment(comment);
                 uint ret=_mgr.DealerBalance(deal); deal.Dispose();
-                return ret==CIMTManagerAPI.MT_RET_OK;
+                return ret==IMTManagerAPI.MT_RET_OK;
             } catch{return false;}
         }
     }
