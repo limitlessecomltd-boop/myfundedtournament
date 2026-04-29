@@ -228,7 +228,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
       <div class="ticker-item">Manager Server <span class="val">51.195.4.87:443</span></div>
       <div class="ticker-item">Login <span class="val">10007</span></div>
       <div class="ticker-item">Mode <span class="val">MT5 MANAGER API</span></div>
-      <div class="ticker-item">Bridge Port <span class="val">5099</span></div>
+      <div class="ticker-item">Bridge Port <span class="val">5100</span></div>
       <div class="ticker-item">Group <span class="val">demo\Pro</span></div>
       <div class="ticker-item">Total Accounts <span class="val" id="tk-accounts">—</span></div>
       <!-- duplicate for seamless loop -->
@@ -236,7 +236,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
       <div class="ticker-item">Manager Server <span class="val">51.195.4.87:443</span></div>
       <div class="ticker-item">Login <span class="val">10007</span></div>
       <div class="ticker-item">Mode <span class="val">MT5 MANAGER API</span></div>
-      <div class="ticker-item">Bridge Port <span class="val">5099</span></div>
+      <div class="ticker-item">Bridge Port <span class="val">5100</span></div>
       <div class="ticker-item">Group <span class="val">demo\Pro</span></div>
       <div class="ticker-item">Total Accounts <span class="val" id="tk-accounts2">—</span></div>
     </div>
@@ -245,7 +245,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
   <!-- Connection banner -->
   <div class="conn-banner disconnected" id="conn-banner">
     <span class="sb-dot" style="background:var(--red);box-shadow:0 0 8px rgba(255,51,85,.6);"></span>
-    <span id="conn-banner-text">Connecting to bridge at 38.60.196.145:5099...</span>
+    <span id="conn-banner-text">Connecting to bridge at 38.60.196.145:5100...</span>
     <span style="margin-left:auto;font-family:'Space Mono',monospace;font-size:10px;" id="conn-time"></span>
   </div>
 
@@ -576,7 +576,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
           <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
             <div class="form-group">
               <label>Bridge URL</label>
-              <input id="set-bridge-url" value="http://38.60.196.145:5099"/>
+              <input id="set-bridge-url" value="http://38.60.196.145:5100"/>
             </div>
             <div class="form-group">
               <label>Bridge Secret</label>
@@ -649,7 +649,7 @@ tr:hover td{background:rgba(255,255,255,.025);}
 
 <script>
 // ── Config ─────────────────────────────────────────────────────────────────
-let BRIDGE_URL = 'http://38.60.196.145:5099';
+let BRIDGE_URL = 'http://38.60.196.145:5100';
 let SECRET     = 'mft_bridge_secret_2024';
 let REFRESH_MS = 10000;
 let bridgeConnected = false;
@@ -737,7 +737,7 @@ async function checkHealth() {
   } else {
     bridgeConnected = false;
     banner.className = 'conn-banner disconnected';
-    document.getElementById('conn-banner-text').textContent = `Bridge offline — ${d?.error || 'Cannot connect to 38.60.196.145:5099'}`;
+    document.getElementById('conn-banner-text').textContent = `Bridge offline — ${d?.error || 'Cannot connect to 38.60.196.145:5100'}`;
     document.getElementById('stat-status').textContent = 'OFFLINE';
     document.getElementById('stat-status').style.color = 'var(--red)';
     document.getElementById('sb-conn-text').textContent = 'Disconnected';
