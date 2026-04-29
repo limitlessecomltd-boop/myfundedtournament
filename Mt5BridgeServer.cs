@@ -351,7 +351,7 @@ class Program {
     }
 
     // DealerBalance(UInt64 login, Double value, UInt32 type, String comment, UInt64& deal_id) ✅ confirmed
-    static string GetGroups() {
+    static string GetGroups() { // v3
         lock(_lock){ if(!_connected||_mgr==null)return"{\"error\":\"not connected\"}";
             try{
                 var sb=new StringBuilder();sb.Append("[");bool first=true;
