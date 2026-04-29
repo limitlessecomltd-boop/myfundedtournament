@@ -360,7 +360,7 @@ class Program {
                     var g=_mgr.GroupCreate();if(g==null)continue;
                     if(_mgr.GroupNext(i,g)!=MTRetCode.MT_RET_OK){g.Dispose();continue;}
                     if(!first)sb.Append(",");first=false;
-                    sb.Append("{"name":""+Esc(g.Name())+"","currency":""+Esc(g.Currency())+""}");
+                    sb.Append("{\"name\":\""+Esc(g.Name())+"\",\"currency\":\""+Esc(g.Currency())+"\"}");
                     g.Dispose();
                 }
                 sb.Append("]");return sb.ToString();
